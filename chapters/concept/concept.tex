@@ -1,0 +1,40 @@
+%************************************************
+\chapter{Flexible Event Subscription}\label{ch:flexibleeventsubscription}
+%************************************************
+
+Present an abstract framework for flexible event subscription.
+> Including: Model <> Process Engine <> Buffer <> CEP
+> How does event subscription currently affect the workflow?
+> What should a workflow look like that allows early event subscription?
+> What must be explicitly stated by the user? What should be done automatically in the background?
+(1 page)
+
+\section{BPMN Extension}
+To fulfill requirements R1.1 and R1.2, additional information has to be included in the BPMN model. By default, a BPMN intermediate event does not have information on the time of subscription or the event query. 
+The BPMN specification offers BPMN-X extensions to add custom properties or elements to a model.
+
+To accomodate the required information, the following extension is proposed:
+> The extension should apply to MessageIntermediateCatchEvent and MessageBoundaryEvent
+> extend tMessage => tBufferedCEPMessage, so that the messageRef can be reused
+> OR extension to messageEventDefinition: ExplicitSubscriptionMessageEventDefinition
+> [subscriptionQuery, subscriptionTime, bufferPolicy]
+
+A buffer shared across multiple instances or events is more complex than a simple single-event-buffer (that one does not require buffer policies). As soon as the requestEvent call can be executed multiple times for the same queryId, we need to specify the following aspects:
+
+Buffer policies:
+(widely based on [Ref paper Sankalita]) RetrievalPolicy, ConsumptionPolicy, LifetimePolicy
++ buffer maximum age (= combination of lifetime policies)
+
+\section{Buffered Event Handling}
+Why do we need a buffer to allow early event subscription?
+
+What is the desired functionality of the event buffer? What functionality (API) does it expose?
+> this could be seen as an extension to the API that is exposed by a standard CEP Platform
+> standard platform API: registerQuery(queryString, notificationRecipient) : queryId, deleteQuery(queryId)
+> extended API: registerQuery(queryString): queryId, requestEvent(queryId, notificationRecipient), unsubscribe(queryId), deleteQuery(queryId)
+
+
+
+
+\section{Extended Process Engine Behaviour}
+=> As a link between the BPMN model and the Buffered Event handling

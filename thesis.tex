@@ -74,19 +74,17 @@
 %\setcounter{page}{90}
 % use \cleardoublepage here to avoid problems with pdfbookmark
 \cleardoublepage
-\part{Some Kind of Manual}
+%\ctparttext{You can put some informational part preamble text here.}
+%\part{Some Kind of Manual}
 \include{chapters/intro/intro}
-\cleardoublepage
-\ctparttext{You can put some informational part preamble text here. 
-Illo principalmente su nos. Non message \emph{occidental} angloromanic
-da. Debitas effortio simplificate sia se, auxiliar summarios da que,
-se avantiate publicationes via. Pan in terra summarios, capital
-interlingua se que. Al via multo esser specimen, campo responder que
-da. Le usate medical addresses pro, europa origine sanctificate nos se.}
-\part{The Showcase}
-\include{chapters/background/background}
+
+\cleardoublepage\include{chapters/background/background}
+\cleardoublepage\include{chapters/requirements/requirements}
+\cleardoublepage\include{chapters/assessment/assessment}
+\cleardoublepage\include{chapters/concept/concept}
+
+
 %\addtocontents{toc}{\protect\clearpage} % <--- just debug stuff, ignore
-\include{chapters/requirements/requirements}
 %\include{multiToC} % <--- just debug stuff, ignore for your documents
 % ********************************************************************
 % Backmatter
@@ -94,7 +92,6 @@ da. Le usate medical addresses pro, europa origine sanctificate nos se.}
 \appendix
 %\renewcommand{\thechapter}{\alph{chapter}}
 \cleardoublepage
-\part{Appendix}
 \include{chapters/appendix/appendix}
 %********************************************************************
 % Other Stuff in the Back

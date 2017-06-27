@@ -1,0 +1,44 @@
+%************************************************
+\chapter{Problem Statement}\label{ch:problemstatement}
+%************************************************
+
+This section will further define the problem and derive formal requirements to event subscription mechanisms
+
+\section{Motivating Examples}
+- one example for independent. The subscription does not depend on a prior precess result, the subscription can be done even before process instantiation
+
+- one example for a process that uses an intermediate event that depends (subscription-wise) on the result of a previous step in the process.
+
+\section{Event Subscription Scenarios}
+What is meant by Event Subscription Scenario and why are we going to work with well-defined scenarios?
+When can events happen in relation to the process (instance) lifecycle? => timeline
+When must subscription happen to catch these events?
+Second dimension: Does the subscription depend on a prior process result?
+> A matrix of Event Subscription Scenarios.
+
+\section{Requirements Definition}
+Derive formal requirements, define, make them measurable.
+
+R1: Flexible Event Subscription Time:
+
+R1.1: Explicitness
+> for each event that is used in a business process, the time of subscription must be clearly defined in relation to the process execution lifecycle
+> The definition is done in the process model
+> explicit about the event platform to subscribe to
+> ? What's the granularity?
+
+R1.2: Flexibility
+> The subscription time can be chosen at least from the following options: [see scenarios]
+> Options are limited when the subscription depends on data from previous execution steps
+
+R2: Automatic Subscription Handling
+
+R2.1: Subscription
+> The subscription to event sources is handled implicitely during process deployment and execution
+> It is handled according to the modeled subscription time.
+
+R2.2: Unsubscription
+> The unsubscription from an event source is handled automatically as soon as a subscription becomes unnecessary.
+
+R3: Event Buffering
+> All events since the subscription are available to the process.
