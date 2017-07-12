@@ -38,3 +38,5 @@ What is the desired functionality of the event buffer? What functionality (API) 
 
 \section{Extended Process Engine Behaviour}
 => As a link between the BPMN model and the Buffered Event handling
+
+\todo[inline]{there must be a "subscription-garbage-collection" for any events that cannot be reached anymore in the current process execution! e.g. two different events behind an xor-gateway. the garbage collection could be executed on every transition}
