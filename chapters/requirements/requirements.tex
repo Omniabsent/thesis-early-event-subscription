@@ -55,31 +55,26 @@ Before the subscription to that specific truck gps event can happen, the process
 
 
 \section{Requirements Definition}
-Derive formal requirements, define, make them measurable.
+The previous sections have exemplified how the execution semantic offered by the BPMN specification limits users in the use of events in business processes. Now these shortcomings are formalized into an additional set of requirements that must be met by a process execution environment to enable event handling in the extended set of event occurrence scenarios.
+The formal requirements will later be used to evaluate the capabilities of current Process Management Solutions and to develop a new concept to handling event subscription in business processes. \todo[inline]{ref to chapters}
 
-R1: Flexible Event Subscription Time:
+\paragraph{R1: Flexible Event Subscription Time\newline}
 
-R1.1: Explicitness
-> for each event that is used in a business process, the time of subscription must be clearly defined in relation to the process execution lifecycle
-> The definition is done in the process model
-> explicit about the event platform to subscribe to
-> ? What's the granularity?
+\textit{R1.1: Explicitness}: 
+For each event that is used in a business process, it must be possible to derive the time of event subscription from the process model. The time of subscription may either be explicitly stated or defined implicitly.
 
-R1.2: Flexibility
-> The subscription time can be chosen at least from the following options: [see scenarios]
-> Options are limited when the subscription depends on data from previous execution steps
+\textit{R1.2: Flexibility}: 
+The time of subscription can be influenced to catch events according to any of the event occurrence scenarios O1, O2, O3, O4. In other words, the process model defines the earliest acceptable time for an event occurrence to be considered in the process execution. The necessary options are \textit{since system start}, \textit{since process deployment}, \textit{since process instantiation}, from an arbitrary but \textit{explicit time during process execution}, or \textit{since enabling of the Event Process Element}.
 
-R2: Automatic Subscription Handling
+\paragraph{R2: Automatic Subscription Handling\newline}
 
-R2.1: Subscription
-> The subscription to event sources is handled implicitely during process deployment and execution
-> It is handled according to the modeled subscription time.
+\textit{R2.1: Subscription}
+The subscription to event sources is handled implicitly by the process execution environment as defined by the process model.
 
-R2.2: Unsubscription
-> The unsubscription from an event source is handled automatically as soon as a subscription becomes unnecessary.
+\textit{R2.2: Removal of Subscription}
+The removal of a subscription from the system is handled automatically as soon as a subscription becomes unnecessary.
 
-R3: Event Buffering
-> All events since the subscription time are available to the process.
-> A single buffer entity can be accessed from different process elements, process instances and processes within the environment
-> Buffer policies?
+\paragraph{R3: Event Buffering\newline}
+To make all events since the subscription time available during process execution, matching events need to be stored temporarily.
 
+\todo[inline]{buffer policies and scope?}
