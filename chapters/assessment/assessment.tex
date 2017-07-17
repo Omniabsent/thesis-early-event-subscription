@@ -5,7 +5,7 @@
 The lack of flexibility in handling event subscription in business processes has been outlined in the previous chapters and a set of extended requirements to process management solutions have been presented.
 In this section I take a closer look at the capabilities of current solutions with regards to the event occurrence scenarios to get a better understanding of the issues that arise when working with event subscription in business processes.
 The assessment will be carried out using BPMN and Camunda, a state-of-the art and widely adopted business process engine.
-The main goal is be to identify and illustrate the shortcomings of the current process technology stack. These shortcomings will be referenced in addition to the presented requirements to develop a more refined subscription handling model in the following chapter. \todo[inline]{"subscription handling model"?}
+The main goal is to identify and illustrate the shortcomings of the current process technology stack. These shortcomings will be referenced in addition to the presented requirements to develop a more refined subscription handling model in the following chapter. \todo[inline]{"subscription handling model"?}
 
 \section{BPMN Models in presence of the Event Occurrence Scenarios}
 Chapter X has revealed that processes can run into deadlocks if events do not occur at the right time \todo[inline]{.}
@@ -34,30 +34,46 @@ The first scenario represents the most simple case, that is also natively suppor
 	\caption{Intermediate Event with a parallel Timer Event}\label{fig:excerpt-event-with-timer}
 \end{figure}
 
-In certain situations an event might not occur at all. Given a basic event implementation like in \autoref{fig:abstract-process-with-event}, the process flow will get to a halt once it reaches the Intermediate Catch Event and not be able to proceed. While depending on the process design this might be the desired behavior, in many situations this is not acceptable.
+In certain situations an event might not occur at all. Given a basic event implementation like in \autoref{fig:abstract-process-with-event}, the process flow will get to a halt once it reaches the Intermediate Catch Event and will not be able to proceed. While, depending on the process design, this might be the desired behavior, in many situations this is not acceptable.
 
-Let's consider a process that is supposed to wait for approval for a certain amount of time and trigger an additional request if the approval has not been issued before the deadline. \autoref{fig:excerpt-event-with-timer} shows how this behavior can be implemented using an Event-based Gateway which puts a Timer Event in parallel to the Intermediate Catch Event. This extension will make sure that a process does not run into a deadlock state if an expected event does not occur.
+Let's consider a process that is supposed to wait for approval for a certain amount of time and trigger an additional request if the approval has not been issued before the deadline. \autoref{fig:excerpt-event-with-timer} shows how this behavior can be implemented using an Event-based Gateway which puts a Timer Event in parallel to the Intermediate Catch Event. This extension will make sure that a process does not run into a deadlock state if the expected event does not occur.
 
 \todo[inline]{I mention an example, but that example is not exactly illustrated in the process}
-\todo[inline]{according to the spec: what exactly will happen to the active catch event?}
+\todo[inline]{according to the spec: what exactly will happen to the active catch event once the timer fires?}
 
 
-\paragraph{Scenario O3: Between Process instantiation and the enabling of the BPMN event}
+\paragraph{Scenario O3: Occurrence between Process instantiation and the enabling of the BPMN event}
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=1\linewidth]{chapters/assessment/parallel-gateway-early-subscription.png}}
-	\caption{Event Element after Parallel Gateway}\label{fig:excerpt-parallel-gateway-event}
+	\caption{Event Element in parallel process flow}\label{fig:excerpt-parallel-gateway-event}
 \end{figure}
 
-\todo[inline]{could add a condition "Is data available yet?" to also support the normal occurrence scenario O1}
+In case the event occurs during process execution, but before the BPMN event element is enabled and thus listening for events, the occurrence will not be considered in the execution. The process will get stuck at the Event Process Element as if the event did not happen at all.
+To avoid a deadlock in this scenario, a solution is to execute the Intermediate Catch Event in parallel to the rest of the process flow using a Parallel Gateway. This is illustrated in \autoref{fig:excerpt-parallel-gateway-event}. The time of subscription to the event can be controlled by the position of the parallel split: To implement an event subscription right after process instantiation, the Parallel Gateway has to be the first element after the Start Event (that means \textit{Part~1} in the illustration is empty). To implement event subscription at a specific point during process execution, part of the process can execute before reaching the Parallel Gateway. In \autoref{fig:excerpt-parallel-gateway-event}, the event may occur at any time during the execution of the collapsed sub-process \textit{Part~2}. 
 
-\paragraph{Scenarios O4 and 05: Before Process Instantiation}
+\paragraph{Scenarios O4 and O5: Before Process Instantiation}
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=1\linewidth]{chapters/assessment/aux-buffer-process.png}}
 	\caption{Event Buffering through an auxiliary Buffering Process}\label{fig:aux-buffering-process}
 \end{figure}
 
+Any Events that happen before process instantiation will not be considered in a standard Intermediate Catch Event. That applies to both scenarios, the occurrence between deployment and instantiation (\textit{O4}) and an occurrence time before the deployment of the process in the Process Engine (\textit{O5}).
+
+To create a Process Model that allows to catch an event before the process instance exists, three new elements are introduced: (1) An additional \textit{Auxiliary Buffering Process} that can catch an incoming event, (2) an \textit{Event~Buffer}, a temporary data-store that keeps event data until required by the \textit{Original~Process}, (3) an \textit{Auxiliary Event Delivery Process}, that retrieves events from the buffer and makes them available to the \textit{Original~Process}.
+\autoref{fig:aux-buffering-process} reveals the interaction of the \textit{Original Process}, the two auxiliary processes and the data-store. To start listening for an event, the \textit{Auxiliary Buffering Process} has to be instantiated through the a message start event containing the information necessary for the event subscription. The process starts listening for the event and writes the received event to the temporary data-store. 
+The given process design is able to handle multiple event occurrences, because the receiving activity is looping. The buffering process terminates once the \textit{Unsubscribe} event is received.
+
+\todo[inline]{how should the ABP be started? manually?}
+
+The \textit{Original Process} can be started any time after the buffering process. In \autoref{fig:aux-buffering-process}, the Intermediate Catch Event has been explicitly split into three events: An initial Send Event to request events, a Catch Event to receive and a final Send Event to signal that no events shall be received anymore.
+The initial Send Event instantiates the \textit{Auxiliary Event Delivery Process}, which tries to read from the Event Buffer and deliver the event to the Original Process. Once there is data available in the buffer, it is sent by the sending activity. The central looping activity will retry reading from the buffer until data becomes available and will only be terminated once the \textit{Stop}-event occurs. 
+The Original Process can receive the event using a standard Intermediate Catch Event even when the event occurs before the instantiation of \textit{Original Process}, so it handles scenario \textit{O4}. 
+Moreover the \textit{Auxiliary Buffering Process} is not bound to a specific event, it works generically with any event information that is passed on to it. For that reason it is also not bound to a specific process deployment and can buffer events even before a process has been deployed, so it handles scenario \textit{O5}.
+Given that the buffering process can alternatively be started using an explicit Message Send Event during process execution and the process does not stop listening until the Original Process has received the event, scenarios O1 and O3 are also supported.
+
+\todo[inline]{what exactly is passed around|how many instances of each process|overwrite or append to buffer}
 
 \section{Implemention of Early Event Subscription using standard Camunda}
 Is it possible to implement this using out-of-the-box Camunda?
