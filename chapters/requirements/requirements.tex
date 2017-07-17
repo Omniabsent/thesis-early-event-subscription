@@ -27,12 +27,13 @@ We specify the possible event occurrence times in relation to the life cycle of 
 \autoref{fig:occurrence-timeline} shows the life cycle steps of a process and an instance from the deployment of the process until the undeployment and uses a timeline to illustrate that an event might occur at any time during this cycle. More precisely, an event is always considered to occur before or after a life cycle step or in between two consecutive steps.
 \todo[inline]{How about system-deployment/process engine start and process undeployment? show in illustration, but say in text that we simplify this for now. after undeployment is essentially before deployment of a new process; Before Engine start is also before pr. deployment and we presume that an engine is running and does not stop.}
 
-Given the relevant life cycle steps, \textit{process deployment}, \textit{process instantiation} and \textit{Event enablement}, the following four occurrence phases are distinguished in this work:
+Given the relevant life cycle steps, \textit{process deployment}, \textit{process instantiation} and \textit{Event enablement}, the following occurrence scenarios are distinguished in this work:
 \begin{aenumerate}
-	\item O1 Before Process deployment
-	\item O2 Between Process deployment and process instantiation
+	\item O1 After the enabling of the BPMN event (BPMN default)
+	\item O2 The event does not occur
 	\item O3 Between Process instantiation and the enabling of the BPMN event
-	\item O4 After the enabling of the BPMN event
+	\item O4 Between Process deployment and process instantiation
+	\item O5 Before Process deployment
 \end{aenumerate}\label{def:occurrence-times}
 
 \todo[inline]{add a back reference to the examples? In example XY, events can occur before... whereas in example...}
@@ -65,6 +66,7 @@ For each event that is used in a business process, it must be possible to derive
 
 \textit{R1.2: Flexibility}: 
 The time of subscription can be influenced to catch events according to any of the event occurrence scenarios O1, O2, O3, O4. In other words, the process model defines the earliest acceptable time for an event occurrence to be considered in the process execution. The necessary options are \textit{since system start}, \textit{since process deployment}, \textit{since process instantiation}, from an arbitrary but \textit{explicit time during process execution}, or \textit{since enabling of the Event Process Element}.
+\todo[inline]{limited by subscription dependencies}
 
 \paragraph{R2: Automatic Subscription Handling\newline}
 
