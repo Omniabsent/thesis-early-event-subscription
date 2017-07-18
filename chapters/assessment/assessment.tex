@@ -7,6 +7,8 @@ In this section I take a closer look at the capabilities of current solutions wi
 The assessment will be carried out using BPMN and Camunda, a state-of-the art and widely adopted business process engine.
 The main goal is to identify and illustrate the shortcomings of the current process technology stack. These shortcomings will be referenced in addition to the presented requirements to develop a more refined subscription handling model in the following chapter. \todo[inline]{"subscription handling model"?}
 
+\todo[inline]{which functionality should be evaluated exactly?: all occurrence scenarios, but no buffer policies. The buffer will always store the last version of the event and also deliver that version.}
+
 \section{BPMN Models in presence of the Event Occurrence Scenarios}
 Chapter X has revealed that processes can run into deadlocks if events do not occur at the right time \todo[inline]{.}
 \begin{figure}[]
@@ -71,15 +73,72 @@ The \textit{Original Process} can be started any time after the buffering proces
 The initial Send Event instantiates the \textit{Auxiliary Event Delivery Process}, which tries to read from the Event Buffer and deliver the event to the Original Process. Once there is data available in the buffer, it is sent by the sending activity. The central looping activity will retry reading from the buffer until data becomes available and will only be terminated once the \textit{Stop}-event occurs. 
 The Original Process can receive the event using a standard Intermediate Catch Event even when the event occurs before the instantiation of \textit{Original Process}, so it handles scenario \textit{O4}. 
 Moreover the \textit{Auxiliary Buffering Process} is not bound to a specific event, it works generically with any event information that is passed on to it. For that reason it is also not bound to a specific process deployment and can buffer events even before a process has been deployed, so it handles scenario \textit{O5}.
-Given that the buffering process can alternatively be started using an explicit Message Send Event during process execution and the process does not stop listening until the Original Process has received the event, scenarios O1 and O3 are also supported.
+Given that the buffering process can alternatively be started using an explicit Message Send Event during process execution and the process does not stop listening until the Original Process has received the event, scenarios \textit{O1} and \textit{O3} are also supported.
 
 \todo[inline]{what exactly is passed around|how many instances of each process|overwrite or append to buffer}
 
 \section{Implemention of Early Event Subscription using standard Camunda}
-Is it possible to implement this using out-of-the-box Camunda?
-Which aspects cannot be (sufficiently) implemented?
-How can … be implemented in Camunda? Show details. Diagrams in appendix.
-(3 pages)
+The previous chapter has shown that that it is possible to create BPMN models to match each of the Event Occurrence Scenarios, though for the scenarios \textit{O4} and \textit{O5} the solution becomes increasingly complex.
+In the next step I investigate the capabilities of Camunda, a modern and actively developed Business Process Engine that is available under an open source license.
+Camunda shall be used without any code customization, that means as offered on the website.
+The solution presented for the last two scenarios has proven capable enough to handle all Event Occurrence Scenarios, therefor the goal is to implement this solution. It will be necessary to create the two auxiliary processes and a data-store in addition to the original process that makes use of the event buffering.
+
+Two generic sample processes have been modeled for demonstration purposes. \autoref{fig:camunda-example-o3} shows a simple process with an explicit subscription activity to represent the listening to the event after process instantiation but before reaching the Catch Event (Scenario \textit{O3}). It follows a sample activity that takes 15 seconds (implemented using a \textit{Script Task}), the Intermediate Catch Event and another Script Task that displays the content of the received message.
+The example for scenarios \textit{O4} and \textit{O5} (see \autoref{fig:camunda-example-o4-o5}) comprises the following elements: After the start event follows an Intermediate Catch Event, then an activity that prints the message of the event to console and last the Process End Event. Both figures show the processes as modeled in the Camunda Modeler.
+
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=1\linewidth]{chapters/assessment/example-o3.PNG}}
+	\caption{Generic Example Process in Camunda for Occurrence Scenario \textit{O4}}\label{fig:camunda-example-o3}
+\end{figure}
+
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=1\linewidth]{chapters/assessment/example-o4-o5.PNG}}
+	\caption{Generic Example Process in Camunda for Occurrence Scenario \textit{O5}}\label{fig:camunda-example-o3-o5}
+\end{figure}
+
+\paragraph{Auxiliary Buffering Process}
+The task of this process is to subscribe to a CEP Platform using a provided event query and start listening for events. Any incoming event must be stored in a data-store (\textit{Event Buffer}).
+UNICORN, an Esper-based academic event processing platform, will be used in this example.
+A local MySQL database has been chosen for buffering the event data because it's freely available, quick to set up, offers standardized access via SQL queries and Java connectors and will persist data to the local harddrive by default. As UNICORN also requires an SQL database, the MySQL instance can be used in both cases.
+
+\autoref{fig:camunda-aux-buffering-process} shows the final Buffering Process modeled in the Camunda Process Modeler. The process can be instantiated by issuing a \textit{Buffering Task} message. This message must contain three data fields: \textit{processDefinitionId}, to know which process definition the buffered messages belong to; \textit{messageName}, the name of the message event within the process; \textit{query}, the event query in the Esper Query Language.
+Camunda will make the message data automatically available in the process instance as process variables, so they can be used during the execution of the Buffering Process.
+After instantiation, the process reaches the activity \textit{Subscribe to Event Source}, a \textit{Java Service Task} that executes a HTTP call to the UNICORN platform. That call registers the event query in UNICORN. \todo[inline]{it tells unicorn its own instanceId, so that unicorn can correlate events to that exact instance}
+Afterwards, the process reaches the receiving activity \textit{Wait for unsubscribe event} that will terminate the process as soon as the \textit{Unsubscribe} event has been received.
+As long as this activity is active, events can be received through the attached Non-Interrupting Boundary Event. Incoming events have a field \textit{eventBody}, which contains the event information and becomes available through a process variable with the same name. \todo[inline]{does the message from UC have a field 'eventBody'?}
+The boundary event triggers the service task \textit{Write eventBody to datastore}, which takes the data from the process variable and writes it to the MySQL Database Instance (\textit{Global Event Buffer}).
+
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=1\linewidth]{chapters/assessment/buffering-process.PNG}}
+	\caption{Auxiliary Buffering Process in the Camunda Modeler}\label{fig:camunda-aux-buffering-process}
+\end{figure}
+
+\paragraph{Auxiliary Event Delivery Process}
+- in or.pr.: why and when request events
+- use other aux process. figure.
+- how communicate? also with mysql buffer
+- what is the end result
+- unsubscription / termination
+
+
+
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=1\linewidth]{chapters/assessment/buffer-delivery-process.PNG}}
+	\caption{Auxiliary Event Delivery Process in Camunda Modeler}\label{fig:camunda-aux-event-delivery}
+\end{figure}
+
+
+
+\paragraph{Interaction with the Original Process}
+- for the two different examples
+
+
+\missingfigure{overview of the 3 processes, mysql and UNICORN}
+
 
 \section{Discussion}
 What are the shortcomings when using out-of-the-box business process solutions to implement
