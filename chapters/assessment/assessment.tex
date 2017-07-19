@@ -75,7 +75,7 @@ The Original Process can receive the event using a standard Intermediate Catch E
 Moreover the \textit{Auxiliary Buffering Process} is not bound to a specific event, it works generically with any event information that is passed on to it. For that reason it is also not bound to a specific process deployment and can buffer events even before a process has been deployed, so it handles scenario \textit{O5}.
 Given that the buffering process can alternatively be started using an explicit Message Send Event during process execution and the process does not stop listening until the Original Process has received the event, scenarios \textit{O1} and \textit{O3} are also supported.
 
-\todo[inline]{what exactly is passed around|how many instances of each process|overwrite or append to buffer}
+\todo[inline]{what exactly is passed around|how many instances of each process|overwrite or append to buffer|this is only one solution to do this, one that requires minimal changes in the original process}
 
 \section{Implemention of Early Event Subscription using standard Camunda}
 The previous chapter has shown that that it is possible to create BPMN models to match each of the Event Occurrence Scenarios, though for the scenarios \textit{O4} and \textit{O5} the solution becomes increasingly complex.
@@ -89,13 +89,13 @@ The example for scenarios \textit{O4} and \textit{O5} (see \autoref{fig:camunda-
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=1\linewidth]{chapters/assessment/example-o3.PNG}}
-	\caption{Generic Example Process in Camunda for Occurrence Scenario \textit{O4}}\label{fig:camunda-example-o3}
+	\caption{Generic Example Process in Camunda for Occurrence Scenario \textit{O3}}\label{fig:camunda-example-o3}
 \end{figure}
 
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=1\linewidth]{chapters/assessment/example-o4-o5.PNG}}
-	\caption{Generic Example Process in Camunda for Occurrence Scenario \textit{O5}}\label{fig:camunda-example-o3-o5}
+	\caption{Generic Example Process in Camunda for Occurrence Scenarios \textit{O4} and \textit{O5}}\label{fig:camunda-example-o4-o5}
 \end{figure}
 
 \paragraph{Auxiliary Buffering Process}
@@ -117,12 +117,10 @@ The boundary event triggers the service task \textit{Write eventBody to datastor
 \end{figure}
 
 \paragraph{Auxiliary Event Delivery Process}
-- in or.pr.: why and when request events
-- use other aux process. figure.
-- how communicate? also with mysql buffer
-- what is the end result
-- unsubscription / termination
-
+The delivery process (see \autoref{fig:camunda-aux-event-delivery}) reads the latest data from the buffer and sends it to the process instance. It can be started with a message that contains the \textit{processInstanceId} and the \textit{processDefinitionId} of the requesting process and the \textit{messageName} of the Message Event that is requested from the buffer.
+A \textit{Delay} Timer Event has been inserted to make sure that the receiving process is already in listening state, the execution happens asynchronously.
+It follows the service task \textit{Retrieve event from buffer}, which executes Java code to read from the MySQL Database \textit{Event Buffer} and store the event information in a process variable named \textit{eventMessage}.
+The content of that process variable is sent to the \textit{Original Process} in the Send Event, afterwards the execution is finished.
 
 
 \begin{figure}[]
@@ -132,16 +130,54 @@ The boundary event triggers the service task \textit{Write eventBody to datastor
 \end{figure}
 
 
+\paragraph{Interaction of the Processes}
+In this implementation of flexible event subscription, the action of subscribing to the event source and the reception of events in the Original Process are splitted into two separate parts, each supported by an auxiliary process.
+To initiate the subscription at the event source, the Auxiliary Event Buffering process has to be started.
+For scenario \textit{O3}, this happens through an extra activity (\textit{Trigger Buffering Process}) during process execution, so that events after process instantiation are received by the Buffering Process.
+In scenarios \textit{O4} and \textit{O5}, the subscription and thus the instantiation of the Buffering Process must happen before the instantiation of the Target Process. As there is no such mechanism in the standard Camunda Process Engine, the Buffering Process must be started by hand, providing the \textit{processDefinitionId}, the \textit{messageName} and the \textit{eventQuery}.
 
-\paragraph{Interaction with the Original Process}
-- for the two different examples
+Now that the \textit{Buffering Process} is running, any events matching the query will be stored to the buffer.
+When the Target Process reaches the Catch Event, a request for buffered events is sent as a message to trigger the \textit{Auxiliary Event Delivery Process}.
+This message is sent using a short piece of Java code that gets executed when the Catch Event is reached. 
+The code is invoked by a Start ExecutionListener attached to the Catch Event. ExecutionListeners are offered by Camunda to execute own Java programs before or after relevant events during process execution, like the execution of an element in the process.
+While the Original Process will now start listening for the desired events, the Event Delivery Process will send the buffered events as messages to the Original Process.
 
+If no events have been received yet, all the involved processes remain active: the Buffering Process will keep listening for an external event. The Delivery Process will send an event to the Original Process as soon as there is one in the buffer. The Catch Event in the Original Process will keep listening for an Event.
+
+\todo[inline]{the termination of the processes is not yet implemented in Camunda}
+\todo[inline]{get wording straight: Original process, target process, requesting process, main process | also always italic or never}
 
 \missingfigure{overview of the 3 processes, mysql and UNICORN}
 
+\todo[inline]{note that this is an investigative implementation that matches exactly the given use-case and is not meant to be used in production. It is neither flexible nor robust enough for that purpose, but suits very well in understanding the capabilities and the shortcomings of BPMN and Camunda when it comes to handling the Event Occurrence Scenarios}
+
 
 \section{Discussion}
-What are the shortcomings when using out-of-the-box business process solutions to implement
-Early Event Subscription?
-What can be implemented without problems?
-(2 pages)
+Thanks to the flexibility of BPMN 2.0 and Camunda, it has proven possible to implement a flexible event subscription time using these tools. It was necessary to create two generic auxiliary processes for event buffering, to connect to a MySQL data-store and use ExecutionListeners to execute custom Java code in Camunda to cover all scenarios \textit{O1} to \textit{O5}.
+
+
+
+\todo[inline]{give them short names for reference?}
+
+\paragraph{No automatic subscription handling\newline}
+subscription has to be modelled explicitly or issued manually. event request has to be modelled explicitly
+
+\paragraph{No option to model subscription information}
+in bpmn
+
+\paragraph{More complex process models\newline}
+
+Process models using flexible subscription time become overly complicated
+
+\paragraph{Buffering is an IT Task\newline}
+
+Event Buffering is an IT Task, not a Business Task
+
+\paragraph{Additional Load on the Process Engine\newline}
+
+Buffering puts extra load on the process engine
+
+\paragraph{Hidden Performance Limitations of the Process Engine\newline}
+
+The Process Engine might pose performance limitations that we cannot influence
+
