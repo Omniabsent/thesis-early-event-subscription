@@ -153,31 +153,42 @@ If no events have been received yet, all the involved processes remain active: t
 
 
 \section{Discussion}
-Thanks to the flexibility of BPMN 2.0 and Camunda, it has proven possible to implement a flexible event subscription time using these tools. It was necessary to create two generic auxiliary processes for event buffering, to connect to a MySQL data-store and use ExecutionListeners to execute custom Java code in Camunda to cover all scenarios \textit{O1} to \textit{O5}.
+The goal of this chapter was to get a better understanding of the capabilities of the tools when it comes to covering all event occurrence scenarios. 
+Even though is has proven possible to to implement a flexible event subscription time using standard BPMN 2.0 and Camunda, the success comes at a cost.
+The downsides of the presented approach are presented in the following.
 
-
+It was necessary to create two generic auxiliary processes for event buffering, to connect to a MySQL data-store and use ExecutionListeners to execute custom Java code in Camunda to cover all scenarios, \textit{O1} to \textit{O5}.
 
 \todo[inline]{give them short names for reference?}
 
-\paragraph{No automatic subscription handling\newline}
-subscription has to be modelled explicitly or issued manually. event request has to be modelled explicitly
 
-\paragraph{No option to model subscription information}
-in bpmn
+\paragraph{No automatic subscription handling\newline}
+
+In the presented process models, separate process elements had to be added to handle event subscription and initiate event delivery. 
+That conflicts with requirement \textit{R2}, which states that the subscription and un-subscription must be automatically handled by the process engine.
+For the scenarios \textit{O4} and \textit{O5} the Buffering Process has to be triggered manually, because it must be executed before the target process is running. Camunda does not handle external event subscription itself, especially not before the process is running.
 
 \paragraph{More complex process models\newline}
 
-Process models using flexible subscription time become overly complicated
+As additional process elements have to be added to handle event subscription and delivery, the models become more complicated and are less concentrated on the business case.
+\todo[inline]{there could be a requirement that states that there should be no additional process elements unless there is an explicit subscription time}
 
 \paragraph{Buffering is an IT Task\newline}
 
-Event Buffering is an IT Task, not a Business Task
+The auxiliary processes are not business tasks and are thus not suited to be modeled in BPMN.
+Desired functionality can be put into Camunda BPMN models thanks to its flexibility to use Java code in Service Tasks or Event Listeners, but naturally the full functionality of the Event Buffer cannot be expressed using BPMN.
+\todo[inline]{what exactly is the issue here?}
 
 \paragraph{Additional Load on the Process Engine\newline}
 
-Buffering puts extra load on the process engine
+Because of the aux processes, two additional processes have to be deployed in the process engine and are potentially running in parallel to any given process instance. For each Event Element used in a process the engine has to run an instance of the Buffering Process and, eventually, an instance of the Buffer Delivery Process.
+That puts additional load on the process engine, which might prevent business critical processes from executing delay-free.
+
+Even when the number of deployed and running auxiliary processes can be reduced through further optimizations there remains an event-management overhead as every event has to be handled twice: once when it is stored in the buffer and once when it's delivered to the target process.
 
 \paragraph{Hidden Performance Limitations of the Process Engine\newline}
 
-The Process Engine might pose performance limitations that we cannot influence
+Given the large amount and high frequency in that events can occur in reality, optimal performance is required for an event-buffering module.
+Running essential parts of the buffering within the process engine might pose performance limitations that cannot be influenced without tempering with the process engine code.
+
 
