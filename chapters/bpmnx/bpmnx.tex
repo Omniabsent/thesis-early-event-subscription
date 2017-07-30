@@ -1,5 +1,5 @@
 %************************************************
-\chapter{Flexible Event Subscription}\label{ch:flexibleeventsubscription}
+\chapter{BPMN extension for Flexible Event Subscription}\label{ch:flexibleeventsubscription}
 %************************************************
 
 Present an abstract framework for flexible event subscription.
@@ -9,7 +9,6 @@ Present an abstract framework for flexible event subscription.
 > What must be explicitly stated by the user? What should be done automatically in the background?
 (1 page)
 
-\section{BPMN Extension}
 To fulfill requirements R1.1 and R1.2, additional information has to be included in the BPMN model. By default, a BPMN intermediate event does not have information on the time of subscription or the event query. 
 The BPMN specification offers BPMN-X extensions to add custom properties or elements to a model.
 
@@ -25,18 +24,3 @@ Buffer policies:
 (widely based on [Ref paper Sankalita]) RetrievalPolicy, ConsumptionPolicy, LifetimePolicy
 + buffer maximum age (= combination of lifetime policies)
 
-\section{Buffered Event Handling}
-Why do we need a buffer to allow early event subscription?
-
-What is the desired functionality of the event buffer? What functionality (API) does it expose?
-> this could be seen as an extension to the API that is exposed by a standard CEP Platform
-> standard platform API: registerQuery(queryString, notificationRecipient) : queryId, deleteQuery(queryId)
-> extended API: registerQuery(queryString): queryId, requestEvent(queryId, notificationRecipient), unsubscribe(queryId), deleteQuery(queryId)
-
-
-
-
-\section{Extended Process Engine Behaviour}
-=> As a link between the BPMN model and the Buffered Event handling
-
-\todo[inline]{there must be a "subscription-garbage-collection" for any events that cannot be reached anymore in the current process execution! e.g. two different events behind an xor-gateway. the garbage collection could be executed on every transition}

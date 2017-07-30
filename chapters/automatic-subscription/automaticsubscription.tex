@@ -1,0 +1,19 @@
+%************************************************
+\chapter{Automatic Subscription Handling}\label{ch:automatic-subscription}
+%************************************************
+
+\section{Buffered Event Handling}
+Why do we need a buffer to allow early event subscription?
+
+What is the desired functionality of the event buffer? What functionality (API) does it expose?
+> this could be seen as an extension to the API that is exposed by a standard CEP Platform
+> standard platform API: registerQuery(queryString, notificationRecipient) : queryId, deleteQuery(queryId)
+> extended API: registerQuery(queryString): queryId, requestEvent(queryId, notificationRecipient), unsubscribe(queryId), deleteQuery(queryId)
+
+
+
+
+\section{Extended Process Engine Behaviour}
+=> As a link between the BPMN model and the Buffered Event handling
+
+\todo[inline]{there must be a "subscription-garbage-collection" for any events that cannot be reached anymore in the current process execution! e.g. two different events behind an xor-gateway. the garbage collection could be executed on every transition}
