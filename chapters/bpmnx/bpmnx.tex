@@ -2,18 +2,19 @@
 \chapter{BPMN extension for Flexible Event Subscription}\label{ch:flexibleeventsubscription}
 %************************************************
 
+\todo[inline]{this is the explanation for the process designer}
+
 Given the additional requirements and the shortcomings identified in the previous sections, the following two chapters present an extension to the BPMN event handling model.
-At first, an extension to the Business Process Model and Notation (BPMN) is described, which aims at providing the Process Designer with more flexible Event Handling capabilities according to Requirement~\textit{R1}.
+At first, an extension to the Business Process Model and Notation (BPMN) is described, which aims at providing the Process~Designer with more flexible Event Handling capabilities according to Requirement~\textit{R1}.
 Afterwards, Chapter~\autoref{ch:automaticsubscription} clarifies the changes necessary to the event handling platform and the process engine to cover Requirements \textit{R2} and \textit{R3}.
-\todo[inline]{While the presented concepts are kept as general as possible, they are grounded in an analysis of the Esper-based CEP Platform Unicorn and the open-source process Engine Camunda.}
+While the presented concepts are kept as general as possible, they are grounded in an analysis of the Esper-based CEP Platform Unicorn and the open-source process Engine Camunda.
 
 To allow the flexible use of event subscription in BPMN models, a number of additional attributes must be added to the model. 
 The extension should cover the Intermediate Catch Event, the Boundary Catch Event and the Receive Task, all three can be used to model the receiving of messages in BPMN.
 \todo[inline]{Is it ok to reference the receiveTask as well? It might have different execution semantics as it doesn't reference the MessageReceiveEvent, but the Message directly.}
 % receiveTask.messageRef; boundaryEvent.catchEvent.(message)eventDefinition.messageRef; intermediateCatchEvent.catchEvent.(message)eventDefinition.messageRef
 To cover all three elements, the extension will be attached to the BPMN type \textit{tMessage}. \todo[inline]{a new <element> or how do we extend?}
-According to the plain specification, the message type comprises an attribute \textit{name}, the name of the message, and \textit{itemRef}, the reference to a BPMN \textit{Item} definition. 
-\todo[inline]{explain 'item'?}
+According to the plain specification, the message type comprises an attribute \textit{name}, the name of the message, and \textit{itemRef}, the reference to a BPMN \textit{Item} definition. \todo[inline]{explain 'item'?}
 In the following, the required additional attributes will be explained one after the other. The goal is to retain a stand-alone model that contains all information necessary to execute the subscription to the event source.
 
 \section{Adding basic subscription information}
@@ -23,24 +24,48 @@ For a basic event subscription, an event~query, the platform address and optiona
 Assuming that there is one CEP platform for all events and processes, the latter two, i.~e. the basic platform information, are configured centrally for the current process execution environment. Hence they don't need to be specified for every given message element. 
 \todo[inline]{that means that in the implementation we need additional configuration values -> implementation chapter}
 The event query instead needs to be specified for every message and is added to the model as an extension attribute of type string, which should contain the full query as interpretable by the CEP platform.
-A similar approach has been taken by X and Y, which aim at enriching BPMN models with subscription information without considering the time of subscription specifically.
-\todo[inline]{They add fields ... to element ..., their primary goal is ...}
+A similar approach has been taken by X and Y, who aim at enriching BPMN models with subscription information without considering the time of subscription specifically.
+\todo[inline]{Find this source; They add fields ... to element ..., their primary goal is ...}
 
-\todo[inline]{Where does this leave us? We now have the necessary information to issue the subscription when reaching the event element.}
+Given this fundamental part of the BPMN extension, it is possible to execute the subscription, but the time of subscription cannot be influenced.
 
 \section{The time of event subscription modeled in BPMN}
-- what example to reference?
-- where to write it?
-- what are the options?
-- what are the implications? => when exactly is the subscription executed. That means we have events since that time.
-- that gives the process designer the necessary tool to implement the examples. He can now pick from which time he wants to consider events.
 
+This section specifically addresses the requirement \textit{R1.1}, aiming to provide a flexible event subscription time to be selected for each BPMN message when designing the event-driven process.
+Two different tools are to be offered to support all subscription times demanded by \textit{R1.1}: Firstly, the subscription can happen implicitly at certain process-related points in time. Alternatively, the subscription can be modeled explicitly as a flow-element in the process.
+It is the task of the process designer to elaborate the correct time of subscription necessary for her use case.
 
+The subscription will be executed automatically by the system based on the information given in the BPMN model. Further information on the exact execution flow is provided in chapter~XY. \todo[inline]{add reference. in automatic subscription handling: say for each of the cases when exactly the subscription is executed.}
+Any event message that occurs before reaching the event element but after the time of subscription will be kept in a buffer by the system.
+In its simplest version, the buffer is of length 1, that means it stores exactly one message received from a CEP platform. It always stores the latest message. When a newer message arrives, the old one is replaced in the buffer.
+Modern event query languages are feature-rich and offer a large set of expressions to filter events from incoming streams. \todo[inline]{ref background}
+The introduced basic event buffer can be used in connection with any desired event query and will store the latest output of that query.
+These two features together suffice to implement even more complex use-cases: Query windows of length \textit{n} can be used to keep multiple events in the buffer, filter expressions allow to keep a subset of all events based on their attribute values, multiple streams can be joined together.
+
+As soon as the process flow reaches an event element, the latest CEP message is retrieved from the buffer. It is not consumed, that means a second event element that references the same BPMN Message will reuse the information from the buffer.
+If no information is available in the buffer, the flow element will remain in the waiting state until a message is received. Then, the process flow proceeds as usual.
+
+\todo[inline]{reorganize this chapter, maybe there should be an extra part for the buffer introduction/definition}
+\todo[inline]{maybe: performance considerations}
 
 \subsection{Subscription time as part of the BPMN Message element}
+To provide the Process Designer with a simple but powerful tool to influence the time of event subscription, a field \textit{subscriptionTime} is added the BPMN message element. 
+The field is implemented as an enumeration and can have one of the following four values: \textit{System Start}, \textit{Process Deployment}, \textit{Process Instantiation}, \textit{Event Element reached}. The last option is the default option according to the BPMN specification.
+\todo[inline]{enumeration is fine?}
+
+In motivating Example~Ex, it is necessary to issue the subscription as early as possible, to make sure that data is available and the process execution is not delayed. \todo[inline]{which example to reference?}
+Using the BPMN extension, the use case can be implemented by defining the event query and the subscription time in the BPMN model. \todo[inline]{show what that would look like in the example. Maybe some XML?}
 
 \subsection{The explicit subscription task}
+
+
+
+
+
+- because there might be a long time between instantiation and reaching the event element
+- because subscription might depend on a variable that is only known at some point during process execution
 - variation in notation from other paper
+\todo[inline]{As an improvement to the options for subscription time, there could be an option "ASAP", so that the process engine issues the subscription automatically as soon as the required process data becomes available}
 
 \section{Using Process Variables in Event Queries}
 
@@ -80,34 +105,9 @@ The use of dynamic process variable values introduces an additional complexity: 
 
 \section{Advanced Buffer Parameters}
 
-
-
-
-
-
-
-
-
-
-Present an abstract framework for flexible event subscription.
-> Including: Model <> Process Engine <> Buffer <> CEP
-> How does event subscription currently affect the workflow?
-> What should a workflow look like that allows early event subscription?
-> What must be explicitly stated by the user? What should be done automatically in the background?
-(1 page)
-
-To fulfill requirements R1.1 and R1.2, additional information has to be included in the BPMN model. By default, a BPMN intermediate event does not have information on the time of subscription or the event query. 
-The BPMN specification offers BPMN-X extensions to add custom properties or elements to a model.
-
-To accomodate the required information, the following extension is proposed:
-> The extension should apply to MessageIntermediateCatchEvent and MessageBoundaryEvent
-> extend tMessage => tBufferedCEPMessage, so that the messageRef can be reused
-> OR extension to messageEventDefinition: ExplicitSubscriptionMessageEventDefinition
-> [subscriptionQuery, subscriptionTime, bufferPolicy]
-
-A buffer shared across multiple instances or events is more complex than a simple single-event-buffer (that one does not require buffer policies). As soon as the requestEvent call can be executed multiple times for the same queryId, we need to specify the following aspects:
-
 Buffer policies:
 (widely based on [Ref paper Sankalita]) RetrievalPolicy, ConsumptionPolicy, LifetimePolicy
 + buffer maximum age (= combination of lifetime policies)
+
+A buffer shared across multiple instances or events is more complex than a simple single-event-buffer (that one does not require buffer policies). As soon as the requestEvent call can be executed multiple times for the same queryId, we need to specify the following aspects:
 
