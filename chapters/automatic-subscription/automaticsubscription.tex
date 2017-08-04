@@ -18,3 +18,14 @@ What is the desired functionality of the event buffer? What functionality (API) 
 => As a link between the BPMN model and the Buffered Event handling
 
 \todo[inline]{there must be a "subscription-garbage-collection" for any events that cannot be reached anymore in the current process execution! e.g. two different events behind an xor-gateway. the garbage collection could be executed on every transition}
+
+
+- handling subscription dependencies:
+- The use of dynamic process variable values introduces an additional complexity: Depending on the time of event subscription, the value of the process variable might not yet be available.
+- reference BPMN data elements: process INSTANCE variable
+-> the variable value might only be available during instance execution
+-> can we find an exact definition of this in the spec?
+- see BPMN2 spec pp.211+ : Process and Activity can have DataInput and DataOutput. DataInput can have an 'optional' attribute
+- during execution the variable data might or might not be available. Related Work: Francesca?
+-> too complex, we need a simplification for this.
+- what happens if the data is not available?

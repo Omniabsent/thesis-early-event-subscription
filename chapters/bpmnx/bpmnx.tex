@@ -38,6 +38,8 @@ It is the task of the process designer to elaborate the correct time of subscrip
 The subscription will be executed automatically by the system based on the information given in the BPMN model. Further information on the exact execution flow is provided in chapter~XY. \todo[inline]{add reference. in automatic subscription handling: say for each of the cases when exactly the subscription is executed.}
 Any event message that occurs before reaching the event element but after the time of subscription will be kept in a buffer by the system.
 In its simplest version, the buffer is of length 1, that means it stores exactly one message received from a CEP platform. It always stores the latest message. When a newer message arrives, the old one is replaced in the buffer.
+\todo[inline]{By default, there is no interference between the buffers of different messages, process instances or processes. Each buffer instance will contain the latest information as if it was the only buffer in the system. Performance improvements to avoid duplicate buffer content will be managed by the system without explicit action by the user. Section ... later introduces a shared, more complex usage scenario of the event buffers.}
+
 Modern event query languages are feature-rich and offer a large set of expressions to filter events from incoming streams. \todo[inline]{ref background}
 The introduced basic event buffer can be used in connection with any desired event query and will store the latest output of that query.
 These two features together suffice to implement even more complex use-cases: Query windows of length \textit{n} can be used to keep multiple events in the buffer, filter expressions allow to keep a subset of all events based on their attribute values, multiple streams can be joined together.
@@ -90,28 +92,41 @@ The exact notation for including process variables in event queries can vary dep
 For the use with the Esper query language, the following is suggested: The exact name of the variable has to be surrounded by curly brackets and preceded by a \textit{\#} character: \textit{\#\{VARIABLENAME\}}.
 This notation is inspired by the usage of substitution parameters in SQL queries that are embedded in Esper. They take the form \textit{\$\{expression\}}.
 \todo[inline]{reference esper docs 5.13.1. Joining SQL Query Results}
+\todo[inline]{define the esper version somewhere}
 
 In the example, the process uses the latest GPS position for a certain truck. The truck is identified by its unique~ID which is part of the query: \textit{SELECT lat, lng from GPSUPDATE where truckid = \#\{truckid\} }.
 \todo[inline]{missingref: dependent example}
 
 The use of dynamic process variable values introduces an additional complexity: Depending on the time of event subscription, the value of the process variable might not yet be available.
-- reference BPMN data elements: process INSTANCE variable
--> the variable value might only be available during instance execution
--> can we find an exact definition of this in the spec?
-- during execution the variable data might or might not be available. Related Work: Francesca?
--> too complex, we need a simplification for this.
-- what happens if the data is not available?
-
-
-
+\todo[inline]{What does this mean for the process designer? A model that can take a state in that a subscription shall be issued, though the data is unavailable, is invalid. When will an error occur? }
 
 
 \section{Advanced Buffer Parameters}
-- but there are cases when more advanced buffer handling can be helpful. consume and shared buffer.
+Inspired by Mandal et al., a number of advanced buffer attributes are available through an extension attribute \textit{BufferPolicies}.
+\todo[inline]{add ref to sankalitas paper; do I elaborate on the changes made in comparison to the paper? + the reasons?}
 
-Buffer policies:
-(widely based on [Ref paper Sankalita]) RetrievalPolicy, ConsumptionPolicy, LifetimePolicy
-+ buffer maximum age (= combination of lifetime policies)
+\paragraph{LifetimePolicy\newline}
 
-A buffer shared across multiple instances or events is more complex than a simple single-event-buffer (that one does not require buffer policies). As soon as the requestEvent call can be executed multiple times for the same queryId, we need to specify the following aspects:
+The first attribute is the \textit{LifetimePolicy}, which allows to specify after which timespan elements in the buffer should be deleted. Timespans shall be defined using ISO timespan format. \todo[inline]{ref}
+The default value is \textit{infinite}.
+Example A has been implemented by setting the \textit{subscriptionTime} to \textit{Process Deployment}, which means that there can be an infinite time difference between the action of subscribing to the event source and the reaching of the event element in one of the instances.
+In case events are not published in a longer time, for example due to technical fault at the event producer, the buffer will contain older events that might not be relevant anymore.
+Using the \textit{LifetimePolicy}, the process designer can express, that events should be deleted from the buffer after a certain period of time and thus avoid outdated information. The buffer is maintained automatically by the system.
+That of course comes at the price that the process has to remain in waiting state until a new event message arrives.
 
+\paragraph{Consumption Behavior\newline}
+
+So far, the event buffers can be used isolated from each other. There is not interference between buffer instances and events are not removed from the buffer after retrieval.
+While for most use-cases this behavior is sufficient, more detailed control over the buffer can be desirable when a given message shall be used multiple times.
+Not always is it wanted, that events remain in the buffer after retrieval.
+An additional parameter \textit{ConsumptionPolicy} is introduced which can take the values \textit{Consume}, \textit{Reuse}(default) and \textit{Bounded Reuse(n)}.
+While \textit{Reuse} denotes the behavior that is already known, \textit{Bounded Reuse(n)} will allow an element to be retrieved exactly \textit{n} times. \textit{n} has to be replaced by an integer value greater 0.
+The option \textit{Consume} will remove an element from the buffer immediately after it has been retrieved for the first time, it is therefor equivalent to \textit{Bounded Reuse(1)}.
+
+- given the option to consume from the buffer, it will now make a difference if the same buffer is accessed multiple times.
+- there are two scenarios to access the same buffer: (1) multiple times in the same instance, (2) multiple times because of parallel instances, (3) multiple times because of a shared buffer across processes
+- before proceding, we need to be clear about the buffer scope: it depends on the time of subscription. (1) after instantiation: buffer only instance-wide; (2) on pr depl: buffer reused across all instances; (3) system start: buffer reused across all processes
+- two additional buffer policies: \textit{SizePolicy}, \textit{OrderPolicy}, default values
+
+
+- what if messages are defined in different ways? => I want to reuse the buffer between processes, but the message definition (especially cep query) are not the same. how will the system behave?
