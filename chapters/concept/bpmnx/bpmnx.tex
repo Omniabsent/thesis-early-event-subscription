@@ -1,6 +1,4 @@
-%************************************************
-\chapter{BPMN extension for Flexible Event Subscription}\label{ch:flexibleeventsubscription}
-%************************************************
+\section{BPMN Extension}
 
 \todo[inline]{this is the explanation for the process designer}
 
@@ -17,7 +15,7 @@ To cover all three elements, the extension will be attached to the BPMN type \te
 According to the plain specification, the message type comprises an attribute \textit{name}, the name of the message, and \textit{itemRef}, the reference to a BPMN \textit{Item} definition. \todo[inline]{explain 'item'?}
 In the following, the required additional attributes will be explained one after the other. The goal is to retain a stand-alone model that contains all information necessary to execute the subscription to the event source.
 
-\section{Adding basic subscription information}\label{ch:bpmnx:basic}
+\subsection{Adding basic subscription information}\label{ch:bpmnx:basic}
 
 For a basic event subscription, an event~query, the platform address and optionally authorization information of the CEP~Platform is required. \todo[inline]{as explained in background}
 \todo[inline]{We work with the following simplified process}
@@ -29,7 +27,7 @@ A similar approach has been taken by X and Y, who aim at enriching BPMN models w
 
 Given this fundamental part of the BPMN extension, it is possible to execute the subscription, but the time of subscription cannot be influenced.
 
-\section{The time of event subscription modeled in BPMN}
+\subsection{The time of event subscription modeled in BPMN}
 
 This section specifically addresses the requirement \textit{R1.1}, aiming to provide a flexible event subscription time to be selected for each BPMN message when designing the event-driven process.
 Two different tools are to be offered to support all subscription times demanded by \textit{R1.1}: Firstly, the subscription can happen implicitly at certain process-related points in time. Alternatively, the subscription can be modeled explicitly as a flow-element in the process.
@@ -50,7 +48,7 @@ If no information is available in the buffer, the flow element will remain in th
 \todo[inline]{reorganize this chapter, maybe there should be an extra part for the buffer introduction/definition}
 \todo[inline]{maybe: performance considerations}
 
-\subsection{Subscription time as part of the BPMN Message element}
+\paragraph{Subscription time as part of the BPMN Message element\newline}
 To provide the Process Designer with a simple but powerful tool to influence the time of event subscription, a field \textit{subscriptionTime} is added the BPMN message element. 
 The field is implemented as an enumeration and can have one of the following four values: \textit{System Start}, \textit{Process Deployment}, \textit{Process Instantiation}, \textit{Event reached}. The last option is the default option according to the BPMN specification.
 \todo[inline]{enumeration is fine?}
@@ -62,7 +60,7 @@ Note that a \textit{subscriptionTime} set to \textit{Event reached} will remain 
 In motivating Example~Ex, it is necessary to issue the subscription as early as possible, to make sure that data is available and the process execution is not delayed. \todo[inline]{which example to reference?}
 Using the BPMN extension, the use case can be implemented by defining the event query and the subscription time in the BPMN model. \todo[inline]{show what that would look like in the example. Maybe some XML?}
 
-\subsection{The explicit subscription task}
+\paragraph{The explicit subscription task\newline}
 As an alternative to specifying the subscription time using the extension field \textit{subscriptionTime}, a new kind of activity is added to BPMN. It can be used to place the action of subscribing to an event source anywhere in the process flow.
 The activity is called \textit{Explicit Subscription Task} and implemented by extending the BPMN Service Task. A field \textit{messageId} is added to the service task to establish a reference between the activity and the message definition.
 As introduced in section~\autoref{ch:bpmnx:basic}, the extended BPMN Message definition contains the information necessary to issue the subscription to an event source.
@@ -80,7 +78,7 @@ That means for example if the \textit{subscriptionTime} is set to \textit{event 
 If \textit{subscriptionTime} is set to \textit{Process Deployment}, then the subscription will happen at that time and the explicit subscription task will remain without effect.
 In case neither of the two is used, the system falls back to the BPMN default and executes the subscription when the event element is reached.
 
-\section{Using Process Variables in Event Queries}
+\subsection{Using Process Variables in Event Queries}
 
 \todo[inline]{this could be added in the requirements and referenced}
 
@@ -101,7 +99,7 @@ The use of dynamic process variable values introduces an additional complexity: 
 \todo[inline]{What does this mean for the process designer? A model that can take a state in that a subscription shall be issued, though the data is unavailable, is invalid. When will an error occur? }
 
 
-\section{Advanced Buffer Parameters}
+\subsection{Advanced Buffer Parameters}
 Inspired by Mandal et al., a number of advanced buffer attributes are available through an extension attribute \textit{BufferPolicies}.
 \todo[inline]{add ref to sankalitas paper; do I elaborate on the changes made in comparison to the paper? + the reasons?}
 

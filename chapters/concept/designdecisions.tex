@@ -1,0 +1,31 @@
+\section{Design Decicions}\label{ch:designdecisions}
+
+The target functionality of the BPMN extension was clearly defined by the identified requirements.
+To implement that functionality, there were a number of options to consider and design decisions to make.
+This chapter provides background information on the decisions that have influenced the presented concept for flexible event subscription.
+
+\todo[inline]{Can I put together an alternative solution? Table of events for a certain event source. The buffer is already there for me to pick from when designing the process.}
+
+\paragraph{The time of subscription is a question of process design}
+-> process designer
+\todo[inline]{Is there an additional event engineer?}
+- this is why the bpmn extension is presented first
+- hide complexity from the designer
+
+\paragraph{The actual buffer is mostly hidden from the user}
+
+-Buffers are implicitly defined through the BPMN model
+
+\paragraph{Buffers are closely linked to process models}
+Messages are only buffered as soon as they are explicitly required by a model
+- we don't just buffer n messages because we might need them in the future. That would be a fuzzy, incalculable performance overhead.
+- instead we keep as little as possible in the buffer
+
+\paragraph{The BPMN Extension is based on the Message element}
+- if I want to talk about related work that goes another way
+- why are the policies a parameter of the message and not the catch event element?
+
+\paragraph{reuse existing technology}
+-> we assume that a cep is present and that basic features of event queries can be used
+- if not present, then only very basic buffer functionality is available
+- but we dont want to start designing another event processing layer with duplicated functionality
