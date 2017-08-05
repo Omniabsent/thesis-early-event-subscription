@@ -13,20 +13,42 @@ The first section describes the necessary extension to the event processing to s
 The following section~\autoref{ch:extendedprocessengine} specifies the changes necessary to the behavior of the process engine as the connecting element between the BPMN model and the event processing platform.
 
 \section{Buffered Event Processing}
-- the standard case: registerQuery(queryString, notificationRecipient) : queryId, deleteQuery(queryId)
-- with bpmn early subscription: more steps are necessary: registerQuery(queryString): queryId, requestEvent(queryId, notificationRecipient), unsubscribe(queryId), deleteQuery(queryId)
-- and the events have to be buffered until they are required
+When reduced to the basics, a standard event processing platform works as follows: The user subscribes to events providing an event query and a notification-path. The platform responds with a unique identifier for that subscription.
+Whenever an event occurs that matches the provided query, the platform issues a notification to the notification-path. Subscriptions can be deleted through their unique identifier.
+These two operations, \textit{subscribe} and \textit{unsubscribe}, make the fundamental API of a CEP platform.
+\todo[inline]{ref} \todo[inline]{Maybe: we consider these two operations as given, because common event processing platforms have these in common, but there is not common event buffering concept yet. even though e.g. esper has something which goes in that direction: output clauses}
 
-- Currently the cep exposes that functionality.
-- now, a new layer is required.
-- that layer can be a separate buffering middleware or integrated into either the cep or the process engine.
-- where is up to the implementation, but in every case the extended api has to expose the following functionality:
-- a call registerQuery(queryString [, bufferPolicies, notificationPath]): queryId, 
+
+\paragraph{An API for buffered Event Processing}
+The novel BPMN extension for flexible event subscription allows to issue a subscription for buffering well before the events ought to be delivered via the notification-path. The introduction of an event buffer as a separate entity between the varying list of notification-recipients and the event query makes an extension of the API necessary.
+Firstly, the \textit{subscribe} operation has to be divided into two steps:
+
+\begin{aenumerate}
+	\item \textit{registerQuery}, registers an event query and instantiates a buffer according to the specified buffer policies. Matching events will be held in the buffer if necessary.
+	\item \textit{requestEvents}, provides the notification-path and initiates the delivery of messages via the given path.
+\end{aenumerate}\label{def:apiextension-subscribe}
+
+A similar situation holds for the un-subscribe operation: Traditionally, a subscription is canceled through a unique identifier that is obtained as a result of the subscribe operation. After cancellation, no more notifications are delivered, the query is removed from the system.
+Given flexible event subscription, this operation must be split into two parts as well:
+
+\begin{aenumerate}
+	\item \textit{unsubscribe} method removes a notification-recipient for a given query-id
+	\item \textit{remove query} operation deletes the query and the buffer.
+\end{aenumerate}\label{def:apiextension-unsubscribe}
+
+Only if all four methods are available, it is possible to execute the subscription on process deployment.
+The query must be registered using \textit{registerQuery} before the process instance, i.~e. notification-path, is available. For each process instance, events can be requested individually using \textit{requestEvents} and thereafter, the notification-recipient can be removed with \textit{unsubscribe}.
+The query and its buffer will remain active even after any single instance has terminated. When the process gets un-deployed, the query can be deleted using \textit{remove query}.
+Section~\autoref{ch:extendedprocessengine} describes the steps in detail.
+
+
+- a call registerQuery(queryString [, bufferPolicies]): queryId, 
 > it does ...
 > if the notificationpath is provided...
 > it returns. unique identifier. must be stored for later management of that query
 - a call requestEvent(queryId, notificationPath),
 > ...
+> requestEvents is not the same as addNotificationRecepient
 - a call unsubscribe(queryId)
 > ...
 - a call deleteQuery(queryId)
@@ -35,6 +57,16 @@ The following section~\autoref{ch:extendedprocessengine} specifies the changes n
 \missingfigure{maybe a uml sequence diagram. Or other diagram format?}
 \todo[inline]{maybe provide a swagger definition for this?}
 
+\paragraph{Different options to implement the API extension}
+
+That extension can either be implemented by adopting the CEP platform itself, by implementing a separate middleware between process engine and CEP platform, or by implementing a buffering module as part of the process engine.
+Which of the three options suits best has to be evaluated for the given use-case and existing infrastructure. In some cases it might not be possible to adapt the code of process engine or event processing platform, which leaves a separate middleware as the only choice.
+\todo[inline]{Generally, extending the event processing platform is advisable? Or put up brief pros and cons of each of the options}
+\missingfigure{three options to implement the event buffering and api extension}
+
+A reference implementation for an extended complex event processing platform is presented in chapter~\autoref{ch:implementation} at the example of the Esper-based CEP platform \textit{Unicorn}. It is also explained, why extending the event platform was the preferred choice in the given scenario.
+
+\paragraph{Performance Considerations}
 - performance improvements through shared windows
 - due to its performance optimizations, an extension of the cep itself would make perfect sense
 - given the extended api, it is now possible to implement early event subscription from the process engine 
