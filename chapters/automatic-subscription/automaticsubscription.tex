@@ -2,22 +2,69 @@
 \chapter{Automatic Subscription Handling}\label{ch:automaticsubscription}
 %************************************************
 
-\section{Buffered Event Handling}
-Why do we need a buffer to allow early event subscription?
+After defining the functionality provided to the user of flexible event subscription, this chapter describes the changes necessary to the software infrastructure that is used for event-driven business process management.
+The concept requires that all subscription and event handling is executed by the system itself, without further interaction by the user.
+All necessary information for that purpose is provided by the BPMN model.
 
-What is the desired functionality of the event buffer? What functionality (API) does it expose?
-> this could be seen as an extension to the API that is exposed by a standard CEP Platform
-> standard platform API: registerQuery(queryString, notificationRecipient) : queryId, deleteQuery(queryId)
-> extended API: registerQuery(queryString): queryId, requestEvent(queryId, notificationRecipient), unsubscribe(queryId), deleteQuery(queryId)
+As described in REF, an event-driven process management setup primarily consists of ...
+\todo[inline]{missingref}
+Changes are necessary to both, the Event Processing Module and the Process Engine. This chapter attempts to keep the change descriptions general so they can be applied to any common process engine and event processing platform.
+The first section describes the necessary extension to the event processing to support early subscription and event buffering.
+The following section~\autoref{ch:extendedprocessengine} specifies the changes necessary to the behavior of the process engine as the connecting element between the BPMN model and the event processing platform.
+
+\section{Buffered Event Processing}
+- the standard case: registerQuery(queryString, notificationRecipient) : queryId, deleteQuery(queryId)
+- with bpmn early subscription: more steps are necessary: registerQuery(queryString): queryId, requestEvent(queryId, notificationRecipient), unsubscribe(queryId), deleteQuery(queryId)
+- and the events have to be buffered until they are required
+
+- Currently the cep exposes that functionality.
+- now, a new layer is required.
+- that layer can be a separate buffering middleware or integrated into either the cep or the process engine.
+- where is up to the implementation, but in every case the extended api has to expose the following functionality:
+- a call registerQuery(queryString [, bufferPolicies, notificationPath]): queryId, 
+> it does ...
+> if the notificationpath is provided...
+> it returns. unique identifier. must be stored for later management of that query
+- a call requestEvent(queryId, notificationPath),
+> ...
+- a call unsubscribe(queryId)
+> ...
+- a call deleteQuery(queryId)
+> ...
+
+\missingfigure{maybe a uml sequence diagram. Or other diagram format?}
+\todo[inline]{maybe provide a swagger definition for this?}
+
+- performance improvements through shared windows
+- due to its performance optimizations, an extension of the cep itself would make perfect sense
+- given the extended api, it is now possible to implement early event subscription from the process engine 
 
 
-- buffer scope
+\section{Extended Process Engine Behaviour}\label{ch:extendedprocessengine}
+It is the task of the Business Process Engine to interpret and execute process models and connect to an event processing platform in event-driven setups.
+From the three relevant modules, two have already been defined, the BPMN extension and the buffered event processing module.
+Out of the box, a process engine like Camunda will ignore any proprietary BPMN extensions and the subscription to an event source must be especially implemented. An example for such an implementation is provided in section~\autoref{ch:assessment-implementation}.
+One goal of this work is to automatize the handling of event subscriptions solely based on the information available through extended BPMN model. Additional process elements are not required.
 
+- read extended information from the model, extended message and explicit subscription task
 
-\section{Extended Process Engine Behaviour}
-=> As a link between the BPMN model and the Buffered Event handling
+- implement the subscription time
+> on deployment
+> on instantiation
+> at service task
+> when event element is reached
+> store the queryId, buffer scope: correlates with the subscription time. is relevant if working with consume messages. Later reuse of the queryId
 
-\todo[inline]{there must be a "subscription-garbage-collection" for any events that cannot be reached anymore in the current process execution! e.g. two different events behind an xor-gateway. the garbage collection could be executed on every transition}
+- implement the requestEvent
+> when event element is reached
+
+- implement the unsubscription
+> when event element is finished
+
+- implement the deletion of the query
+> when event element is finished
+> when a process is undeployed
+> there must be a "subscription-garbage-collection" for any events that cannot be reached anymore in the current process execution! e.g. two different events behind an xor-gateway. the garbage collection could be executed on every transition
 
 
 - handling subscription dependencies:
@@ -29,3 +76,4 @@ What is the desired functionality of the event buffer? What functionality (API) 
 - during execution the variable data might or might not be available. Related Work: Francesca?
 -> too complex, we need a simplification for this.
 - what happens if the data is not available?
+

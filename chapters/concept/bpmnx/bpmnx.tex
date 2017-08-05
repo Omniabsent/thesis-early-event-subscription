@@ -46,16 +46,16 @@ As soon as the process flow reaches an event element, the latest CEP message is 
 If no information is available in the buffer, the flow element will remain in the waiting state until a message is received. Then, the process flow proceeds as usual.
 
 \todo[inline]{reorganize this chapter, maybe there should be an extra part for the buffer introduction/definition}
-\todo[inline]{maybe: performance considerations}
 
 \paragraph{Subscription time as part of the BPMN Message element\newline}
 To provide the Process Designer with a simple but powerful tool to influence the time of event subscription, a field \textit{subscriptionTime} is added the BPMN message element. 
 The field is implemented as an enumeration and can have one of the following four values: \textit{System Start}, \textit{Process Deployment}, \textit{Process Instantiation}, \textit{Event reached}. The last option is the default option according to the BPMN specification.
 \todo[inline]{enumeration is fine?}
 
-Note that a \textit{subscriptionTime} set to \textit{Event reached} will remain without effect if an explicit subscription task was executed before the event is reached.
+Note that a \textit{subscriptionTime} set to \textit{Event reached} will remain without effect if an explicit subscription task for the same event was executed before the event is reached.
 
 \todo[inline]{what does system start mean?}
+\todo[inline]{For each of the options: Define exactly (according to BPMN spec or standard literature), when in the flow the subscription is executed.}
 
 In motivating Example~Ex, it is necessary to issue the subscription as early as possible, to make sure that data is available and the process execution is not delayed. \todo[inline]{which example to reference?}
 Using the BPMN extension, the use case can be implemented by defining the event query and the subscription time in the BPMN model. \todo[inline]{show what that would look like in the example. Maybe some XML?}

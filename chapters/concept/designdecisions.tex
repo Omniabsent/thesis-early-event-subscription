@@ -14,7 +14,15 @@ This chapter provides background information on the decisions that have influenc
 
 \paragraph{The actual buffer is mostly hidden from the user}
 
--Buffers are implicitly defined through the BPMN model
+- Buffers are implicitly defined through the BPMN model
+- keep the look and feel of the message catch event
+- minimal changes to existing models, backwards compatibility
+
+\paragraph{Avoid additional user interfaces}
+- the user will only use the bpmn model
+- we don't want any other element because of complexity
+- the process should be self-contained, contain all necessary information for subscription and buffering.
+-> single point of contact
 
 \paragraph{Buffers are closely linked to process models}
 Messages are only buffered as soon as they are explicitly required by a model
