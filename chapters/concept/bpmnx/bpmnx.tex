@@ -99,7 +99,7 @@ The use of dynamic process variable values introduces an additional complexity: 
 \todo[inline]{What does this mean for the process designer? A model that can take a state in that a subscription shall be issued, though the data is unavailable, is invalid. When will an error occur? }
 
 
-\subsection{Advanced Buffer Parameters}
+\subsection{Advanced Buffer Parameters}\label{ch:bpmnx:bufferpolicies}
 Inspired by Mandal et al., a number of advanced buffer attributes are available through an extension attribute \textit{BufferPolicies}.
 \todo[inline]{add ref to sankalitas paper; do I elaborate on the changes made in comparison to the paper? + the reasons?}
 
@@ -114,7 +114,7 @@ That of course comes at the price that the process has to remain in waiting stat
 
 \paragraph{Consumption Behavior\newline}
 
-So far, the event buffers can be used isolated from each other. There is not interference between buffer instances and events are not removed from the buffer after retrieval.
+So far, the event buffers can be used isolated from each other. There is no interference between buffer instances and events are not removed from the buffer after retrieval.
 While for most use-cases this behavior is sufficient, more detailed control over the buffer can be desirable when a given message shall be used multiple times.
 Not always is it wanted, that events remain in the buffer after retrieval.
 An additional parameter \textit{ConsumptionPolicy} is introduced which can take the values \textit{Consume}, \textit{Reuse}(default) and \textit{Bounded Reuse(n)}.
