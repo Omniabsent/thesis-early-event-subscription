@@ -1,10 +1,10 @@
-\section{BPMN Extension}
+\section{BPMN Extension}\label{ch:bpmnx}
 
 \todo[inline]{this is the explanation for the process designer}
 
 Given the additional requirements and the shortcomings identified in the previous sections, the following two chapters present an extension to the BPMN event handling model.
 At first, an extension to the Business Process Model and Notation (BPMN) is described, which aims at providing the Process~Designer with more flexible Event Handling capabilities according to Requirement~\textit{R1}.
-Afterwards, Chapter~\autoref{ch:automaticsubscription} clarifies the changes necessary to the event handling platform and the process engine to cover Requirements \textit{R2} and \textit{R3}.
+Afterwards, \autoref{ch:automaticsubscription} clarifies the changes necessary to the event handling platform and the process engine to cover Requirements \textit{R2} and \textit{R3}.
 While the presented concepts are kept as general as possible, they are grounded in an analysis of the Esper-based CEP Platform Unicorn and the open-source process Engine Camunda.
 
 To allow the flexible use of event subscription in BPMN models, a number of additional attributes must be added to the model. 
@@ -15,19 +15,21 @@ To cover all three elements, the extension will be attached to the BPMN type \te
 According to the plain specification, the message type comprises an attribute \textit{name}, the name of the message, and \textit{itemRef}, the reference to a BPMN \textit{Item} definition. \todo[inline]{explain 'item'?}
 In the following, the required additional attributes will be explained one after the other. The goal is to retain a stand-alone model that contains all information necessary to execute the subscription to the event source.
 
+\todo[inline]{add table overview of all extension fields with some details. Look that it doesnt double with the table-todo in automatic-subscription}
+
 \subsection{Adding basic subscription information}\label{ch:bpmnx:basic}
 
 For a basic event subscription, an event~query, the platform address and optionally authorization information of the CEP~Platform is required. \todo[inline]{as explained in background}
 \todo[inline]{We work with the following simplified process}
 Assuming that there is one CEP platform for all events and processes, the latter two, i.~e. the basic platform information, are configured centrally for the current process execution environment. Hence they don't need to be specified for every given message element. 
 \todo[inline]{that means that in the implementation we need additional configuration values -> implementation chapter}
-The event query instead needs to be specified for every message and is added to the model as an extension attribute of type string, which should contain the full query as interpretable by the CEP platform.
+The event query instead needs to be specified for every message and is added to the model as an extension attribute \textit{eventQuery} of type string, which should contain the full query as interpretable by the CEP platform.
 A similar approach has been taken by X and Y, who aim at enriching BPMN models with subscription information without considering the time of subscription specifically.
 \todo[inline]{Find this source; They add fields ... to element ..., their primary goal is ...}
 
 Given this fundamental part of the BPMN extension, it is possible to execute the subscription, but the time of subscription cannot be influenced.
 
-\subsection{The time of event subscription modeled in BPMN}
+\subsection{The time of event subscription modeled in BPMN}\label{ch:bpmnx:subscriptiontimes}
 
 This section specifically addresses the requirement \textit{R1.1}, aiming to provide a flexible event subscription time to be selected for each BPMN message when designing the event-driven process.
 Two different tools are to be offered to support all subscription times demanded by \textit{R1.1}: Firstly, the subscription can happen implicitly at certain process-related points in time. Alternatively, the subscription can be modeled explicitly as a flow-element in the process.
@@ -37,6 +39,8 @@ The subscription will be executed automatically by the system based on the infor
 Any event message that occurs before reaching the event element but after the time of subscription will be kept in a buffer by the system.
 In its simplest version, the buffer is of length 1, that means it stores exactly one message received from a CEP platform. It always stores the latest message. When a newer message arrives, the old one is replaced in the buffer.
 \todo[inline]{By default, there is no interference between the buffers of different messages, process instances or processes. Each buffer instance will contain the latest information as if it was the only buffer in the system. Performance improvements to avoid duplicate buffer content will be managed by the system without explicit action by the user. Section ... later introduces a shared, more complex usage scenario of the event buffers.}
+
+\todo[inline]{maybe make a separate paragraph somewhere here?}
 
 Modern event query languages are feature-rich and offer a large set of expressions to filter events from incoming streams. \todo[inline]{ref background}
 The introduced basic event buffer can be used in connection with any desired event query and will store the latest output of that query.
@@ -125,6 +129,6 @@ The option \textit{Consume} will remove an element from the buffer immediately a
 - there are two scenarios to access the same buffer: (1) multiple times in the same instance, (2) multiple times because of parallel instances, (3) multiple times because of a shared buffer across processes
 - before proceding, we need to be clear about the buffer scope: it depends on the time of subscription. (1) after instantiation: buffer only instance-wide; (2) on pr depl: buffer reused across all instances; (3) system start: buffer reused across all processes
 - two additional buffer policies: \textit{SizePolicy}, \textit{OrderPolicy}, default values
-
+\todo[inline]{write text for given keypoints}
 
 - what if messages are defined in different ways? => I want to reuse the buffer between processes, but the message definition (especially cep query) are not the same. how will the system behave?

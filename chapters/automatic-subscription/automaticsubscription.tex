@@ -10,7 +10,7 @@ As described in REF, an event-driven process management setup primarily consists
 \todo[inline]{missingref}
 Changes are necessary to both, the Event Processing Module and the Process Engine. This chapter attempts to keep the change descriptions general so they can be applied to any common process engine and event processing platform.
 The first section describes the necessary extension to the event processing to support early subscription and event buffering.
-The following section~\autoref{ch:extendedprocessengine} specifies the changes necessary to the behavior of the process engine as the connecting element between the BPMN model and the event processing platform.
+The following \autoref{ch:extendedprocessengine} specifies the changes necessary to the behavior of the process engine as the connecting element between the BPMN model and the event processing platform.
 
 
 \section{Buffered Event Processing}
@@ -40,7 +40,7 @@ Firstly, the \textit{subscribe} operation has to be divided into two steps:
 	\item \textit{registerQuery(queryString[, bufferPolicies]): queryId}\newline
 	The call registers an event query in the CEP platform and instantiates a buffer. Matching events will be held in the buffer according to the specified  policies. It returns a unique identifier to that new query registration and hence for the connected buffer. That identifier must be used to modify the query later.
 	
-	\textit{bufferPolicies} is an optional parameter which is provided as an object with four possible fields: \textit{LifetimePolicy}, \textit{ConsumptionPolicy}, \textit{SizePolicy}, \textit{OrderPolicy}. Refer to section~\autoref{ch:bpmnx:bufferpolicies} for a detailed specification of the semantics of the parameters. If \textit{bufferPolicies} is not or only partly specified, the system should fall back to the default values.
+	\textit{bufferPolicies} is an optional parameter which is provided as an object with four possible fields: \textit{LifetimePolicy}, \textit{ConsumptionPolicy}, \textit{SizePolicy}, \textit{OrderPolicy}. Refer to \autoref{ch:bpmnx:bufferpolicies} for a detailed specification of the semantics of the parameters. If \textit{bufferPolicies} is not or only partly specified, the system should fall back to the default values.
 	
 	\item \textit{requestEvents(queryId, notificationPath)}\newline
 	Initiates the delivery of notifications for a given queryId to a notification recipient.
@@ -68,7 +68,7 @@ Given flexible event subscription, this operation must be split into two parts a
 All four methods are required to execute a subscription on process deployment.
 The query must be registered using \textit{registerQuery} before the process instance, i.~e. notification-path, is available. For each process instance, events can be requested individually using \textit{requestEvents} and thereafter, the notification-recipient can be removed with \textit{unsubscribe}.
 The query and its buffer will remain active even after any single instance has terminated. When the process gets un-deployed, the query can be deleted using \textit{remove query}.
-Section~\autoref{ch:extendedprocessengine} describes the steps in detail.
+\autoref{ch:extendedprocessengine} describes the steps in detail.
 \todo[inline]{show the steps with sample data from one of the examples}
 
 - to achieve the default behavior, each two steps have to be executed just after the other.
@@ -85,7 +85,7 @@ Which of the three options suits best has to be evaluated for the given use-case
 \todo[inline]{Generally, extending the event processing platform is advisable? Or put up brief pros and cons of each of the options}
 \missingfigure{three options to implement the event buffering and api extension}
 
-A reference implementation for an extended complex event processing platform is presented in chapter~\autoref{ch:implementation} at the example of the Esper-based CEP platform \textit{Unicorn}. It also explains, why extending the event platform was the preferred choice in the given scenario.
+A reference implementation for an extended complex event processing platform is presented in \autoref{ch:implunicorn} at the example of the Esper-based CEP platform \textit{Unicorn}. It also explains, why extending the event platform was the preferred choice in the given scenario.
 
 \paragraph{Performance Considerations}
 \todo[inline]{todo}
@@ -94,34 +94,45 @@ A reference implementation for an extended complex event processing platform is 
 - given the extended api, it is now possible to implement early event subscription from the process engine 
 
 
-\section{Extended Process Engine Behaviour}\label{ch:extendedprocessengine}
+\section{Extended Process Engine Behavior}\label{ch:extendedprocessengine}
 It is the task of the Business Process Engine to interpret and execute process models and connect to an event processing platform in event-driven setups.
-From the three relevant modules, two have already been defined, the BPMN extension and the buffered event processing module.
-Out of the box, a process engine like Camunda will ignore any proprietary BPMN extensions and the subscription to an event source must be especially implemented. An example for such an implementation is provided in section~\autoref{ch:assessment-implementation}.
-One goal of this work is to automatize the handling of event subscriptions solely based on the information available through extended BPMN model. Additional process elements are not required.
+From the three relevant parts, two have already been defined, the BPMN extension and the buffered event processing module.
+Out of the box, a process engine like Camunda will ignore any proprietary BPMN extensions and the subscription to an event source must be especially implemented. An example for such an implementation is provided in \autoref{ch:assessment-implementation}.
+One goal of this work is to automatize the handling of event subscriptions solely based on the information available through the extended BPMN model. Additional process elements should not be required.
+This section will clarify, which operations need to be executed by the process engine to enable the automatic subscription handling.
+\autoref{ch:implcamunda} demonstrates the implementation of automatic subscription handling at the example of Camunda.
 
-- read extended information from the model, extended message and explicit subscription task
-
-- implement the subscription time
-> on deployment
-> on instantiation
-> at service task
-> when event element is reached
-> store the queryId, buffer scope: correlates with the subscription time. is relevant if working with consume messages. Later reuse of the queryId
-
-- implement the requestEvent
-> when event element is reached
-
-- implement the unsubscription
-> when event element is finished
-
-- implement the deletion of the query
-> when event element is finished
-> when a process is undeployed
-> there must be a "subscription-garbage-collection" for any events that cannot be reached anymore in the current process execution! e.g. two different events behind an xor-gateway. the garbage collection could be executed on every transition
+\paragraph{Parsing additional information from the BPMN model}
+It is required that the process engine is able to read the additional information from the BPMN extension~(see~\autoref{ch:bpmnx}) so that it is available during process deployment and execution.
+This affects the BPMN message element, which can contain the additional attributes \textit{eventQuery}, \textit{subscriptionTime} and \textit{bufferPolicies}.
+Secondly, the \textit{Explicit Subscription Task} has to be processed. It contains a reference to a Message entity within the same model.
+The process engine might have to be adopted to read all relevant data from the extended model.
 
 
+\paragraph{Managing subscription and un-subscription}
+As defined in the BPMN extension for flexible event subscription, the action of subscribing to an event source can happen at different times during process deployment and execution. The options and the implicit timing of subscription and un-subscription are specified in \autoref{ch:bpmnx:subscriptiontimes}.
+The process engine must communicate with the process engine using the four calls \textit{registerQuery}, \textit{requestEvents}, \textit{unsubscribe} and \textit{deleteQuery}, that were presented in the previous chapter.
+For each possible subscription time, the following briefly enumerates which operations must be executed when. 
+
+\begin{description}
+	\item[In every case:] 
+		The return-value of \textit{registerQuery}, a unique identifier of that query, must be stored for the related BPMN \textit{Message}. The id is later necessary to execute the other three API methods.
+		When an event element is reached, a call to \textit{requestEvents} must be issued. When the execution of that event element is finished, call \textit{unsubscribe}.
+	\item[Subscr. on process deployment:]
+		When a process gets deployed, the process engine must check if subscription information is in the model. For every \textit{Message} element that is set as \textit{subscribe on pr. deployment}, a call to \textit{registerQuery} must be issued as part of the deployment process. A call to \textit{deleteQuery} is executed when the process gets un-deployed for the same messages.
+	\item[Subscr. on process instantiation:] 
+		When a process gets instantiated, \textit{registerQuery} must be executed for each \textit{Message} that is set to \textit{subscribe on pr. instantiation}. \textit{deleteQuery} can be called when the last reachable event element for a \textit{Message} has finished executing or no connected event can be reached anymore. The deletion happens at the latest when the process instance terminates.
+	\item[Subscr. through explicit subscription task:]
+		If the control flow reaches a subscription task, the process engine executes \textit{registerQuery} for the referenced \textit{Message}. The execution of \textit{deleteQuery} follows the same rules as in the preceding case.
+	\item[Subscr. when the event element is reached:]
+		Once the event element is reached, \textit{registerQuery} must be executed for any \textit{Message} that is not covered by one of the prior cases. \textit{deleteQuery} must be called when the event element is finished.
+\end{description}
+\todo[inline]{be more precise about the time the calls should be executed (if possible). "reached"? "completed"? use the right bpmn words}
+
+
+\todo[inline] {Do I want to write about extended validity checks? soundness? The question would be: What happens if the model erroneous w.r.t. to the bpmn extension?}
 - handling subscription dependencies:
+- when are process variables replaced by their actual values
 - The use of dynamic process variable values introduces an additional complexity: Depending on the time of event subscription, the value of the process variable might not yet be available.
 - reference BPMN data elements: process INSTANCE variable
 -> the variable value might only be available during instance execution
@@ -131,3 +142,5 @@ One goal of this work is to automatize the handling of event subscriptions solel
 -> too complex, we need a simplification for this.
 - what happens if the data is not available?
 
+
+\todo[inline]{Time of un-subscription also must be clarified in bpmnx}
