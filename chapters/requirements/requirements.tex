@@ -4,12 +4,104 @@
 
 This section will further define the problem and derive formal requirements to event subscription mechanisms
 
+illustrate the complexity through 2 sample scenarios that are similar but different
+
 \section{Motivating Examples}
-- one example for independent. The subscription does not depend on a prior precess result, the subscription can be done even before process instantiation
+% some has been mentioned in the introduction
 
-- one example for a process that uses an intermediate event that depends (subscription-wise) on the result of a previous step in the process.
+To allow a better understanding of the issue, event-driven use-cases from two different domains are presented in the following.
+The cases are revealed through their standard BPMN representation, which can cause problems in certain real-life situations.
+It is illustrated, why the time of event subscription is of great importance and motivate to study the mechanics and implications of event subscription in business processes.
 
-==> If the event occurs at a certain time, the process gets delayed unnecessarily or even run into a deadlock
+\paragraph{Delay of a logistics process}
+The first example(\autoref{fig:example-eurotunnel}) is taken from the logistics domain and shows a truck transport that has to cross the English Channel.
+The truck driver receives the transport plan for his next tour from France to the UK. By default, the company crosses the Channel using the Eurotunnel, an underground train connection between London and Paris.
+
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=1\linewidth]{chapters/requirements/Eurotunnel-simplified.png}}
+	\caption{BPMN Model of a Logistics Process using events for route optimization (Example 1.1)}
+	\label{fig:example-eurotunnel}
+\end{figure}
+
+After loading the goods at the factory, the truck will head towards the check-in location of the Eurotunnel.
+If everything runs on schedule, the truck will cross the channel on the train and then deliver the goods in Great Britain.
+Alternatively, the process considers a route using the ferry from Calais(FR) to Dover(UK).
+The Eurotunnel administration publishes delay information approximately every 30 minutes through an RSS feed on their website. While it mostly operates on schedule, delays ranging from 15~minutes to several hours occur regularly. It can happen that new information is not published for multiple hours.
+Significant delay events (delay~>~30~minutes) are received through a boundary catching message event attached to the activity \textit{Drive to Eurotunnel Check-In}. The boundary event is interrupting, hence the activity is canceled if a delay occurs.
+The transport continues towards the ferry terminal and crosses the English Channel over sea. After crossing the channel, the goods are delivered to the recipient.
+\todo[inline]{show a cep query for that scenario to make it more precise}
+
+According to the BPMN specification, the listening for the boundary event starts as soon as the related activity is activated.
+\todo[inline]{is that exactly correct?}
+Given that events arrive every 30~minutes, there can be a gap of up to half an hour, before the first information becomes available.
+In the worst cases, when data isn't published for several hours, this gap will be even bigger.
+Let's consider a very busy weekday. A technical fault occurred in the tunnel earlier and the train runs 3 hours behind schedule.
+The last information on the RSS feed was published at 2:35pm. At that time the truck driver is still in the process of loading goods, finishing the activity at 2:40pm.
+Following the process definition, the driver now departs towards the Eurotunnel check-in.
+The system publishes updated information at 3:15pm: operations are still 2:30h behind schedule. The message gets received through the process and the truck driver takes the alternative route to the ferry, but only after heading to the Eurotunnel for 35~minutes. The late change of plans causes an unnecessary delay to the shipment.
+
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=1\linewidth]{chapters/requirements/Eurotunnel_part2.png}}
+	\caption{Transport via English Channel that is timed to a delivery slot (Example 1.2)}
+	\label{fig:example-eurotunnel-part2}
+\end{figure}
+
+\autoref{fig:example-eurotunnel-part2} is an extension of the the transport process.
+In logistics, it is common that a delivery cannot be accepted at arbitrary time. Instead, the receiving party assigns delivery windows to the transport company.
+The transport must arrive during the given time window, otherwise the delivery cannot be completed.
+After crossing the English Channel, the process model shows the catching of a message event containing the desired final arrival time at the factory. There is an agreement with the factory, that the delivery slots will be approved 2~hours before the expected arrival.
+If the current ETA of the transport is greater or equal to the arrival time, the driver will head to the drop-off point straight away. If the transport is ahead of schedule, the driver will have to delay the delivery to match the time window.
+
+The presented process model illustrates another complexity of using events in processes. Again, the listening to the announcement of a delivery window will start when the event element is reached, in this case only after crossing the English Channel. 
+Until an event has been received, the process will not continue. 
+Much worse: if the receiving party sends out the arrival time information too early, while the truck is crossing the channel, the event is missed. If it is not issued again, the process cannot receive a message and will get stuck indefinitely waiting to catch the event.
+
+Neither of the two presented catch events allow for an efficient and reliable execution of the process. They can cause unnecessary delays and even blocking of the process execution.
+The remainder of this work will further analyze the capabilities of BPMN to express event-usage scenarios and propose solutions to the mentioned problems.
+
+\todo[inline]{Consider more possible event occurrence times to prepare for the next chapter}
+
+\paragraph{Up-to-date shipping information for an order}
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=1\linewidth]{chapters/requirements/Retail-Order.png}}
+	\caption{Model of a retail order management process (Example 2)}
+	\label{fig:example-order}
+\end{figure}
+
+A~similar situation can be observed in the Order Management process presented in \autoref{fig:example-order}.
+It describes the interaction between customer and seller in a traditional distance retail scenario: After browsing the product catalog, the customer requests a quote for the articles he or she is willing to buy.
+The retailer makes an offer including an approximation of the expected shipment date and sends it to the customer. That quote is then either accepted or not and the payment is issued if necessary.
+Once the retailer is informed about the placement of the order, the products are packed and shipped as soon as possible.
+For articles that are not currently in stock, the retailer must await the shipment from the factory. If any of the factory-shipments is delayed, the retailer cannot ship in time and will announce a delayed shipment date to the customer.
+This situation is modeled through a non-interrupting boundary event attached to the \textit{Prepare Shipping} activity, which triggers the sending of the updated shipment date to the customer.
+
+The process shows a number of similarities, but also differences in terms of event-use when compared to the previous process example.
+At first we want to look at the three intermediate catch events, \textit{Quote received}, \textit{Order canceled} and \textit{Order placed}.
+In each of the cases, the event to be caught is the direct response to a message that was sent right before. While the process will also enter a waiting state until the response arrives, that waiting is not to be interpreted as an unnecessary delay to the process execution.
+Other than in Example~1.2(\autoref{fig:example-eurotunnel-part2}), there is nothing useful to do before the response is received.
+It is furthermore worth noting that the response messages cannot be missed, because the message catch event immediately follows the message send event.
+
+A different situation holds for the boundary event \textit{Shipment Delay}.
+While the subscription to a Eurotunnel event can be issued at any time, it does not depend on any process data, the shipment delay has to be observed for each product that is part of the order. A subscription can therefor not be executed before the activity \textit{Prepare Quote} has finished executing  \todo[inline]{show a cep query for that scenario to make it more precise}
+By process definition, the system will listen to shipment delays once the activity \textit{Prepare Shipping} has started executing, much later than possible.
+Any events that occur between the two activities, that means, for example, when the customer makes the decision about accepting or canceling the order, cannot be considered in the process execution and the customer will not be informed about a possible late shipment.
+
+
+% The first of these three follows the \textit{Send/Receive} Service Interaction Pattern. \todo[inline]{missingref}
+% Two parties interact 
+\todo[inline]{write about service interaction patterns somewhere}
+
+\paragraph{}
+\noindent
+The two presented examples have illustrated the complexity of using events in business process, especially when the possible event occurrence times are considered in detail.
+Differences have been pointed out as to how exactly the event is placed in the process, if it waits for a direct response to an earlier request or if the event occurrence unrelated to the execution of that very process.
+Motivated by this complexity, it is the goal of this work to identify the capabilities of BPMN to handle event subscription in business processes.
+
+\todo[inline]{this chapter must be closer related to event subscription. Don't make it too general. subscription is the thing}
+
 
 \section{Event Occurrence Scenarios}
 Given the motivating examples, I am deriving a generic set of event occurrence scenarios. Each of these scenarios can occur in the real world and process implementations need to be capable of handling them to avoid negative effects.
@@ -60,6 +152,8 @@ The previous sections have exemplified how the execution semantic offered by the
 The formal requirements will later be used to evaluate the capabilities of current Process Management Solutions and to develop a new concept to handling event subscription in business processes. \todo[inline]{ref to chapters}
 
 \paragraph{R1: Flexible Event Subscription Time\newline}
+
+\todo[inline]{use latex 'description'}
 
 \textit{R1.1: Explicitness}: 
 For each event that is used in a business process, it must be possible to derive the time of event subscription from the process model. The time of subscription may either be explicitly stated or defined implicitly.
