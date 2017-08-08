@@ -106,9 +106,10 @@ Motivated by this complexity, it is the goal of this work to identify the capabi
 \section{Event Occurrence Scenarios}
 Given the motivating examples, I am deriving a generic set of event occurrence scenarios. Each of these scenarios can occur in the real world and process implementations need to be capable of handling them to avoid negative effects.
 
-\paragraph{Time of event occurrence}
+\paragraph{Event Subscription Time}
 
-The most important variable to consider is the time of event occurrence. According to the BPMN specification, it is possible to catch an event if it occurs after the event element is enabled. As shown before, it is often impossible to control occurrence time and events do occur outside of these time windows.
+The most important variable to consider is the time of event occurrence. \todo[inline]{reformulate}
+According to the BPMN specification, it is possible to catch an event if it occurs after the event element is enabled. As shown before, it is often impossible to control occurrence time and events do occur outside of these time windows.
 We specify the possible event occurrence times in relation to the life cycle of a process that utilizes a BPMN Intermediate Event \todo[inline]{ref process lifecycle}.
 \begin{figure}[]
 	\myfloatalign
@@ -128,14 +129,16 @@ Given the relevant life cycle steps, \textit{process deployment}, \textit{proces
 	\item O5 Before Process deployment
 \end{aenumerate}\label{def:occurrence-times}
 
-\todo[inline]{add a back reference to the examples? In example XY, events can occur before... whereas in example...}
+\todo[inline]{add a back reference to the examples. In example XY, events can occur before... whereas in example...}
 
 For a flexible and efficient use of events in business processes, it must be possible to use events that occur in any of these phases.
 To make sure that an event can be caught, no matter at which time during the phase it occurs, the subscription to the CEP platform must happen at the beginning of the occurrence phase.
 It follows that the event subscription must be possible at system start, at process deployment, at process instantiation, at any time during process execution and when the BPMN Event element is enabled.
 
+\todo[inline]{Explain that, to catch events at these times, the subscription has to happen before. Therefor we derive event subscription times}
+
 \paragraph{Event Subscription Dependencies}
-It is important to note that the subscription to an event source can depend on additional context information or process data. This can be a severe limitation to the possible subscription time.
+It is important to note that the subscription to an event source can depend on additional context information or process data. This can be a significant limitation to the possible subscription time.
 \todo[inline]{ref to process model} shows a logistics process that uses event data about the GPS position of a certain truck to keep the estimated time of arrival of the transport updated. Whenever it receives an updated GPS position, the ETA is re-calculated; once the \textit{arrival}-event has been received, the process finishes.
 
 \todo[inline]{this example is not good, because we are not interested in a gps event that occurs earlier. Find an example where you would like earlier events, but subscription is not possible}
@@ -149,29 +152,35 @@ Before the subscription to that specific truck gps event can happen, the process
 
 \section{Requirements Definition}
 The previous sections have exemplified how the execution semantic offered by the BPMN specification limits users in the use of events in business processes. Now these shortcomings are formalized into an additional set of requirements that must be met by a process execution environment to enable event handling in the extended set of event occurrence scenarios.
-The formal requirements will later be used to evaluate the capabilities of current Process Management Solutions and to develop a new concept to handling event subscription in business processes. \todo[inline]{ref to chapters}
+The formal requirements will later be used to evaluate the capabilities of current Process Management Solutions~(\autoref{ch:assessment}) and to develop a new concept to handling event subscription in business processes~(\autoref{ch:flexibleeventsubscription}).
 
-\paragraph{R1: Flexible Event Subscription Time\newline}
+\paragraph{R1: Flexible Event Subscription Time}
 
-\todo[inline]{use latex 'description'}
+\begin{description}
+	\item[R1.1 Explicitness:] 
+	For each event that is used in a business process, it must be possible to derive the time of event subscription from the process model. The time of subscription may either be explicitly stated or defined implicitly.
+	\item[R1.2 Flexibility:] 
+	The time of subscription can be influenced to catch events according to any of the event occurrence scenarios O1, O2, O3, O4. In other words, the process model defines the earliest acceptable time for an event occurrence to be considered in the process execution. The necessary options are \textit{since system start}, \textit{since process deployment}, \textit{since process instantiation}, from an arbitrary but \textit{explicit time during process execution}, or \textit{since enabling of the Event Process Element}.
+\end{description}
 
-\textit{R1.1: Explicitness}: 
-For each event that is used in a business process, it must be possible to derive the time of event subscription from the process model. The time of subscription may either be explicitly stated or defined implicitly.
 
-\textit{R1.2: Flexibility}: 
-The time of subscription can be influenced to catch events according to any of the event occurrence scenarios O1, O2, O3, O4. In other words, the process model defines the earliest acceptable time for an event occurrence to be considered in the process execution. The necessary options are \textit{since system start}, \textit{since process deployment}, \textit{since process instantiation}, from an arbitrary but \textit{explicit time during process execution}, or \textit{since enabling of the Event Process Element}.
 \todo[inline]{limited by subscription dependencies}
 \todo[inline]{change the options back to the times of subscription. Mention that the subscription is necessary before the time of event occurrence, but too early subscription is also a problem.}
+\todo[inline]{target only intermediate events. (limitation, although it also makes the most sense.)}
 
-\paragraph{R2: Automatic Subscription Handling\newline}
+\paragraph{R2: Automatic Subscription Handling}
 
-\textit{R2.1: Subscription}
-The subscription to event sources is handled implicitly by the process execution environment as defined by the process model.
+\begin{description}
+	\item[R2.1 Subscription:] 
+	The subscription to event sources is handled implicitly by the process execution environment as defined by the process model.
+	\item[R2.2 Removal of Subscription:] 
+	The removal of a subscription from the system is handled automatically as soon as a subscription becomes unnecessary.
+\end{description}
 
-\textit{R2.2: Removal of Subscription}
-The removal of a subscription from the system is handled automatically as soon as a subscription becomes unnecessary.
 
-\paragraph{R3: Event Buffering\newline}
-To make all events since the subscription time available during process execution, matching events need to be stored temporarily.
+\begin{description}
+	\item[R3 Event Buffering:]
+	To make all events since the subscription time available during process execution, matching events need to be stored temporarily.
+\end{description}
 
-\todo[inline]{buffer policies and scope?}
+\todo[inline]{buffer policies?}
