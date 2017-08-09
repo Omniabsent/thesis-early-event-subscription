@@ -1,3 +1,42 @@
 %************************************************
-\chapter{Introduction}\label{ch:introduction}
+\chapter{Introduction}
 %************************************************
+
+Given the increasing competition on the global market place, companies are seeking to improve their value and reduce costs.
+In many areas, Business Process Management has been chosen as one of the tools to help stay competitive.
+Especially large enterprises, but also small to medium businesses formalize their workflows in business process models to allow archiving, documentation and automatized management and execution.
+
+With Business Process Technology in constant progression, the opportunities that the field has to offer are ever growing.
+Since the recent years, many efforts have been dedicated towards bringing together business processes and Complex Event Processing.
+By the help of Event Processing Systems, companies are trying to get a hold of the exponentially growing amounts of data that occur in today's IT environment.
+Incorporated in process executions, events heavily increase their capabilities and flexibility. They can be utilized for intraorganizational communication between processes or business departments, but also allow to respond to external situations within seconds or milliseconds.
+The Business Process Model and Notation~(BPMN), an industry standard for representing business processes both visually and textually, natively supports the use of events in a plethora of ways. Events are considered a main building block of a feature-rich process modeling language and can, for instance, be used for instantiating processes, communicating between process participants or to support decisions.
+
+An interaction with a Complex Event Processing platform generally follows the publish-subscribe paradigm: The event consumer contacts the platform and issues a subscription to a specific subset of available events.
+An event producer, for example a Vehicle providing its current GPS location, publishes information to the event processing platform, which is then forwarded to every consumer that had subscribed.
+Intermediate Events are a basic way to implement event-based communication in BPMN and facilitate the reception of external message events.
+Nevertheless, the BPMN specification does not specifically consider the publish-subscribe workflow and offers only limited flexibility when it comes to incorporating event subscription and un-subscription operations in business process models.
+The consequences and possible solutions to this lack of specification are investigated in this work.
+
+
+\section{Motivation}
+- distributed -> hard to control
+- subscription before occurrence time
+- subscr. not considered in detail in bpmn
+- other research towards ..., 
+- increasing demand for using events in processes
+- problems can occur when mis-used, delay or blockage, significant time and financial loss
+-> brief, textual example
+- a more flexible approach to event subscription might help resolve those issues
+
+
+\section{Contribution}
+(0) reviewing the problem from different perspectives, deriving requirements
+(1) assessment of the capabilities of standard bpmn
+(2) Proposition of a BPMN extension for flexible event subscription, its advantages
+(3) derived requirements to process engines and CEP platforms
+(4) A reference implementation using Camunda and UNICORN
+
+
+\section{Structure}
+\todo[inline]{write}
