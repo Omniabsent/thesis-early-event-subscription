@@ -2,7 +2,7 @@
 \chapter{Background on Event-Driven Business Process Management}\label{ch:background}
 %************************************************
 
-\section{Business Process Management}
+\section{Business Process Management}\label{ch:bg:bpm}
 With its origins dating back to the process orientation trend of the 1990s, \ac{BPM} has meanwhile become a mainstream tool to support organizations.
 It had been noted, that company workflows can essentially be broken down into activities that are executed in a coordinated manner by one or more parties.
 A certain group of activities thereby form a process which is executed within an organization.
@@ -24,8 +24,25 @@ Based on a process model, the number of possible instances is theoretically infi
 	\cite[p.~7]{weske:bpm-book}
 \end{description}
 
-While traditionally activities where executed manually by company staff following the written process specifications, computer systems are used today to drive the execution and enforcement of business processes and organizational rules.
-The generic software systems utilized for that purpose are introduced in the following \autoref{ch:bg:bpms}.
+\noindent
+The lifecycle of a business process can be  described in four cyclic phases in that numerous stakeholders interact and contribute depending on their specialization.
+Process development starts with a \emph{Design \& Analysis} phase which yields a refined and validated business process model.
+In the following \emph{Configuration} phase, it is necessary to prepare the process implementation, select the means and an environment to run the process in.
+The action of making the process runnable in the execution environment is called \emph{process deployment}.
+After these preparations the process can be enacted in daily business while its current state is monitored and system maintenance is performed if necessary (\emph{Enactment} phase). 
+A single process execution begins with the \emph{process instantiation}, when the process has succeeded or is aborted, we say the process is \emph{terminated}.
+During the enactment, system and stakeholders can start collecting performance indicators and process execution logs to allow evaluating the quality of the process specification. If that \emph{Evaluation} step reveals deficiencies, the lifecycle starts over by re-entering the design phase.
+The \emph{process un-deployment} is performed if necessary, so that no new instances of the process can be started.
+\cite[p.~11~ff.]{weske:bpm-book}
+%the investigations undertaken in this work target the Design \& Analysis phase
+
+\todo[inline]{
+- introduce activity lifecycle/control flow
+}
+\missingfigure{activity lifecycle}
+
+While traditionally activities are executed manually by company staff following the written process specifications, computer systems are used today to drive the execution and enforcement of business processes and organizational rules.
+The generic software systems utilized for that purpose are introduced in the following section.
 
 \todo[inline]{not only one source}
 
@@ -34,27 +51,31 @@ The implementation of business processes has developed from a manual execution g
 One of the main reasons for \acs{BPM}'s growing popularity is that in today's fast-paced economy, a large part of the business activity is either supported by computers or even carried out autonomously by them.
 The specialized software systems that are utilized to support the enactment of business processes are referred to as \emph{business process management systems}.
 
-\paragraph{Business Process Lifecycle}
+\paragraph{Process Management Architecture}
+A typical IT infrastructure for driving business processes is illustrated in \autoref{fig:bpm-architecture}. 
+Five principal building blocks are considered which will be explained in the following.
 
-- the investigations undertaken in this work target the Design \& Analysis phase
+As indicated in the business process lifecycle, the visualized scenario commences with the \emph{Business Process Modeling}. As a result of the \emph{Design \& Analysis} phase, new process models are created and refined to be stored in the \emph{Business Process Model Repository}. 
+The relation between the two elements includes writing new models to the repository as well as reading models for review and further modification.
+Given that the desired model is approved for enactment, the process gets deployed to the \emph{Process Engine} as part of the configuration step.
+The process engine is the heart of the execution environment. It performs the execution of the processes from deployment until un-deployment, while the enactment and instantiation is controlled by the \emph{Business Process Environment}.
+An indefinite number of \emph{Service Provider}s realize application services to support the process execution. A service provider can be a software module but also a knowledge worker performing a particular process step.
 
-\paragraph{Process Management Reference Architecture}
-A typical IT infrastructure for running and maintaining business processes comprises the following building blocks:
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=1\linewidth]{chapters/background/bpm-architecture.png}}
+	\caption{Business process management systems architecture model (see~\cite{weske:bpm-book},~p.~120)}
+	\label{fig:bpm-architecture}
+\end{figure}
 
-
-
-\missingfigure{bpm it infrastructure: modeling tool, model repository, users, process engine, external service providers}
-
-talk about their basic architecture, process engine
-+ phases: deployment, enactment, un-deployment
 
 \paragraph{The Camunda Business Process Engine}\label{ch:bg:camunda}
-- there are many process engines
-- camunda is open source and popular and modern and actively developed
-- the camunda project and its current state
-- parts of the camunda software
-- some outstanding features
-- why do I mention this?
+A large and ever growing number of process engines is available on the market, including solutions from IT giants like SAP, IBM and Oracle.
+In this work, \emph{Camunda BPM} has been chosen to illustrate implementations.
+As of August 2017, the software product is available in version 7.7.0 and comes in a commercial, regularly updated version and in a free, community-driven solution that is updated with every major release.
+Camunda is popular among the research community as the source code is openly available, the product is mature, but actively developed and offers comprehensive support for BPMN 2.0. It is designed to be extensible and easily modifiable to adapt to custom requirements.
+\emph{Camunda BPM} comprises a modeling tool, the Camunda process engine core and a number of browser-based user-interfaces to control process enactment and monitor execution state.
+\autoref{ch:implementation} will provide further details about the engine architecture and extension mechanisms.
 
 
 \subsection{Business Process Model and Notation}
@@ -82,6 +103,9 @@ talk about their basic architecture, process engine
 \missingfigure{pub/sub workflow}
 
 \section{Events in Business Processes}
+- there are 2 use cases for events in bp: (1) for process monitoring, (2) for driving processes
+%Brandl H.-M. and Guschakowski D. Complex Event Processing in the Context of Business Activity Monitoring
+
 - interplay BPT to CEP platforms, 
 > sub in BPMN should rather be 'Problem Statement' somehow
 - putting cep queries into bpmn models => heiko's thesis or other related work?
