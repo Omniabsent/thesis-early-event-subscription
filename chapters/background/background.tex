@@ -2,26 +2,74 @@
 \chapter{Background on Event-Driven Business Process Management}\label{ch:background}
 %************************************************
 
-\section{Business Process Management and Technology}
-- Brief: what is a business process
--> definition
-- activity / instance life cycle
+\section{Business Process Management}
+With its origins dating back to the process orientation trend of the 1990s, \ac{BPM} has meanwhile become a mainstream tool to support organizations.
+It had been noted, that company workflows can essentially be broken down into activities that are executed in a coordinated manner by one or more parties.
+A certain group of activities thereby form a process which is executed within an organization.
+More precisely, \citeauthor{weske:bpm-book} \cite{weske:bpm-book} defines a single \emph{business process} as follows:
 
-- What's the management process, brief life cycle
+\begin{description}
+	\item[Definition 1 (Business Process):]
+	A \emph{business process} consists of a set of activities that are performed in coordination to realize a business goal. Each business process is enacted by a single organization, but it may interact with processes performed by other organizations. \cite[p.~5]{weske:bpm-book}
+\end{description}
+
+\noindent The term \emph{Business process management} describes the techniques available to develop and support processes throughout their life-cycle.
+It is grounded in the use of explicit process representations which ultimately allow the exchange, analysis and reproduction of the workflows.
+This process specification is referred to as the \emph{business process model}, composed of activities and the rules that are necessary to coordinate their execution. When a process is performed according to its model, the single execution is called \textit{process instance}.
+Based on a process model, the number of possible instances is theoretically infinite.
+
+\begin{description}
+	\item[Definition 2 (Business Process Model):]
+	A \emph{business process model} consists of a set of activity models and execution constraints between them. A \emph{business process instance} represents a concrete case in the operational business of a company, consisting of activity instances.
+	\cite[p.~7]{weske:bpm-book}
+\end{description}
+
+While traditionally activities where executed manually by company staff following the written process specifications, computer systems are used today to drive the execution and enforcement of business processes and organizational rules.
+The generic software systems utilized for that purpose are introduced in the following \autoref{ch:bg:bpms}.
+
+\todo[inline]{not only one source}
+
+\subsection{Business Process Management Systems}\label{ch:bg:bpms}
+The implementation of business processes has developed from a manual execution guided by business rules to a fully automatized execution in a specialized IT environment.
+One of the main reasons for \acs{BPM}'s growing popularity is that in today's fast-paced economy, a large part of the business activity is either supported by computers or even carried out autonomously by them.
+The specialized software systems that are utilized to support the enactment of business processes are referred to as \emph{business process management systems}.
+
+\paragraph{Business Process Lifecycle}
+
+- the investigations undertaken in this work target the Design \& Analysis phase
+
+\paragraph{Process Management Reference Architecture}
+A typical IT infrastructure for running and maintaining business processes comprises the following building blocks:
+
+
+
+\missingfigure{bpm it infrastructure: modeling tool, model repository, users, process engine, external service providers}
+
+talk about their basic architecture, process engine
++ phases: deployment, enactment, un-deployment
+
+\paragraph{The Camunda Business Process Engine}\label{ch:bg:camunda}
+- there are many process engines
+- camunda is open source and popular and modern and actively developed
+- the camunda project and its current state
+- parts of the camunda software
+- some outstanding features
+- why do I mention this?
+
 
 \subsection{Business Process Model and Notation}
-- modeling notation, focus on ..., 2.0
+- different modeling notations are available, each serving a different purpose / specialization
+> BPM Systems require an explicit representation, but support different modeling languages. A more recent industry standard is . .. ,currently available in version 2.0, published in ...
+- modeling notation, focus on ..., 2.0, Object Management Group
 - main elements:
 -> briefly explain
 - events: why? how?
 - Message
 - choreographies
 
-\subsection{The Process Engine}
-- What's the infrastructure to manage and execute business processes
-- what does the engine do.
-- Introduce Camunda
+\missingfigure{Sample BPMN business process}
 
+- explain what happens in that process
 
 \section{Complex Event Processing}
 - what does it do
@@ -29,13 +77,16 @@
 -> stream processing and | input > processing > output |
 - Event queries: Esper
 - event producer, consumer, subscription
--> pub/sub
-- interplay BPT to CEP platforms, sub in BPMN
+-> pub/sub; temporal order sub > occur > unsub
+
+\missingfigure{pub/sub workflow}
+
+\section{Events in Business Processes}
+- interplay BPT to CEP platforms, 
+> sub in BPMN should rather be 'Problem Statement' somehow
 - putting cep queries into bpmn models => heiko's thesis or other related work?
-
-
-
-
+- how can events be used
+- exercise through one example
 
 
 

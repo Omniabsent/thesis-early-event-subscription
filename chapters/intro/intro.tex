@@ -2,7 +2,7 @@
 \chapter{Introduction}
 %************************************************
 
-Given the increasing competition on the global market place, companies are seeking to improve their value and reduce costs.
+Given the increasing competition on the global market place, companies are seeking to improve their products while reducing costs.
 In many areas, Business Process Management has been chosen as one of the tools to help stay competitive.
 Especially large enterprises, but also small to medium businesses formalize their workflows in business process models to allow archiving, documentation and automatized management and execution.
 
@@ -15,22 +15,30 @@ The Business Process Model and Notation~(BPMN), an industry standard for represe
 An interaction with a Complex Event Processing platform generally follows the publish-subscribe paradigm: The event consumer contacts the platform and issues a subscription to a specific subset of available events.
 An event producer, for example a Vehicle providing its current GPS location, publishes information to the event processing platform, which is then forwarded to every consumer that had subscribed.
 Intermediate Events are a basic way to implement event-based communication in BPMN and facilitate the reception of external message events.
-Nevertheless, the BPMN specification does not specifically consider the publish-subscribe workflow and offers only limited flexibility when it comes to incorporating event subscription and un-subscription operations in business process models.
-The consequences and possible solutions to this lack of specification are investigated in this work.
+Nevertheless, the BPMN specification does not specifically consider the publish-subscribe workflow and provides limited capabilities when it comes to incorporating event subscription and un-subscription operations in business process models.
+This work investigates the consequences of this lack of specification and provides a design and implementation to overcome the identified shortcomings.
 
 
 \section{Motivation}
-- distributed -> hard to control
-- subscription before occurrence time
-- subscr. not considered in detail in bpmn
-- other research towards ..., 
-- increasing demand for using events in processes
-- problems can occur when mis-used, delay or blockage, significant time and financial loss
+why?
+- cant live without complex event processing in business processes, increasing demand for using events in processes
+- pub/sub is a fundamental part of using events in BPs
+- still it is not considered in bpmn
+- there is research on including the subscription query in the model, but the subscription time is not further defined
+- the bpmn specification says "..", that leaves us with a very limited listening time
+
+- but distributed setup -> hard to control
+- we need subscription before occurrence time
+- issues will occur when mis-used, delay or blockage, significant time and financial loss
 -> brief, textual example
-- a more flexible approach to event subscription might help resolve those issues
+- to ensure the efficient use of events in processes, a more flexible use of subscription is necessary
+
+> the problem will be further illustrated in motivating examples
 
 
 \section{Contribution}
+Working towards a more flexible use of event subscription in business processes...
+
 (0) reviewing the problem from different perspectives, deriving requirements
 (1) assessment of the capabilities of standard bpmn
 (2) Proposition of a BPMN extension for flexible event subscription, its advantages
