@@ -126,7 +126,7 @@ As a first step, the employee assigned to handle the request must check if the d
 If the car is available, the quote must be created in two sequential activities to be then sent out by the \textit{Send Message Event}. If the car is not available, the customer is informed about the closing of his request. 
 In either case, the process ends with an \textit{End Event} after the customer was informed about the result of his request.
 
-- introduce the other essential elements
+\todo[inline]{- introduce the other essential elements, types of events}
 
 \paragraph{Process Choreographies}
 - talk about how several parties can interact => choreography
@@ -161,6 +161,7 @@ Whenever a new event source is available it can be connected to the CEP platform
 
 \paragraph{Stream Processing}
 To be able to cope with potentially large amounts of data, Complex Event Processing Platforms work on the basis of \textit{stream processing}.
+\todo[inline]{'relational' db}
 In a traditional database, information is stored for an indefinite amount of time. When a user queries the data store, the system processes the tabular data and calculates the requested result. 
 The advantage of this approach is that the user can access historic data at any time, as long as it is not explicitly deleted from the database.
 In many occasions, the amount of available data significantly surpasses the storage capacities and that concept can no longer be followed.
@@ -188,16 +189,29 @@ For the illustration of the concepts, this thesis relies on the Esper \ac{EPL}~\
 \end{lstlisting}
 
 \section{Event-driven Business Process Management}
-- see opheretzion p.17
-- maybe also reference baumgrass paper / GET project
+- see opheretzion p.17 and where are we now
+- maybe also reference baumgrass paper / GET project | Towards a Methodology for the Engineering
+of Event-Driven Process Applications (BG2016)
+- + 
 
-- there are 2 use cases for events in bp: (1) for process monitoring, (2) for driving processes
+- there are 2 use cases for events in bp: 
+(1) for process monitoring (=> pe is event producer)
+> what's it about
+this thesis focusses on (2) as it investigates subscription mechanisms during the execution of a process
 %Brandl H.-M. and Guschakowski D. Complex Event Processing in the Context of Business Activity Monitoring
 
-- interplay BPT to CEP platforms, 
-> sub in BPMN should rather be 'Problem Statement' somehow
-- putting cep queries into bpmn models => heiko's thesis or other related work?
-- how can events be used
+(2) for driving processes (=> pe is event consumer)
+%Chandy, K.M. and Schulte, W.R. (2010), Event Processing: Designing IT Systems for Agile Companies, McGraw-Hill, New York, NY
+> Event-Driven Process Control (event-driven business process management: where are we now)
+
+- interplay BPT to CEP platforms, a subscription must be issued
+- no standard yet available to do subscription in bpmn
+- it must be assumed that the subscription is either already active or explicitly modeled in BPMN, e.g. using a service task
+- OR given the BPMN spec it is generally assumed that the subscription is executed as soon as en event is enabled
+- further analysis of this topic is provided in ...
+
+- Correlating events to process instances
+
 - exercise through one example
 
 
