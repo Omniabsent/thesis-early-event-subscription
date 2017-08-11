@@ -10,13 +10,14 @@ More precisely, \citeauthor{weske:bpm-book} \cite{weske:bpm-book} defines a sing
 
 \begin{description}
 	\item[Definition 1 (Business Process):]
-	A \emph{business process} consists of a set of activities that are performed in coordination to realize a business goal. Each business process is enacted by a single organization, but it may interact with processes performed by other organizations. \cite[p.~5]{weske:bpm-book}
+	A \emph{business process} consists of a set of activities that are performed in coordination to realize a business goal. Each business process is enacted by a single organization, but it may interact with processes performed by other organizations.
 \end{description}
 
 \noindent The term \emph{Business process management} describes the techniques available to develop and support processes throughout their life-cycle.
 It is grounded in the use of explicit process representations which ultimately allow the exchange, analysis and reproduction of the workflows.
-This process specification is referred to as the \emph{business process model}, composed of activities and the rules that are necessary to coordinate their execution. When a process is performed according to its model, the single execution is called \textit{process instance}.
-Based on a process model, the number of possible instances is theoretically infinite.
+This process specification is referred to as the \emph{business process model}, composed mainly of activities and the rules that are necessary to coordinate their execution.
+When a process is performed according to its model, the single execution is called \textit{process instance}.
+Based on a process model, the number of possible instances is theoretically unbounded.
 
 \begin{description}
 	\item[Definition 2 (Business Process Model):]
@@ -34,17 +35,34 @@ A single process execution begins with the \emph{process instantiation}, when th
 During the enactment, system and stakeholders can start collecting performance indicators and process execution logs to allow evaluating the quality of the process specification. If that \emph{Evaluation} step reveals deficiencies, the lifecycle starts over by re-entering the design phase.
 The \emph{process un-deployment} is performed if necessary, so that no new instances of the process can be started.
 \cite[p.~11~ff.]{weske:bpm-book}
+\todo[inline]{add reference to \cite{dumas:bpm}, mention that Weske says pretty much the same}
 %the investigations undertaken in this work target the Design \& Analysis phase
 
+\subsection{Business Process Meta Model and Activity Lifecycle}\label{ch:bg:bpmetamodel}
+Attempting to...
+
+\begin{description}
+	\item[Definition 3 (Business Process Meta Model):]
+	Let $C$ be a set of control flow constructs. $P = (N,E,type)$ is a \textit{process model} if it consists of a set $N$ of nodes, and a set $E$ of edges. \cite{weske:bpm-book},~p.~91
+	\begin{itemize} 
+		\item
+		$N = N_{A}\cup N_{E}\cup N_{G}$, where $N_{A}$ is a set of activity models, $N_{E}$ is a set of event models and $N_{G}$ is a set of gateway models. These sets are mutually disjoint.
+		\item 
+		$E$ is a set of directed edges between nodes, such that $E\subseteq N \times N$, representing control flow.
+		\item
+		$type:N_{G}\rightarrow C$ assigns to each gateway model a control flow construct.
+	\end{itemize}
+\end{description}
+
 \todo[inline]{
+Much like the process instance lifecycle, each activity follows a cycle
 - introduce activity lifecycle/control flow
 }
 \missingfigure{activity lifecycle}
 
+%
 While traditionally activities are executed manually by company staff following the written process specifications, computer systems are used today to drive the execution and enforcement of business processes and organizational rules.
 The generic software systems utilized for that purpose are introduced in the following section.
-
-\todo[inline]{not only one source}
 
 \subsection{Business Process Management Systems}\label{ch:bg:bpms}
 The implementation of business processes has developed from a manual execution guided by business rules to a fully automatized execution in a specialized IT environment.
@@ -55,7 +73,7 @@ The specialized software systems that are utilized to support the enactment of b
 A typical IT infrastructure for driving business processes is illustrated in \autoref{fig:bpm-architecture}. 
 Five principal building blocks are considered which will be explained in the following.
 
-As indicated in the business process lifecycle, the visualized scenario commences with the \emph{Business Process Modeling}. As a result of the \emph{Design \& Analysis} phase, new process models are created and refined to be stored in the \emph{Business Process Model Repository}. 
+With reference to the business process lifecycle, the visualized scenario commences with the \emph{Business Process Modeling}. As a result of the \emph{Design \& Analysis} phase, new process models are created and refined to be stored in the \emph{Business Process Model Repository}. 
 The relation between the two elements includes writing new models to the repository as well as reading models for review and further modification.
 Given that the desired model is approved for enactment, the process gets deployed to the \emph{Process Engine} as part of the configuration step.
 The process engine is the heart of the execution environment. It performs the execution of the processes from deployment until un-deployment, while the enactment and instantiation is controlled by the \emph{Business Process Environment}.
@@ -71,7 +89,7 @@ An indefinite number of \emph{Service Provider}s realize application services to
 
 \paragraph{The Camunda Business Process Engine}\label{ch:bg:camunda}
 A large and ever growing number of process engines is available on the market, including solutions from IT giants like SAP, IBM and Oracle.
-In this work, \emph{Camunda BPM} has been chosen to illustrate implementations.
+In this work, \emph{Camunda BPM}~\cite{camunda} has been chosen to illustrate implementations.
 As of August 2017, the software product is available in version 7.7.0 and comes in a commercial, regularly updated version and in a free, community-driven solution that is updated with every major release.
 Camunda is popular among the research community as the source code is openly available, the product is mature, but actively developed and offers comprehensive support for BPMN 2.0. It is designed to be extensible and easily modifiable to adapt to custom requirements.
 \emph{Camunda BPM} comprises a modeling tool, the Camunda process engine core and a number of browser-based user-interfaces to control process enactment and monitor execution state.
@@ -79,18 +97,34 @@ Camunda is popular among the research community as the source code is openly ava
 
 
 \subsection{Business Process Model and Notation}
-- different modeling notations are available, each serving a different purpose / specialization
-> BPM Systems require an explicit representation, but support different modeling languages. A more recent industry standard is . .. ,currently available in version 2.0, published in ...
-- modeling notation, focus on ..., 2.0, Object Management Group
+Given the general semantics of business processes, a specific modeling notation has to be selected to express an informal process description in a formal, interchangeable way.
+Different languages and notations have become available over the years, each serving different specializations.
+Kossak~et~al.~\cite{kossak:bpmn2} organize some of the more popular languages as follows: A subset of them are focused on the control flow of business processes, for instance \ac{BPMN}~\cite{bpmnspec}, Yet Another Workflow Language and Petri Nets; some focus on object-orientation, like \ac{UML} activity diagrams and use case diagrams; some are data-flow oriented, e.~g.~the Structured Analysis and Design Technique.
+\todo[inline]{references to the other languages}
+
+Among these, the \acs{BPMN} has developed into a widely-adopted industry standard, also becoming ISO-standard in 2013~\cite{iso2013bpmn}.
+The standard is developed by the Object Management Group~\cite{omghome} and now available in version 2.0~(January~2011) after being first released in January~2008.
+\acs{BPMN} can be understood as an extension to the abstract business process meta model~(\autoref{ch:bg:bpmetamodel}) adding a comprehensive catalog of visual representations and semantic constructs. Furthermore, one of the most important features of its latest version is the a standardized interchange format provided through an XML specification, as \cite{weske:bpm-book} points out.
+As emphasized by \citeauthor{Muehlen:2007}~\cite{Muehlen:2007}, the increased expressiveness of modern languages like \acs{BPMN} comes at the cost of an increased complexity. An aspect that, apparently, did not stop it from gaining popularity.
+
+\paragraph{Core Building Blocks of a BPMN Model}
+
+Following the business process meta model, a \acs{BPMN} model is a node-edge-model whereas nodes are either \emph{Activity Models}, \emph{Event Models} or \emph{Gateway Models}.
+
 - main elements:
 -> briefly explain
 - events: why? how?
+
+
+\missingfigure{Sample BPMN model}
+- explain what happens in that process
+
+\paragraph{Process Choreographies}
 - Message
 - choreographies
 
-\missingfigure{Sample BPMN business process}
+\missingfigure{Sample BPMN model}
 
-- explain what happens in that process
 
 \section{Complex Event Processing}
 - what does it do

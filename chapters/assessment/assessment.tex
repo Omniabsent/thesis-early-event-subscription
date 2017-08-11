@@ -35,6 +35,7 @@ The first scenario represents the most simple case, that is also natively suppor
 	{\includegraphics[width=1\linewidth]{chapters/assessment/parallel-timer-event.png}}
 	\caption{Intermediate Event with a parallel Timer Event}\label{fig:excerpt-event-with-timer}
 \end{figure}
+\todo[inline]{alternatively: a receive task with boundary timer event}
 
 In certain situations an event might not occur at all. Given a basic event implementation like in \autoref{fig:abstract-process-with-event}, the process flow will get to a halt once it reaches the Intermediate Catch Event and will not be able to proceed. While, depending on the process design, this might be the desired behavior, in many situations this is not acceptable.
 
