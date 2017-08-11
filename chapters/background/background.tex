@@ -104,39 +104,93 @@ Kossak~et~al.~\cite{kossak:bpmn2} organize some of the more popular languages as
 
 Among these, the \acs{BPMN} has developed into a widely-adopted industry standard, also becoming ISO-standard in 2013~\cite{iso2013bpmn}.
 The standard is developed by the Object Management Group~\cite{omghome} and now available in version 2.0~(January~2011) after being first released in January~2008.
-\acs{BPMN} can be understood as an extension to the abstract business process meta model~(\autoref{ch:bg:bpmetamodel}) adding a comprehensive catalog of visual representations and semantic constructs. Furthermore, one of the most important features of its latest version is the a standardized interchange format provided through an XML specification, as \cite{weske:bpm-book} points out.
+\acs{BPMN} can be understood as an extension to the abstract business process meta model~(\autoref{ch:bg:bpmetamodel}) adding a comprehensive catalog of visual representations and semantic constructs on top of a meta model. Furthermore, one of the most important features of its latest version is the a standardized interchange format provided through an \acs{XML} specification, as \cite{weske:bpm-book} points out.
 As emphasized by \citeauthor{Muehlen:2007}~\cite{Muehlen:2007}, the increased expressiveness of modern languages like \acs{BPMN} comes at the cost of an increased complexity. An aspect that, apparently, did not stop it from gaining popularity.
 
-\paragraph{Core Building Blocks of a BPMN Model}
+\paragraph{Essential Elements of a BPMN Model}
+Following the abstract business process meta model, the core elements in any BPMN model are flow elements~(nodes) and connecting objects~(edges).
+Flow elements can be either \textit{Events}, \textit{Activities} or \textit{Gateways}, each of them coming in different versions.
+This section will introduce a subset of the elements available through the \acs{BPMN} specification to build the foundation to comprehend the thoughts presented in this work.
 
-Following the business process meta model, a \acs{BPMN} model is a node-edge-model whereas nodes are either \emph{Activity Models}, \emph{Event Models} or \emph{Gateway Models}.
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=1\linewidth]{chapters/background/intro-rental-car.png}}
+	\caption{Simple BPMN model of issuing a quote for car rental}
+	\label{fig:simple-bpmn-model}
+\end{figure}
 
-- main elements:
--> briefly explain
-- events: why? how?
+\autoref{fig:simple-bpmn-model} shows how a booking request might be handled in a car rental business.
+Circular elements represent events, diamond-shaped elements are gateways. Activities are visualized by rectangles with rounded corners.
+The given process gets instantiated whenever a booking request request is received from a customer, shown as a Message Start event. 
+As a first step, the employee assigned to handle the request must check if the desired car is available. To that follows an exclusive OR-Gateway, distinguishing the further process flow depending on the availability of the car.
+If the car is available, the quote must be created in two sequential activities to be then sent out by the \textit{Send Message Event}. If the car is not available, the customer is informed about the closing of his request. 
+In either case, the process ends with an \textit{End Event} after the customer was informed about the result of his request.
 
-
-\missingfigure{Sample BPMN model}
-- explain what happens in that process
+- introduce the other essential elements
 
 \paragraph{Process Choreographies}
+- talk about how several parties can interact => choreography
 - Message
 - choreographies
 
-\missingfigure{Sample BPMN model}
+\missingfigure{Sample BPMN choreoraphy model}
 
 
 \section{Complex Event Processing}
-- what does it do
-- how does it generally work
--> stream processing and | input > processing > output |
-- Event queries: Esper
-- event producer, consumer, subscription
--> pub/sub; temporal order sub > occur > unsub
+The IT world is facing an exponential increase in the amount of produced data. A significant part of this data are pieces of information about real-life occurrences, such as a current sensor value, an interaction on a website or the location of a vehicle on the road.
+We call this kind of strongly time-related information an \textit{Event} and the according computer science field \ac{CEP}~\cite{evtprocessing}.
+- events are of a certain type
 
-\missingfigure{pub/sub workflow}
+\todo[inline]{More precisely, Events are defined as follows...}
 
-\section{Events in Business Processes}
+Four major components take part in an event processing network: (a) An \textit{event producer} provides information to the system, (b) an \textit{event agent} processes the occurring information, so that it can be delivered to the \textit{event consumer}~(c). The components are linked through \textit{event channels}~(d).
+Typically, a so-called \textit{\acs{CEP} Engine}~(also: CEP platform) is at the heart of the system, taking the role of an event agent.
+Modern CEP platforms are trimmed to maximum efficiency, being able to process hundreds of thousands of events every minute.
+Their main purpose is to accept incoming events from event producers, filter and match them according to selection criteria and, finally, derive a new event occurrence to be sent to the registered event consumers.
+
+\paragraph{The publish/subscribe Principle}
+In event-based architectures, communication takes place according to the \textit{Publish/Subscribe Principle}.
+The concept essentially demands that an event processing middleware publishes events to processes only after they have issued a subscription for these events.
+Consequently, there is a strict temporal order between the actions subscribe, consume and un-subscribe. The consumption and un-subscription can only happen after the subscription. Once an un-subscription has been issued, no consumption can follow.~\cite{tanenbaum:2007}
+
+One of the main advantages of this principle is, that the involved parties are \textit{referentially decoupled}. They do not need to explicitly refer to each other, an aspect that is also acknowledged in~\cite{evtprocessing}.
+Their decoupled nature facilitates the management and development of event processing networks. Event producers and consumers might change frequently.
+Whenever a new event source is available it can be connected to the CEP platform without considering all future consumers. Consumers can subscribe and un-subscribe without influencing the operations on the consumer side.
+
+\missingfigure{pub/sub}
+
+\paragraph{Stream Processing}
+To be able to cope with potentially large amounts of data, Complex Event Processing Platforms work on the basis of \textit{stream processing}.
+In a traditional database, information is stored for an indefinite amount of time. When a user queries the data store, the system processes the tabular data and calculates the requested result. 
+The advantage of this approach is that the user can access historic data at any time, as long as it is not explicitly deleted from the database.
+In many occasions, the amount of available data significantly surpasses the storage capacities and that concept can no longer be followed.
+
+Stream processing addresses the mentioned challenge by largely reducing the amount of data that is persisted in the system. Instead, it is the goal to keep only those pieces of information, that are necessary to process a result for currently registered queries.
+Incoming data objects, or events in the case of a CEP platform, enter the event stream and are immediately evaluated against all existing query expressions. If the information is not required to process any of the queries, it is deleted instantly.
+As a consequence, a certain event can not be part of a query result, if that query has been registered after the occurrence of the event.
+In case aggregated information is demanded by the query, the stream processor will internally store aggregated information, but not keep every information that led to the aggregated value.~\cite{streamprocessing} 
+
+\missingfigure{stream processing}
+
+\paragraph{Event Query Languages}
+The subscription to an event in a CEP platform is primarily defined by an \textit{Event Query}.
+Many modern event query languages are inspired by \acs{SQL}, but cannot be entirely compliant due to the different underlying data processing concept.
+When formulating event queries, it is essential to consider the stream processing principle.
+
+For the illustration of the concepts, this thesis relies on the Esper \ac{EPL}~\cite{esperhome}, utilized in Esper event processing engines like the one employed in \autoref{ch:implementation}.
+
+\todo[inline]{a little more on epl, what can it do? windows, joins, filters}
+
+\begin{lstlisting}[language=sql,caption={A sample EPL Query},label=lst:epl-query-example]
+	SELECT time, delay, delayreason
+	FROM eurotunnel
+	WHERE delay > 30
+\end{lstlisting}
+
+\section{Event-driven Business Process Management}
+- see opheretzion p.17
+- maybe also reference baumgrass paper / GET project
+
 - there are 2 use cases for events in bp: (1) for process monitoring, (2) for driving processes
 %Brandl H.-M. and Guschakowski D. Complex Event Processing in the Context of Business Activity Monitoring
 
