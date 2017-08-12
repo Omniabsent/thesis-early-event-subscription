@@ -3,11 +3,16 @@
 %************************************************
 % start broad, become narrower, explain differences
 
-- at first: why is the first area related?
+The field of \ac{EdBPM} has developed from connecting \ac{CEP} and \ac{BPM} in an attempt to increase the quality and performance of business processes.
+\acs{EdBPM} must be viewed from different perspectives.
+In event-driven business process monitoring and business activity monitoring, the process engine is solely an event producer that publishes information to an event engine.
+A considerable amount of research was undertaken to make use of CEP to detect process violations and execution performance. 
+\ref{label}
+BAM, process mining... \cite{janiesch:poc-eventdriven-bam}
+%- automatic query derivation
+In \cite{Krumeich2014EventDrivenBP}, the authors did a comprehensive survey of research efforts in the area event-driven business process management and conclude that... > they point out that most research is in this area
 
-Both topics, \ac{CEP} and \ac{BPM}, have a long history in research.
-Bringing the two areas together to empower and improve automated process management
-
+...
 
 This work has investigated how a flexible event subscription handling can be incorporated in BPMN models.
 It is therefor contributing towards a facilitation 
@@ -29,46 +34,41 @@ however:
 similar to chapter 4:
 %Control the flow: How to safely compose streaming services into business processes
 %Modeling and Execution of Event Stream Processing in Business Processes
-
+\cite{appel2014modeling}: includes the streams and stream processing right into the process model
+same: \cite{biornstad2006control}
 
 
 
 
 (1)
-- comprehensive research effort towards process monitoring, analysis, ..., mining from event logs
-\cite{janiesch:poc-eventdriven-bam}
+
 > business activity monitoring
 %N. Herzberg, A. Meyer, O. Khovalko, M.Weske, Improving business process intelligence with object state transition events, in: 32nd International Conference on Conceptual Modeling (ER), China, 2013
 %Event-based monitoring of process execution violations
 
-- in all of these cases the process engine is considered as event producer
-In \cite{Krumeich2014EventDrivenBP}, the authors a comprehensive survey of research efforts in the area event-driven business process management and conclude that... > they point out that most research is in this area
-- automatic query derivation
+
 
 (2)
 - edpc: baumgraß, re-eval decisions
 - eda
+\cite{decker2008instantiation}: Process Instantiation, talks a lot about subscription, but no flexible subscr time, nobuffer, only for instantiation
 
 \cite{von2010integrating}: Integrating Complex Events for Collaborating and Dynamically Changing Business Processes; talk about un/subscription, extend ws-bpel with subscription, reporting, patterns, expression language, ..; scope, time of subscription and event buffering not discussed
+also: \cite{juric2010wsdl}
 
 \cite{Kunz2010}: acknowledge the lack of usability in CEP and address it by applying bpmn as graphical support for the definition of cep patterns
 \cite{gabriel2016konzeptionelle}: generate queries from new graphical notation, anbieterunabhängige Modellierung von EdBPM
-
-%WSDL and BPEL extensions for Event Driven Architecture: extensions to specify event format, producer or consumer, mention subscription etc, I think only inter- and intra-process communication, no external events
-
-\cite{appel2014modeling}: includes the streams and stream processing right into the process model
-same: \cite{biornstad2006control}
 
 
 - use case implementations
 \cite{estruch2012event}: event-driven manufacturing process; 
 
 
-
-
 - correlating events to processes
 
 - maybe: persisting events in cep platforms | or delayed delivery of events
 > \cite{roth2010event}: Event data warehousing for complex event processing and \cite{buchmann2010event}:Event-Driven services: Integrating production, logistics and transportation
-- see heiko: rel work: connection of complex events and business processes
+also \cite{li2007historic}: historic data in pub/sub
+
+> but if i want to have that historic information, than I would have to issue a subscription some time before. I integrate everything in the process model
 
