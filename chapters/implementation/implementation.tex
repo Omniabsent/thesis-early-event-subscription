@@ -2,9 +2,126 @@
 \chapter{Reference Implementation}\label{ch:implementation}
 %************************************************
 
-from \autoref{ch:bpmnx:basic}
-\todo[inline]{that means that in the implementation we need additional configuration values -> implementation chapter}
+\autoref{ch:flexibleeventsubscription} has presented a concept that involves the model layer, the process engine and the event engine.
+It enables flexible event subscription to overcome the issues revealed in ...
+By explicitly chosing the time of event subscription and bridging the gap between event reception and consumption by the process instance it is possible to ...
+
+the model extension is formalized in \autoref{ch:bpmnx}, hence BPMN models extended by all information necessary for flexible event subscription can be created.
+
+to evaluate our results and provide a reference implementation, we enhance the business process engine Camunda and the event processing platform UNICORN following the procedures described in \autoref{ch:extendedprocessengine} and \autoref{ch:bufferedcep} respectively.
+Camunda is extended by providing a Process Engine Plugin, Unicorn by adapting the source code.
+The resulting illustration of an event-driven architecture is evaluated by implementing the examples shown in \autoref{ch:motivatingexamples}.
+
+- why do I decide to extend the cep engine and not process engine or create extra middleware?
+
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=1\linewidth]{chapters/implementation/flexible-evt-subscr-camunda-unicorn.png}}
+	\caption{Architecture for flexible event subscription in Camunda and Unicorn}
+	\label{fig:architecture-camunda-unicorn}
+\end{figure}
 
 \section{Extending the Event Processing Platform Unicorn}\label{ch:implunicorn}
+\textit{UNICORN} is an event engine developed for academic purposes at the Business Process Technology chair of Hasso-Plattner-Institute, Potsdam.
+\cite{herzberg2013event}
+It focuses on event processing for \acs{BPM}, ...
+Based on Esper, that means, what is esper
+what unicorn adds to esper
+
+the architecture of UNICORN
+> which parts will be adapted
+
+\subsection{Event Buffering}
+To allow the delayed delivery of events 
+
+\paragraph{engine-specific implementation options}
+when investigating the options for implementing event buffers in UNICORN, multiple possibilities came up:
+(engine-specific alternative solutions)
+> unicorn offers event persistence
+> esper offers output clauses => fire output after certain time or triggered by a variable change
+> esper offers "named windows": "a global data window that can take part in many statement queries, and that can be inserted-into and deleted-from by multiple statements". probably exactly what a buffer does
+%http://www.espertech.com/esper/release-5.3.0/esper-reference/html/nwtable.html#nwtable-overview-namedwindow
+\# but the query must be changed to use that feature. we don't want that
+
+\paragraph{generic solution}
+it has been decided to provide a generic buffer implementation that could be applied to any event engine.
+it can handle the policies...
+(buffered-)QueryListener
+How the buffer itself is implemented
++ maintenance module to cope with lifetime policy
+
+the implementation is not trimmed for performance
+in a production use-case it might be preferable to use the existing technology that the event engine offers if it suits with the requirements of the BPM architecture
+
+
+\subsection{REST API Extension}
+UNICORN offers a restful http api
+by default it has the following functionality
+section xy demands that the functionality is extended.
+the methods are implemented as follows
+>
+>
+>
+>
+backwards compatibility? do we change the existing calls directly or du we create a new endpoint / new paths?
+
+
+after implementing the necessary extensions to the event engine, it is the task of the process engine to connect the extended process model to the buffered event handling.
+The adaptations to the process engine are presented in the following section.
 
 \section{Event Subscription Handling in Camunda}\label{ch:implcamunda}
+through the bpmn extension for flexible event subscription, the information necessary to register event queries in a cep platorm is available in the bpmn model.
+\autoref{} outlines how the business process engine must be adapted to execute the operations for subscription handling.
+Camunda is an open-source business process engine with support for the latest version of the BPMN. Further information is provided in \autoref{}
+
+\autoref{} depicts the architecure of Camunda, highlighting the modified parts in gray.
+for our purposes we consider the core components execution engine, model repository, correlation serviceand the modeler
+the tasks of them are...
+
+\subsection{Employing ExecutionListeners in a Process Engine Plugin}
+the platform is designed to offer customizability (source)
+a core concept to execute own code during process execution are Execution Listeners.
+they can be inserted straight into a bpmn model using the camunda modeler as demonstrated in \autoref{assessment}
+one of the main goals of introducing the bpmn extension is to get rid of the necessity to explicitly model the subscription in the process (unless an explicit subscription task shall be used).
+instead subscriptions shall be managed automatically by the process engine, solely based on the modeled attributes.
+
+To achieve this kind of behavior, Camunda offers the concept of a \ac{PEP} to register global execution listeners.
+The plugin is a seperate software module that implements the ... interface. (ref)
+it is activated by adding an entry ... in the process engine config.
+within the implementation of the plugin, it is possible to intercept the process engine execution at predefined points.
+the engine itself implements an event-oriented architecture: significant milestones during engine executions fire an event that execution listeners can react on.
+Some of the available events are...
+
+\cite{mandal:2017} and \cite{Pufahl2017} have chosen to directly adapt the source code of camunda. more precisely, they propose to modify the Behavior class to execute additional code when a BPMN element starts executing.
+In this work, we implement a Process Engine Plugin as it allows a clearer, more understandable approach to adopting the execution behavior. especially when it is only necessary to execute additional operations and not modify or delete existing code.
+the PEP furthermore facilitates re-usability across environments and different versions of Camunda.
+
+..ref illustrates how a a pep can be used to execute a piece of code on process instantiation.
+
+A helpful example for using a BPMN Parse Listener is also provided on GitHub\footnote{pep example https://github.com/camunda/camunda-bpm-examples/tree/master/process-engine-plugin/bpmn-parse-listener}.
+
+\missingfigure{chunk of code that shows the main plugin class, how an execution listener is added. and that execution listener does a s.o.p.}
+
+% interface def https://docs.camunda.org/javadoc/camunda-bpm-platform/7.7/?org/camunda/bpm/engine/impl/cfg/ProcessEnginePlugin.html
+% peps https://docs.camunda.org/manual/7.7/user-guide/process-engine/process-engine-plugins/
+
+
+from \autoref{ch:bpmnx:basic}
+\todo[inline]{that means that in the implementation we need additional configuration values -> implementation chapter}
+%- PEP config properties: cep url
+
+\subsection{Managing event Subscriptions at Runtime}
+The Process Engine Plugin enables us to execute custom java code during process deployment, instantiation and execution.
+By this means, event subscription and un-subscription can be implemented.
+
+Before event subscription and un-subscription itself can be addressed, it must be ensured that the subscription information is read from the bpmn model.
+when a process gets deployed in Camunda, the BPMN-file is read and stored in an internal Java-Object representation.
+% read a model https://docs.camunda.org/manual/7.7/user-guide/model-api/bpmn-model-api/read-a-model/
+% bpmn extension elements https://docs.camunda.org/manual/7.7/user-guide/model-api/bpmn-model-api/extension-elements/
+Custom BPMN extension elements can be accessesd using an in-built generic XML model API.
+It allows to read and modify any element in the XML model read from file. The API-call to read the CEP query from the BPMN model is shown in ..ref
+
+\missingfigure{xml model api call to read the cep query and s.o.p. it }
+
+- event correlation
+> SubscriptionManager: memorize the subscriptionIDs for a process instance
