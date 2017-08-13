@@ -11,14 +11,14 @@
     <xsd:complexType>
       <xsd:sequence>
         <xsd:element type="xsd:string" name="eventQuery" minOccurs="1" maxOccurs="1" />
-        <xsd:element type="tSubscriptionTime" name="subscriptionTime" minOccurs="0" maxOccurs="1"/>
+        <xsd:element type="tSubscriptionTime" name="subscriptionTime" minOccurs="0" maxOccurs="1" default="Element Execution"/>
         <xsd:element name="bufferPolicies" minOccurs="0" maxOccurs="1">
           <xsd:complexType>
             <xsd:sequence>
-              <xsd:element type="xsd:string" name="lifetimePolicy" minOccurs="0" maxOccurs="1"/>
-              <xsd:element type="xsd:string" name="consumptionPolicy" minOccurs="0" maxOccurs="1"/>
-              <xsd:element type="xsd:integer" name="sizePolicy" minOccurs="0" maxOccurs="1"/>
-              <xsd:element type="tOrderPolicy" name="orderPolicy" minOccurs="0" maxOccurs="1"/>
+              <xsd:element type="xsd:string" name="lifetimePolicy" minOccurs="0" maxOccurs="1" default="infinite"/>
+              <xsd:element type="xsd:string" name="consumptionPolicy" minOccurs="0" maxOccurs="1" default="Reuse"/>
+              <xsd:element type="xsd:integer" name="sizePolicy" minOccurs="0" maxOccurs="1" default="-1"/>
+              <xsd:element type="tOrderPolicy" name="orderPolicy" minOccurs="0" maxOccurs="1" default="FIFO"/>
             </xsd:sequence>
           </xsd:complexType>
         </xsd:element>
@@ -31,7 +31,7 @@
 		<xsd:enumeration value="Process Deployment"/>
 		<xsd:enumeration value="Process Instantiation"/>
 		<xsd:enumeration value="Manual"/>
-		<xsd:enumeration value="BPMNDefault"/>
+		<xsd:enumeration value="Element Execution"/>
 	</xsd:restriction>
 </xsd:simpleType>
 
