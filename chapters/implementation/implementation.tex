@@ -12,11 +12,9 @@ to evaluate our results and provide a reference implementation, we enhance the b
 Camunda is extended by providing a Process Engine Plugin, Unicorn by adapting the source code.
 The resulting illustration of an event-driven architecture is evaluated by implementing the examples shown in \autoref{ch:motivatingexamples}.
 
-- why do I decide to extend the cep engine and not process engine or create extra middleware?
-
 \begin{figure}[]
 	\myfloatalign
-	{\includegraphics[width=1\linewidth]{chapters/implementation/flexible-evt-subscr-camunda-unicorn.png}}
+	{\hspace*{-2.3cm}\includegraphics[width=1.3\linewidth]{chapters/implementation/flexible-evt-subscr-camunda-unicorn.png}}
 	\caption{Architecture for flexible event subscription in Camunda and Unicorn}
 	\label{fig:architecture-camunda-unicorn}
 \end{figure}
@@ -26,33 +24,56 @@ The resulting illustration of an event-driven architecture is evaluated by imple
 \cite{herzberg2013event}
 It focuses on event processing for \acs{BPM}, ...
 Based on Esper, that means, what is esper
-what unicorn adds to esper
+what unicorn adds to esper: graphical and rest user-interface to ..., event persistence store, bp execution and correlation, recently also an event generator/replayer
+==> it translated user interactions into the according Esper method calls
 
-the architecture of UNICORN
-> which parts will be adapted
+- currently unicorn uses version 5.3.0 of esper, therefor all future considerations are made based on the documentation of that version
+
+It has been decided to extend the event engine in this scenario, for several reasons.
+Firstly, the performance and operation of the process engine shall not be jeopardized. Event Processing features potentially require a lot of performance to handle a large number of requests in a short amount of time.
+By implementing the event Buffering module loosely coupled to the Process Engine, we ensure that its performance is not influenced.
+Implementing a separate middleware was avoided in the course of this work, to keep the architecture easy and concise to describe.
+Unicorn is an academic prototype in constant development and therefor predestined to be directly extended for this kind of use-case.
+Moreover, the chosen architecture promises performance advantages thanks to running the event buffering in the same \acs{JVM} as Esper.
+
 
 \subsection{Event Buffering}
-To allow the delayed delivery of events 
+To allow the delayed delivery of events, buffering functionality is added to Unicorn.
+Whereas, originally, events that match a certain query in esper are directly forwarded to the notification-recipients, they will instead be held in a buffer until requested by recipient. 
+If a recipient is already subscribed, than the behavior will be equivalent to the original scenario, because the event will be delivered instantly.
 
-\paragraph{engine-specific implementation options}
-when investigating the options for implementing event buffers in UNICORN, multiple possibilities came up:
-(engine-specific alternative solutions)
-> unicorn offers event persistence
-> esper offers output clauses => fire output after certain time or triggered by a variable change
-> esper offers "named windows": "a global data window that can take part in many statement queries, and that can be inserted-into and deleted-from by multiple statements". probably exactly what a buffer does
-%http://www.espertech.com/esper/release-5.3.0/esper-reference/html/nwtable.html#nwtable-overview-namedwindow
-\# but the query must be changed to use that feature. we don't want that
+\paragraph{Engine-specific Implementation Options}
+When investigating the options for implementing event buffers in UNICORN, solutions that are specific to the event processing platform were considered.
+Notably, the concept of a \textit{Window} in event processing languages is very much comparable with a buffer as described in this work. Windows hold a variable number of events in memory according to specified window properties. That way, windows can act like size- or time-oriented buffers and allow access to older events whenever a new event occurs.
+\textit{Named Windows} in Esper allow to create global data windows that can be modified and read from multiple statements. Similar functionality is provided by \textit{Tables}, which follow a relational approach by primary key.
+\footnote{see \textit{Chapter 6. EPL Reference: Named Windows And Tables},\newline \url{http://www.espertech.com/esper/release-5.3.0/esper-reference/html/nwtable.html}}
 
-\paragraph{generic solution}
+If a query window is connected with the Esper-specific \textit{Output Clause}, it is possible to delay query output with timing constraints or trigger it on the change of a global variable.
+\footnote{see \textit{Chapter 5. EPL Reference: Clauses},\newline \url{http://www.espertech.com/esper/release-5.3.0/esper-reference/html/epl\_clauses.html}}
+When putting together these features, an event buffer could be implemented as follows: The call \textit{registerQuery} instantiates the window. If the \textit{Consume}-policy is used, we use a named window that we share among queries and delete from after receiving the event. 
+At \textit{subscribe}, a notification-recipient is added to a query and output is triggered by causing a variable change in Esper. \textit{Unsubscribe} and \textit{removeQuery} remove a notification-recipient and de-register the query respectively.
+
+A major drawback of this approach is, that the event queries have to be adopted to use the specific features which makes additional knowledge necessary when designing the processes.
+Alternatively, the original queries submitted by the process engine can be transformed before registering them in Unicorn, for example by encapsulating them in a sub-query. That way they make use of the mentioned features, but certain expressions will not be possible anymore due to limitations of the Esper EPL with regards to sub-queries.
+
+Apart from this approach, it is worth noting that Unicorn offers a persistent storage of historic events, which can theoretically be used to implement the buffering functionality.
+However it would be necessary to abuse the relational approach to implement a persistent stream buffer on top of the SQL database, which is not desirable.
+
+\paragraph{The Generic Buffering Solution}
+After considering ... 
+none of them is really good
 it has been decided to provide a generic buffer implementation that could be applied to any event engine.
-it can handle the policies...
-(buffered-)QueryListener
+
+we therefor implement three new classes:
+
 How the buffer itself is implemented
 + maintenance module to cope with lifetime policy
 
-the implementation is not trimmed for performance
-in a production use-case it might be preferable to use the existing technology that the event engine offers if it suits with the requirements of the BPM architecture
+it can handle the policies...
+(buffered-)QueryListener
 
+the implementation is not trimmed for performance, no shared buffers, maybe ref shared windows from cep
+in a production use-case it might be preferable to use the existing technology that the event engine offers if it suits with the requirements of the BPM architecture
 
 \subsection{REST API Extension}
 UNICORN offers a restful http api
@@ -96,7 +117,7 @@ Some of the available events are...
 In this work, we implement a Process Engine Plugin as it allows a clearer, more understandable approach to adopting the execution behavior. especially when it is only necessary to execute additional operations and not modify or delete existing code.
 the PEP furthermore facilitates re-usability across environments and different versions of Camunda.
 
-..ref illustrates how a a pep can be used to execute a piece of code on process instantiation.
+..ref illustrates how a pep can be used to execute a piece of code on process instantiation.
 
 A helpful example for using a BPMN Parse Listener is also provided on GitHub\footnote{pep example https://github.com/camunda/camunda-bpm-examples/tree/master/process-engine-plugin/bpmn-parse-listener}.
 

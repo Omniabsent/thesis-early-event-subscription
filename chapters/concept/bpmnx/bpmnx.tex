@@ -99,6 +99,8 @@ Using the BPMN extension, the use case can be implemented by defining the event 
 \paragraph{The explicit subscription task\newline}
 As an alternative to specifying the subscription time using the extension field \textit{subscriptionTime} of \textit{tMessage}, an extension to the BPMN ServiceTask is proposed. \todo[inline]{it follows the ideas presented in ... but through referencing the message element}
 
+\todo[inline]{latest concept (xsd) states that it's an extension of tTask}
+
 \missingfigure{Example 2 using an explicit subscription task}
 
 The extended task is used to execute the subscription explicitly as part of the process flow.
@@ -119,6 +121,7 @@ In case neither of the two is used, the system falls back to the BPMN default an
 \subsection{Using Process Variables in Event Queries}
 
 \todo[inline]{this could be added in the requirements and referenced}
+\todo[inline]{only if subscriptionTime not 'on depl'}
 
 % also see bpmn2 spec 10.3 pp. 233ff.
 
@@ -128,6 +131,7 @@ The exact notation for including process variables in event queries can vary dep
 For the use with the Esper query language, the following is suggested: The exact name of the variable has to be surrounded by curly brackets and preceded by a \textit{\#} character: \textit{\#\{VARIABLENAME\}}.
 This notation is inspired by the usage of substitution parameters in SQL queries that are embedded in Esper. They take the form \textit{\$\{expression\}}.
 \todo[inline]{reference esper docs 5.13.1. Joining SQL Query Results}
+
 
 In the example, the process uses the latest GPS position for a certain truck. The truck is identified by its unique~ID which is part of the query: \textit{SELECT lat, lng from GPSUPDATE where truckid = \#\{truckid\} }.
 \todo[inline]{missingref: dependent example}
