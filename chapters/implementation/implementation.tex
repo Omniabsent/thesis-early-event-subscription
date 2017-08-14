@@ -12,6 +12,7 @@ the model extension is formalized in \autoref{ch:bpmnx}, hence BPMN models exten
 to evaluate our results and provide a reference implementation, we enhance the business process engine Camunda and the event processing platform UNICORN following the procedures described in \autoref{ch:extendedprocessengine} and \autoref{ch:bufferedcep} respectively.
 Camunda is extended by providing a Process Engine Plugin, Unicorn by adapting the source code.
 The resulting illustration of an event-driven architecture is evaluated by implementing the examples shown in \autoref{ch:motivatingexamples}.
+\todo[inline]{Application to examples missing}
 
 \begin{figure}[]
 	\myfloatalign
@@ -139,40 +140,31 @@ After implementing the necessary extensions to the event engine, it is the task 
 The adaptations to the process engine are presented in the following section.
 
 \section{Event Subscription Handling in Camunda}\label{ch:implcamunda}
-through the bpmn extension for flexible event subscription, the information necessary to register event queries in a cep platorm is available in the bpmn model.
-\autoref{} outlines how the business process engine must be adapted to execute the operations for subscription handling.
-Camunda is an open-source business process engine with support for the latest version of the BPMN. Further information is provided in \autoref{}
+Through the BPMN extension for flexible event subscription, the information necessary to register event queries in a CEP platform can be made available in process models.
+\autoref{ch:extendedprocessengine} outlines how the business process engine must be adapted to execute the operations for subscription handling.
+Camunda is an open-source business process engine with support for the latest version of the BPMN and used to exemplify the modification process. Further information about Camunda is provided in \autoref{ch:bg:bpms}.
 
-\todo[inline]{write from keypoints}
-
-\autoref{} depicts the architecure of Camunda, highlighting the modified parts in gray.
-for our purposes we consider the core components execution engine, model repository, correlation serviceand the modeler
-the tasks of them are...
+\autoref{fig:architecture-camunda-unicorn} depicts a simplified architecure of Camunda, highlighting modifications in gray.
+Our workflow for flexible event subscription mainly involves the core components execution engine, model repository, correlation service and the Camunda modeler.
 
 \subsection{Employing ExecutionListeners in a Process Engine Plugin}
-the platform is designed to offer customizability (source)
-a core concept to execute own code during process execution are Execution Listeners.
-they can be inserted straight into a bpmn model using the camunda modeler as demonstrated in \autoref{assessment}
-one of the main goals of introducing the bpmn extension is to get rid of the necessity to explicitly model the subscription in the process (unless an explicit subscription task shall be used).
-instead subscriptions shall be managed automatically by the process engine, solely based on the modeled attributes.
+Being a community-driven open-source project, the Camunda project offers numerous options for customizing and extending its behavior.
+A core concept to trigger the execution of custom code during a process execution are \textit{ExecutionListeners}.
+They can be incorporated in BPMN models using the properties window of the Camunda Modeler as demonstrated in \autoref{ch:assessment}. In that case they have a textual representation in the model file, a specification can be found in the product documentation
+\footnote{\textit{Camunda BPMN Extension Elements}, \url{https://docs.camunda.org/manual/7.7/reference/bpmn20/custom-extensions/extension-elements/\#executionlistener}}.
 
-To achieve this kind of behavior, Camunda offers the concept of a \ac{PEP} to register global execution listeners.
-The plugin is a seperate software module that implements the ... interface. (ref)
-it is activated by adding an entry ... in the process engine config.
-within the implementation of the plugin, it is possible to intercept the process engine execution at predefined points.
-the engine itself implements an event-oriented architecture: significant milestones during engine executions fire an event that execution listeners can react on.
-Some of the available events are...
+However, one of the main goals of this thesis is to provide an alternative solution to explicitly modeling the subscription, unless an explicit subscription task shall be used). Thus the additional necessity attach execution listeners to BPMN elements shall be avoided.
+Instead, subscriptions shall be managed automatically by the process engine solely based on the subscription definition provided in the extended message element.
+To achieve this kind of behavior, Camunda offers the concept of a \ac{PEP} to intercept significant engine operations and introduce custom code. 
+By this means, execution listeners can be added programatically.
+The plugin is a separate software module that implements the interface \textit{ProcessEnginePlugin}
+\footnote{\textit{Process Engine Plugins}, \url{https://docs.camunda.org/manual/7.7/user-guide/process-engine/process-engine-plugins/}}.
+It is activated by adding a \textit{plugin} entry in the process engine configuration.
 
-\cite{mandal:2017} and \cite{Pufahl2017} have chosen to directly adapt the source code of camunda. more precisely, they propose to modify the Behavior class to execute additional code when a BPMN element starts executing.
-In this work, we implement a Process Engine Plugin as it allows a clearer, more understandable approach to adopting the execution behavior. especially when it is only necessary to execute additional operations and not modify or delete existing code.
-the PEP furthermore facilitates re-usability across environments and different versions of Camunda.
-
-..ref illustrates how a pep can be used to execute a piece of code on process instantiation.
-
-A helpful example for using a BPMN Parse Listener is also provided on GitHub
-\footnote{see GitHub: \textit{camunda-bpm-examples/process-engine-plugin/bpmn-parse-listener}, \url{https://github.com/camunda/camunda-bpm-examples/tree/master/process-engine-plugin/bpmn-parse-listener}}.
-
-\missingfigure{chunk of code that shows the main plugin class, how an execution listener is added. and that execution listener does a s.o.p.}
+\cite{mandal:2017} and \cite{Pufahl2017} have chosen to directly adapt the source code of camunda. More precisely, they propose to modify the \textit{Behavior} class of the Camunda core to execute additional code when a BPMN element starts executing.
+In this work, we implement a Process Engine Plugin as it allows a clearer, more understandable approach to adopting the execution behavior. 
+That holds especially when it is only necessary to execute additional operations and not modify or delete existing code.
+Moreover, the PEP facilitates the re-usability across environments and different versions of Camunda.
 
 % interface def https://docs.camunda.org/javadoc/camunda-bpm-platform/7.7/?org/camunda/bpm/engine/impl/cfg/ProcessEnginePlugin.html
 % peps https://docs.camunda.org/manual/7.7/user-guide/process-engine/process-engine-plugins/
@@ -183,17 +175,42 @@ from \autoref{ch:bpmnx:basic}
 %- PEP config properties: cep url
 
 \subsection{Managing event Subscriptions at Runtime}
-The Process Engine Plugin enables us to execute custom java code during process deployment, instantiation and execution.
-By this means, event subscription and un-subscription can be implemented.
+The Process Engine Plugin enables us to execute custom JAVA code at predefined points during engine execution.
+An entry point to the modification of the execution behavior is provided through the implementation of the \textit{ProcessEnginePlugin} interface. It allows to intercept \textit{preInit}, \textit{postInit} and \textit{postProcessEngineBuild}, that means at three different points during the engine bootstrapping.
+We chose to provide a custom implementation for the \textit{preInit} method, which has an object of \textit{ProcessEngineConfigurationImpl} as parameter.
+With the engine configuration available, a plethora of custom handlers, validators and listeners can be registered\footnote{Some arbitrary examples are pre-/post-deployers, event-handlers, post-variable-serializers, command-interceptors. Full list available from: \url{https://docs.camunda.org/javadoc/camunda-bpm-platform/7.7/org/camunda/bpm/engine/impl/cfg/ProcessEngineConfigurationImpl.html}}.
 
-Before event subscription and un-subscription itself can be addressed, it must be ensured that the subscription information is read from the bpmn model.
-when a process gets deployed in Camunda, the BPMN-file is read and stored in an internal Java-Object representation.
+We implement a \textit{BPMNParseListener} that is to be executed after a BPMN element finished parsing~(\textit{customPostBPMNParseListeners}).
+The BPMNParseListener interface allows us to react to the parsing of single elements based on their type by making a separate method for every BPMN element available.
+A helpful example for using that listener is also provided on GitHub
+\footnote{GitHub: \textit{camunda-bpm-examples/process-engine-plugin/bpmn-parse-listener}, \url{https://github.com/camunda/camunda-bpm-examples/tree/master/process-engine-plugin/bpmn-parse-listener}}.
+The BPMN extension affects the intermediate and boundary message catch event, the receive task, the explicit subscription task and can also be used to specify subscription information for a message start event.
+It was attempted to utilize the separate methods of every element, but it is not possible to access the subscription information in the associated message elements from that point. Apart from the provided method arguments, the engine's \textit{RepositoryService} can normally be used to view model information, but only after the deployment was finished.  
+To overcome this limitation, we implement the method \textit{parseRootElement}, to which a representation of the root element \textit{bpmn:definitions} is passed, including all message and extension elements.
+
+\missingfigure{chunk of code that shows the main plugin class, how an execution listener is added. and that execution listener does a s.o.p.}
+
 % read a model https://docs.camunda.org/manual/7.7/user-guide/model-api/bpmn-model-api/read-a-model/
 % bpmn extension elements https://docs.camunda.org/manual/7.7/user-guide/model-api/bpmn-model-api/extension-elements/
-Custom BPMN extension elements can be accessesd using an in-built generic XML model API.
-It allows to read and modify any element in the XML model read from file. The API-call to read the CEP query from the BPMN model is shown in ..ref
 
-\missingfigure{xml model api call to read the cep query and s.o.p. it }
-
+\paragraph{SubscriptionEngine}
 - event correlation
 > SubscriptionManager: memorize the subscriptionIDs for a process instance
+
+\paragraph{ExecutionListeners}
+
+
+\paragraph{Implementation of parseRootElement}
+By the help of the model representation, all relevant elements are extracted and the necessary modifications are made depending on the time of event subscription.
+If the subscription is to be issued at the time of process deployment, 
+
+\missingfigure{maybe provide pseudo code?}
+
+
+
+
+
+
+
+
+
