@@ -142,6 +142,12 @@ We call this kind of strongly time-related information an \textit{Event} and the
 - events are of a certain type
 
 \todo[inline]{More precisely, Events are defined as follows...}
+from http://www.softnet.tuc.gr/~minos/Papers/rtstreams15.pdf
+-Event tuples are defined by [11] as tuples e =< s, t >,
+where e represents the event of interest, s refers to a list
+of attributes and t is a list of timestamps, the first being
+the start of the event and the last the end of it
+%[11] N. P. Schultz-Moller, M. Migliavacca, and P. Pietzuch. Distributed complex event process
 
 Four major components take part in an event processing network: (a) An \textit{event producer} provides information to the system, (b) an \textit{event agent} processes the occurring information, so that it can be delivered to the \textit{event consumer}~(c). The components are linked through \textit{event channels}~(d).
 Typically, a so-called \textit{\acs{CEP} Engine}~(also: CEP platform) is at the heart of the system, taking the role of an event agent.
@@ -181,6 +187,7 @@ When formulating event queries, it is essential to consider the stream processin
 For the illustration of the concepts, this thesis relies on the Esper \ac{EPL}~\cite{esperhome}, utilized in Esper event processing engines like the one employed in \autoref{ch:implementation}.
 
 \todo[inline]{a little more on epl, what can it do? windows, joins, filters}
+\todo[inline]{event patterns}
 
 \begin{lstlisting}[language=sql,caption={Sample Query in Esper EPL},label=lst:epl-query-example]
 	SELECT time, delay, delayreason
