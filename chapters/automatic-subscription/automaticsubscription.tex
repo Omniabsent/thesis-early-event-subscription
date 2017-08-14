@@ -88,7 +88,7 @@ Which of the three options suits best has to be evaluated for the given use-case
 \todo[inline]{Generally, extending the event processing platform is advisable? Or put up brief pros and cons of each of the options}
 \missingfigure{three options to implement the event buffering and api extension}
 
-A reference implementation for an extended complex event processing platform is presented in \autoref{ch:implunicorn} at the example of the Esper-based CEP platform \textit{Unicorn}. It also explains, why extending the event platform was the preferred choice in the given scenario.
+A reference implementation for an extended complex event processing platform is presented in \autoref{ch:implunicorn} at the example of the Esper-based CEP~platform \textit{Unicorn}. It also explains, why extending the event platform was the preferred choice in the given scenario.
 
 \todo[inline]{the communication overhead must be considered: if many events are sent to the buffer, but they are rarely issued to a process instance, then it will make sense to place the buffer closer to the event engine w.r.t. the the involved comm overhead.
 Though it must be noted, that if events occur rarely, but many process instances consume them, than there will be an additional overhead to send events from the buffer to the instance. in that scenario, it might be advantageous to implement the event buffering close to the process engine}
@@ -112,7 +112,7 @@ This section will clarify, which operations need to be executed by the process e
 \paragraph{Parsing additional information from the BPMN model}
 It is required that the process engine is able to read the additional information from the BPMN extension~(see~\autoref{ch:bpmnx}) so that it is available during process deployment and execution.
 This affects the BPMN message element, which can contain the additional attributes \textit{eventQuery}, \textit{subscriptionTime} and \textit{bufferPolicies}.
-Secondly, the \textit{Explicit Subscription Task} has to be processed. It contains a reference to a Message entity within the same model.
+Secondly, the \textit{Explicit Subscription Task} has to be processed. It contains a reference to a Message entity within the same model element.
 The process engine might have to be adopted to read all relevant data from the extended model.
 
 

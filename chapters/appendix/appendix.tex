@@ -1,1 +1,54 @@
+%************************************************
+\chapter{Appendix}
+%************************************************
+
+\begin{lstlisting}[basicstyle=\scriptsize,caption={XSD schema of the BPMN extension for flexible event subscription},label=lst:xsd-flexsub]
+<xsd:schema xmlns:flexsub="http://www.some.url/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.some.url/">
+<xsd:element name="explicitSubscriptionTask" type="tExplicitSubscriptionTask" />
+<xsd:complexType name="tExplicitSubscriptionTask">
+<xsd:complexContent>
+<xsd:extension base="tTask">
+<xsd:attribute name="messageRef" type="xsd:QName" use="required"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+
+<xsd:element name="subscriptionDefinition">
+<xsd:complexType>
+<xsd:sequence>
+<xsd:element type="xsd:string" name="eventQuery" minOccurs="1" maxOccurs="1" />
+<xsd:element type="tSubscriptionTime" name="subscriptionTime" minOccurs="0" maxOccurs="1" default="Element Execution"/>
+<xsd:element name="bufferPolicies" minOccurs="0" maxOccurs="1">
+<xsd:complexType>
+<xsd:sequence>
+<xsd:element type="xsd:string" name="lifetimePolicy" minOccurs="0" maxOccurs="1" default="infinite"/>
+<xsd:element type="xsd:string" name="consumptionPolicy" minOccurs="0" maxOccurs="1" default="Reuse"/>
+<xsd:element type="xsd:integer" name="sizePolicy" minOccurs="0" maxOccurs="1" default="-1"/>
+<xsd:element type="tOrderPolicy" name="orderPolicy" minOccurs="0" maxOccurs="1" default="FIFO"/>
+</xsd:sequence>
+</xsd:complexType>
+</xsd:element>
+</xsd:sequence>
+</xsd:complexType>
+</xsd:element>
+
+<xsd:simpleType name="tSubscriptionTime">
+<xsd:restriction base="xsd:string">
+<xsd:enumeration value="Process Deployment"/>
+<xsd:enumeration value="Process Instantiation"/>
+<xsd:enumeration value="Manual"/>
+<xsd:enumeration value="Element Execution"/>
+</xsd:restriction>
+</xsd:simpleType>
+
+<xsd:simpleType name="tOrderPolicy">
+<xsd:restriction base="xsd:string">
+<xsd:enumeration value="LIFO"/>
+<xsd:enumeration value="FIFO"/>
+</xsd:restriction>
+</xsd:simpleType>
+</xsd:schema>
+\end{lstlisting}
+
 \todo[inline]{complete xml example of a BPMN model using the extensions}
+

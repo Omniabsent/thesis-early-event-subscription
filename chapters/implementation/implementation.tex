@@ -83,7 +83,7 @@ The presented buffering module supports the temporary storage of query results a
 All buffer policies described in \autoref{ch:bpmnx:bufferpolicies} have been implemented.
 The following section explains how the \acs{REST}~\acs{API} of Unicorn is extended to make use of the buffering module.
 
-\subsection{REST API Extension}
+\subsection{REST API Extension}\label{ch:impl:unicorn-api}
 Unicorn offers a webservice that allows users to interact with the event processing engine via the \ac{HTTP}.
 The restful API comprises the most basic functionality, query registration, query deletion and obtaining query strings by the subscription identifier.
 An interaction generally works as follows: The user executes a POST to \textit{<platform>/EventQuery/REST}, providing an event query and information about the desired notification-recipient~(\textit{notification path}). Unicorn registers the query in Esper and returns a unique identifier to the user.
@@ -186,31 +186,54 @@ A helpful example for using that listener is also provided on GitHub
 \footnote{GitHub: \textit{camunda-bpm-examples/process-engine-plugin/bpmn-parse-listener}, \url{https://github.com/camunda/camunda-bpm-examples/tree/master/process-engine-plugin/bpmn-parse-listener}}.
 The BPMN extension affects the intermediate and boundary message catch event, the receive task, the explicit subscription task and can also be used to specify subscription information for a message start event.
 It was attempted to utilize the separate methods of every element, but it is not possible to access the subscription information in the associated message elements from that point. Apart from the provided method arguments, the engine's \textit{RepositoryService} can normally be used to view model information, but only after the deployment was finished.  
-To overcome this limitation, we implement the method \textit{parseRootElement}, to which a representation of the root element \textit{bpmn:definitions} is passed, including all message and extension elements.
-
-\missingfigure{chunk of code that shows the main plugin class, how an execution listener is added. and that execution listener does a s.o.p.}
+To overcome this limitation, we implement the method \textit{parseRootElement}, to which a representation of the root element \textit{bpmn:definitions} is passed, including all message and extension elements. 
+Before the content of this method is described, two more aspects need to be introduced, the \textit{SubscriptionEngine} and the \textit{ExecutionListeners}.
 
 % read a model https://docs.camunda.org/manual/7.7/user-guide/model-api/bpmn-model-api/read-a-model/
 % bpmn extension elements https://docs.camunda.org/manual/7.7/user-guide/model-api/bpmn-model-api/extension-elements/
 
 \paragraph{SubscriptionEngine}
-- event correlation
-> SubscriptionManager: memorize the subscriptionIDs for a process instance
+A new class \textit{SubscriptionEngine} has been introduced, that encapsulates most of the functionality needed to communicate with the API of the event engine.
+It offers method representations of all four API-calls, \textit{registerQuery}, \textit{subscribe}, \textit{unsubscribe} and \textit{removeQuery}, translating them into the according HTTP calls which are then executed.
+The second, more important functionality is the \textit{SubscriptionRepository}, a list of all available query and subscription identifiers and a mapping to the related process definitions or instances.
+As described in \autoref{ch:impl:unicorn-api}, active queries and subscriptions can only be deleted using their unique identifiers. 
+When issuing a subscription or registering a query, these identifiers are stored in the repository until the removal call is executed.
 
 \paragraph{ExecutionListeners}
+The concept involves four execution listeners, one for each API-call, which are attached to activities through the BPMN parse listener.
+Execution listeners can be triggered by the camunda-internal end- or start-event of an activity and can therefor be used to implement the event subscription handling.
+Their implementation is concise: each of them is a separate class implementing the \textit{ExecutionListener} interface. They only have one method \textit{notify}, which is called by the engine when the end- or start-event fires.
+Within the method, each listener class issues an API-call using the functionality exposed by \textit{SubscriptionManager}.
+
+\todo[inline]{could mention that registerQuery can be bound either to an instance or to a process definition. this differentiation is made based on the subscriptionDefinition which is passed to the listener on creation.}
+
+All implemented classes are visualized in ... .
+\missingfigure{UML of all involved classes}
 
 
 \paragraph{Implementation of parseRootElement}
-By the help of the model representation, all relevant elements are extracted and the necessary modifications are made depending on the time of event subscription.
-If the subscription is to be issued at the time of process deployment, 
+After introducing the \textit{SubscriptionEngine} and the \textit{ExecutionListeners}, this paragraph describes how the listeners are attached to the activities in the course of the execution of \textit{parseRootElement}.
+By the help of the model representation passed ot the method as an argument of type \textit{Element}, all relevant xml~elements can be extracted based on the element names.
+This results in a list of all intermediate and boundary message catch events and receive-tasks and the messages that they reference. The subscription definition is available as a child element of each message.
+For each element in the list, the execution now proceeds as outlined in \autoref{ch:extendedprocessengine}.
+Depending on the specified subscription time, ExecutionListeners are added at the beginning or end of activity executions or process executions. If the specified subscription time is \textit{Process Deployment}, the provided query is registered immediately using the SubscriptionManager.
 
-\missingfigure{maybe provide pseudo code?}
+This can be exemplified by an intermediate message catch event with subscription time \textit{on process instantiation}:
+\begin{itemize}
+	\item An instance of \textit{RegisterQueryListener} is added to the start event of the process. The \textit{subscriptiondefinition} is provided to that listener.
+	\item The \textit{SubscribeListener} is attached to the start event of the activity representation of the intermediate message event.
+	\item To the same activity, objects of \textit{UnsubscribeListener} and \textit{RemoveQueryListener} are registered to be triggered by the end event.
+\end{itemize}
 
+The complete workflow is shown as pseudo code in \autoref{}. \missingfigure{maybe provide pseudo code?}
+It is worth noting that the available code-base can easily be used to implement the event subscription for message start events, so that processes can be automatically instantiated by events delivered from the event engine.
+Considering that process definitions in Camunda are rarely removed completely, the removal of queries on process un-deployment was not implemented. The lack of an obvious intercept point to inject code at that time makes an implementation cumbersome.
 
-
-
-
-
+\paragraph{}
+Altogether, the enhanced CEP platform and business process engine enable the automatic handling of information provided through the BPMN extension for flexible event subscription.
+The event engine exposes functionality for buffered event handling which is accessed through execution listeners during the process execution in Camunda.
+The Camunda extension can be flexibly re-used across environments thanks to its implementation in the form of a Process Engine Plugin.
+Given these extended features, process designers can conveniently incorporate external message events in their BPMN models.
 
 
 
