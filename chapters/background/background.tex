@@ -26,7 +26,7 @@ Based on a process model, the number of possible instances is theoretically unbo
 \end{description}
 
 \noindent
-The lifecycle of a business process can be  described in four cyclic phases in that numerous stakeholders interact and contribute depending on their specialization.
+The lifecycle of a business process can be described as a cycle of four phases in that numerous stakeholders interact and contribute depending on their specialization.
 Process development starts with a \emph{Design \& Analysis} phase which yields a refined and validated business process model.
 In the following \emph{Configuration} phase, it is necessary to prepare the process implementation, select the means and an environment to run the process in.
 The action of making the process runnable in the execution environment is called \emph{process deployment}.
@@ -88,7 +88,7 @@ An indefinite number of \emph{Service Provider}s realize application services to
 
 
 \paragraph{The Camunda Business Process Engine}
-A large and ever growing number of process engines is available on the market, including solutions from IT giants like SAP, IBM and Oracle.
+A large, growing number of process engines is available on the market, including solutions from IT giants like SAP, IBM and Oracle.
 In this work, \emph{Camunda BPM}~\cite{camunda} has been chosen to illustrate implementations.
 As of August 2017, the software product is available in version 7.7.0 and comes in a commercial, regularly updated version and in a free, community-driven solution that is updated with every major release.
 Camunda is popular among the research community as the source code is openly available, the product is mature, but actively developed and offers comprehensive support for BPMN 2.0. It is designed to be extensible and easily modifiable to adapt to custom requirements.
@@ -99,7 +99,7 @@ Camunda is popular among the research community as the source code is openly ava
 \subsection{Business Process Model and Notation}
 Given the general semantics of business processes, a specific modeling notation has to be selected to express an informal process description in a formal, interchangeable way.
 Different languages and notations have become available over the years, each serving different specializations.
-Kossak~et~al.~\cite{kossak:bpmn2} organize some of the more popular languages as follows: A subset of them are focused on the control flow of business processes, for instance \ac{BPMN}~\cite{bpmnspec}, Yet Another Workflow Language and Petri Nets; some focus on object-orientation, like \ac{UML} activity diagrams and use case diagrams; some are data-flow oriented, e.~g.~the Structured Analysis and Design Technique.
+Kossak~et~al.~\cite{kossak:bpmn2} organize some of the more popular languages as follows: A subset of them are focused on the control flow of business processes, for instance \ac{BPMN}~\cite{bpmnspec}, Yet Another Workflow Language and Petri Nets; some focus on object-orientation, like the \ac{UML} activity diagrams and use case diagrams; some are data-flow oriented, e.~g.~the Structured Analysis and Design Technique.
 \todo[inline]{references to the other languages}
 
 Among these, the \acs{BPMN} has developed into a widely-adopted industry standard, also becoming ISO-standard in 2013~\cite{iso2013bpmn}.
@@ -109,7 +109,7 @@ As emphasized by \citeauthor{Muehlen:2007}~\cite{Muehlen:2007}, the increased ex
 
 \paragraph{Essential Elements of a BPMN Model}
 Following the abstract business process meta model, the core elements in any BPMN model are flow elements~(nodes) and connecting objects~(edges).
-Flow elements can be either \textit{Events}, \textit{Activities} or \textit{Gateways}, each of them coming in different versions.
+Flow elements can be either \textit{Events}, \textit{Activities} or \textit{Gateways}, each of them coming in different variations.
 This section will introduce a subset of the elements available through the \acs{BPMN} specification to build the foundation to comprehend the thoughts presented in this work.
 
 \begin{figure}[]
@@ -133,7 +133,7 @@ In either case, the process ends with an \textit{End Event} after the customer w
 - Message
 - choreographies
 
-\missingfigure{Sample BPMN choreoraphy model}
+\missingfigure{Sample BPMN choreoraphy model, maybe the same as before, but with 2 lanes and communication in-between}
 
 
 \section{Complex Event Processing}
@@ -163,7 +163,7 @@ One of the main advantages of this principle is, that the involved parties are \
 Their decoupled nature facilitates the management and development of event processing networks. Event producers and consumers might change frequently.
 Whenever a new event source is available it can be connected to the CEP platform without considering all future consumers. Consumers can subscribe and un-subscribe without influencing the operations on the consumer side.
 
-\missingfigure{pub/sub}
+\missingfigure{pub/sub and event processing architecture}
 
 \paragraph{Stream Processing}
 To be able to cope with potentially large amounts of data, Complex Event Processing Platforms work on the basis of \textit{stream processing}.
@@ -184,10 +184,9 @@ The subscription to an event in a CEP platform is primarily defined by an \texti
 Many modern event query languages are inspired by \acs{SQL}, but cannot be entirely compliant due to the different underlying data processing concept.
 When formulating event queries, it is essential to consider the stream processing principle.
 
-For the illustration of the concepts, this thesis relies on the Esper \ac{EPL}~\cite{esperhome}, utilized in Esper event processing engines like the one employed in \autoref{ch:implementation}.
+For the illustration of the concepts, this thesis relies on the Esper \ac{EPL}~\cite{esperhome}, utilized in Esper-based event processing engines like the one employed in \autoref{ch:implementation}.
 
-\todo[inline]{a little more on epl, what can it do? windows, joins, filters}
-\todo[inline]{event patterns}
+\todo[inline]{more on epl, what can it do? windows, joins, filters,patterns}
 
 \begin{lstlisting}[language=sql,caption={Sample Query in Esper EPL},label=lst:epl-query-example]
 	SELECT time, delay, delayreason
