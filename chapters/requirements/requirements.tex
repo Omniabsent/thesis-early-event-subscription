@@ -166,40 +166,83 @@ For that reason, in addition to the four subscription-time options presented ear
 
 
 \section{Requirements Definition}
-The previous sections have exemplified how the execution semantic offered by the BPMN specification limits users in the use of events in business processes. Now these shortcomings are formalized into an additional set of requirements that must be met by a process execution environment to enable event handling in the extended set of event occurrence scenarios.
-The formal requirements will later be used to evaluate the capabilities of current Process Management Solutions~(\autoref{ch:assessment}) and to develop a new concept to handling event subscription in business processes~(\autoref{ch:flexibleeventsubscription}).
+The previous sections have exemplified how the BPMN execution semantics and notation capabilities limit users when using events in business processes. 
+Now, these shortcomings are formalized into a set of requirements additional to the features offered by BPMN.
+They build the foundation for enhancing BPM solutions towards flexible event subscription management~(\autoref{ch:flexibleeventsubscription}).
+Before, the formal requirements will be used to evaluate the capabilities of current Process Management Solutions~(\autoref{ch:assessment}), which results in an additional set of requirements \textit{R4-R6} presented in \autoref{ch:ass:reqextension}.
 
-\paragraph{R1: Flexible Event Subscription Time}
+\medskip \noindent
+It shall be noted that the requirements \textit{R2} and \textit{R3} introduced in this chapter are mostly in line with the ones outlined by Mandal~et.\,al. in their work on early subscription and event buffering\,\cite{mandal:2017}.
+
+\todo[inline]{by event I usually mean event from a cep pub/sub event source. The requirements relate to external intermediate message events. A limitation that is made in accordance with the motivated scenario. though some of the aspects might apply to other types of eventy, like the start event.}
+
+
+\paragraph{R1: Fundamental Subscription Information}
 
 \begin{description}
-	\item[R1.1 Explicitness:] 
+	\item[R1.1 Information Availability:]
+	For each event that is used in a business process, all information necessary to execute an event subscription in the given execution environment must be available.
+	That information generally includes the event query, the address of an event processing platform and auxiliary information to establish the communication, for instance authentication data.
+	While the event query is associated to a specific event element and must therefor be part of the process model, the process platform information might be valid for potentially all processes and can be made available through a global data store.
+	\item[R1.2 Variables in Event Queries] 
+	To adapt an event subscription to execution- or time-specific information, variables can be utilized as part of the query string.
+	At the time of event subscription, these variables must be replaced their current values before the subscription is executed.
+\end{description}
+
+\paragraph{R2: Flexible Event Subscription Time}
+
+\begin{description}
+	\item[R2.1 Explicitness:] 
 	For each event that is used in a business process, it must be possible to derive the time of event subscription from the process model. The time of subscription may either be explicitly stated or defined implicitly.
-	\item[R1.2 Flexibility:] 
-	The time of subscription can be influenced to catch events according to any of the event occurrence scenarios O1, O2, O3, O4. In other words, the process model defines the earliest acceptable time for an event occurrence to be considered in the process execution. The necessary options are \textit{since system start}, \textit{since process deployment}, \textit{since process instantiation}, from an arbitrary but \textit{explicit time during process execution}, or \textit{since enabling of the Event Process Element}.
+	\item[R2.2 Flexibility:] 
+	The time of subscription can be influenced independently from the place the event element takes in the model. Timing options are made available to catch events according to any of the event occurrence scenarios EOS1, EOS3, EOS4 and EOS5. 
+	Consequently, the options must include but are not limited to the subscription before process deployment, during  pr. deployment, at process instantiation, subscription at an arbitrary but explicit time during process execution or when the event element is enabled.
+	Thereby, also events that occur after the time of subscription, but before the event element is enabled shall be available to be consumed.
+	%By that means, the variability of the time of event occurrence can be specifically addressed in the process model and unnecessary delay or blocking of the execution can be reduced.
+	\item[R2.3 Awareness of Subscription Dependencies:]
+	The additional flexibility provided through \textit{R2.2} is limited by the use of variables in event queries~(\textit{R1.2}) and the implicit dependencies on context information.
+	The execution environment must only allow a subscription time after the resolving of all dependencies.
+	
+	Dependencies can exist within a certain process instance, for example when an information from a local DataObject is referenced in a query. In more complex scenarios, the subscription might depend on data from other process instances or even other processes which must first be obtained.
 \end{description}
 
 
-\todo[inline]{limited by subscription dependencies}
-\todo[inline]{change the options back to the times of subscription. Mention that the subscription is necessary before the time of event occurrence, but too early subscription is also a problem.}
-\todo[inline]{target only intermediate events. (limitation, although it also makes the most sense.)}
-
-\paragraph{R2: Automatic Subscription Handling}
+\paragraph{R3: Event Buffering}
 
 \begin{description}
-	\item[R2.1 Subscription:] 
-	The subscription to event sources is handled implicitly by the process execution environment as defined by the process model.
-	\item[R2.2 Removal of Subscription:] 
-	The removal of a subscription from the system is handled automatically as soon as a subscription becomes unnecessary.
+	\item[R3.1 Buffering Principle:]
+	%To make all events since the subscription time available during process execution, matching events need to be stored temporarily.
+	As introduced by \textit{R2.2}, an indefinite time can pass between the time of subscription and the consumption of the event.
+	While the subscription operation generally assures that the event is received, it is necessary to temporarily store it until the consuming element is reached.
+	
+	This temporary storage is referred to as an \textit{Event~Buffer}.
+	The storage must be designed to fulfill the semantics demanded by \textit{R2.2} which means that any event that occurs after the time of event subscription must be available to consume.
+	
+	\item[R3.2 Buffer Scope:]
+	The flexible event subscription time~(\textit{R2.2}) allows an event subscription after process instantiation, but also before process instantiation or deployment.
+	It can be inferred that an event buffer operates either in the scope of a process instance, a process definition, or in the scope of the complete execution environment.
+	To implement all event subscription times stated in \textit{R2.2}, the execution environment must support event buffering in each of the three scopes. The provided concept must make clear to the user, which scope is referenced at any point in time.
+	
+	\item[R3.3 Buffer Policies:]
+	Buffer parameters specifying the behavior of the buffer in further detail are referred to as \textit{Buffer~Policies}, a notion introduced by Mandal~et.\,al.\,\cite{mandal:2017}.
+	
+	\item[R3.3.1 Lifetime Policy:]
+	Given that the time between the event subscription and its consumption may be indefinitely long, process designs can require to limit the maximum time an event is held in the buffer.
+	A parameter must be offered to specify this timespan.
+	
+	\item[R3.3.2 Consumption Policy:]
+	Requirement \textit{R3.2} implies that buffers can be shared among process instances of the same process and other processes.
+	In this scenario, it needs to be defined if an information is consumed from the buffer upon retrieval, or if the information remains in the buffer for other participants to access. 
+		
+	\item[R3.3.3 Size Policy:]
+	Provided that multiple events can occur between the time of subscription and the enabling of the event element, it must be specified for each buffer, how many events should be stored for later consumption.
+	In basic scenarios, where a buffer is only accessed a single time by one catch event in one process instance, a fixed buffer size of one element will be sufficient. However, if a buffer is accessed multiple times or shared among instances, the buffer size may vary between~1~and infinity.
+	
+	\item[R3.3.4 Order Policy:]
+	If multiple events are stored in the buffer~(\textit{R3.3.3}), it will make a difference in which order the events are provided for consumption. The order can be chosen as \textit{First in first out}~(FIFO) or \textit{Last in first out}~(LIFO) 
+	
 \end{description}
 
-
-\begin{description}
-	\item[R3 Event Buffering:]
-	To make all events since the subscription time available during process execution, matching events need to be stored temporarily.
-\end{description}
-
-\todo[inline]{buffer policies?}
-\todo[inline]{variables and subscription dependencies}
 
 \medskip \noindent
 \todo[inline]{write connecting paragraph}
