@@ -35,7 +35,7 @@ The truck driver receives the transport plan for his next tour from France to th
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=1\linewidth]{chapters/requirements/Eurotunnel-simplified.png}}
-	\caption{(Example 1.1) BPMN Model of a Logistics Process using events for route optimization}
+	\caption{BPMN Model of a Logistics Process using events for route~optimization~(Example 1.1)}
 	\label{fig:example-eurotunnel}
 \end{figure}
 
@@ -58,7 +58,7 @@ The system publishes updated information at 3:15~pm, operations are still 2:30\,
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=1\linewidth]{chapters/requirements/Eurotunnel_part2.png}}
-	\caption{(Example~1.2) Transport via English Channel that is timed to a delivery slot }
+	\caption{Transport via English Channel that is timed to a delivery~slot~(Example~1.2)}
 	\label{fig:example-eurotunnel-part2}
 \end{figure}
 
@@ -112,58 +112,60 @@ Motivated by this complexity and the possible implications, it is the goal of th
 
 
 \section{Event Occurrence Scenarios}
-Given the motivating examples, I am deriving a generic set of event occurrence scenarios. Each of these scenarios can occur in the real world and process implementations need to be capable of handling them to avoid negative effects.
+Given the motivating examples, a generic set of \textit{Event Occurrence Scenarios} is defined in this section. 
+Each of the scenarios represents a real-world situation and process implementations need to be capable of handling them to avoid negative effects.
 
-\paragraph{Event Subscription Time}
+\medskip \noindent
+The dominant variable to consider is the event occurrence time.
+According to the BPMN specification, it is possible to catch an event if it occurs after the event element is enabled. As shown before, it is often impossible to control occurrence time and events do occur outside of the listening time intervals.
+An \ac{EOS} describes the time of event occurrence in relation to a specific step in process or engine execution.
+The life-cycle of a process within a process engine is explained in \autoref{ch:bg:bpm} and taken as reference. It is assumed that the process and event engine are configured and running.W
+An event is considered to always occur before or after a life-cycle step or in between two consecutive steps. 
+Given the life cycle steps \textit{process deployment}, \textit{process instantiation} and \textit{event enabling}, the following occurrence scenarios are distinguished in this work:
+% they have an implicit temporal order
 
-The most important variable to consider is the time of event occurrence. \todo[inline]{reformulate}
-According to the BPMN specification, it is possible to catch an event if it occurs after the event element is enabled. As shown before, it is often impossible to control occurrence time and events do occur outside of these time windows.
-We specify the possible event occurrence times in relation to the life cycle of a process that utilizes a BPMN Intermediate Event \todo[inline]{ref process lifecycle}.
+\begin{aenumerate}
+	\item[$EOS_{1}$] While the BPMN event element is enabled
+	\item[$EOS_{2}$] The event does not occur
+	\item[$EOS_{3}$] Between process instantiation and \\the enabling of the BPMN event
+	\item[$EOS_{4}$] Between process deployment and \\process instantiation
+	\item[$EOS_{5}$] Before process deployment
+\end{aenumerate}\label{def:occurrence-times}
+% they are ordered this way to be in line with the assessment chapter
+
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=1\linewidth]{chapters/requirements/timeline-event-occurrence.png}}
-	\caption{Possible event occurrence times in relation to a process execution life cycle}\label{fig:occurrence-timeline}
-\end{figure}
+	\caption{Possible event occurrence times in relation to a process execution life cycle}
+	\label{fig:occurrence-timeline}
+\end{figure}\todo[inline]{improve figure: include EOS notions, save space, ?}
 
-\autoref{fig:occurrence-timeline} shows the life cycle steps of a process and an instance from the deployment of the process until the undeployment and uses a timeline to illustrate that an event might occur at any time during this cycle. More precisely, an event is always considered to occur before or after a life cycle step or in between two consecutive steps.
-\todo[inline]{How about system-deployment/process engine start and process undeployment? show in illustration, but say in text that we simplify this for now. after undeployment is essentially before deployment of a new process; Before Engine start is also before pr. deployment and we presume that an engine is running and does not stop.}
-
-Given the relevant life cycle steps, \textit{process deployment}, \textit{process instantiation} and \textit{Event enablement}, the following occurrence scenarios are distinguished in this work:
-\begin{aenumerate}
-	\item O1 After the enabling of the BPMN event (BPMN default)
-	\item O2 The event does not occur
-	\item O3 Between Process instantiation and the enabling of the BPMN event
-	\item O4 Between Process deployment and process instantiation
-	\item O5 Before Process deployment
-\end{aenumerate}\label{def:occurrence-times}
+An overview of the EOSs and the related life-cycle steps is provided in \autoref{fig:occurrence-timeline}, which uses a time-line to illustrate the possible event occurrence times.
+The model deliberately excludes event occurrences after termination of the event element, because that would presume that there is no more interest in the event as the execution flow continued on another branch. Otherwise, the process will remain in waiting state until the event occurs.
 
 \todo[inline]{add a back reference to the examples. In example XY, events can occur before... whereas in example...}
 
-For a flexible and efficient use of events in business processes, it must be possible to use events that occur in any of these phases.
-To make sure that an event can be caught, no matter at which time during the phase it occurs, the subscription to the CEP platform must happen at the beginning of the occurrence phase.
-It follows that the event subscription must be possible at system start, at process deployment, at process instantiation, at any time during process execution and when the BPMN Event element is enabled.
+As introduced in \autoref{ch:bg:cep}, there is a strict temporal order between event subscription, reception and un-subscription.
+To catch an event that occurs as described in any of the EOSs, the related subscription operation has to be executed before the start of the time interval associated with the EOS.
+On that basis, the latest possible event subscription time can be derived from each event occurrence scenario and is as follows:
+\textit{before process deployment}~($EOS_{5}$), \textit{during process deployment}~($EOS_{4}$), \textit{at process instantiation}~($EOS_{3}$) and when the \textit{BPMN event element is enabled}~($EOS_{1}$).
 
-\todo[inline]{Explain that, to catch events at these times, the subscription has to happen before. Therefor we derive event subscription times}
+It is important to highlight that the subscription to an event source can depend on additional context information or process data, which can be a significant limitation to the possible subscription time.
+That situation is illustrated in \textit{Example~2}~(\autoref{fig:example-order}), where the subscription to the shipment delay information cannot be executed before the \textit{Prepare~Quote} activity is completed.
+More generally put, a \textit{subscription~dependency} is defined as follows:
 
-\paragraph{Event Subscription Dependencies}
-It is important to note that the subscription to an event source can depend on additional context information or process data. This can be a significant limitation to the possible subscription time.
-\todo[inline]{ref to process model} shows a logistics process that uses event data about the GPS position of a certain truck to keep the estimated time of arrival of the transport updated. Whenever it receives an updated GPS position, the ETA is re-calculated; once the \textit{arrival}-event has been received, the process finishes.
+\begin{description}
+	\item[Subscription Dependency]
+	The subscription operation is \textit{dependent}, if any of its parameters, for instance the event query, contains a variable value that has to be determined at the time of subscription.
+	The value might reference a piece of information from the process instance context, an engine-wide piece of data or external information.
+	In case of a dependence, the subscription cannot be issued before the associated information is available.
+\end{description}
 
-\todo[inline]{this example is not good, because we are not interested in a gps event that occurs earlier. Find an example where you would like earlier events, but subscription is not possible}
+If a subscription dependency resolves before the process execution reaches the event element, it should still be possible to flexibly chose the subscription time in the process.
+For that reason, in addition to the four subscription-time options presented earlier, an additional option \textit{at any time during process execution} must be available.
 
-Before the subscription to that specific truck gps event can happen, the process must determine the \textit{truckId} to use in the event query. Only when the \textit{truckId} is available, the subscription can be executed. This example illustrates how a query filter expression can depend on context data, but it might as well be the event source itself that differs depending on the particular execution.
-
-\todo[inline]{there could be an xor gateway and following two different events and only one of them can get executed}
-
-\todo[inline]{solution would be to listen to all gps, but potentially too much data. Decision must be made cautiously! <= Where should I mention this? maybe later in the concept}
-
-\todo[inline]{formulate a concise Problem Statement}
-
-%The remainder of this work will further analyze the capabilities of BPMN to express event-usage scenarios and propose solutions to the mentioned problems.
 
 \section{Requirements Definition}
-\todo[inline]{Maybe move to the end of 4. and add non-functional requirements as well?}
-
 The previous sections have exemplified how the execution semantic offered by the BPMN specification limits users in the use of events in business processes. Now these shortcomings are formalized into an additional set of requirements that must be met by a process execution environment to enable event handling in the extended set of event occurrence scenarios.
 The formal requirements will later be used to evaluate the capabilities of current Process Management Solutions~(\autoref{ch:assessment}) and to develop a new concept to handling event subscription in business processes~(\autoref{ch:flexibleeventsubscription}).
 
@@ -197,3 +199,8 @@ The formal requirements will later be used to evaluate the capabilities of curre
 \end{description}
 
 \todo[inline]{buffer policies?}
+\todo[inline]{variables and subscription dependencies}
+
+\medskip \noindent
+\todo[inline]{write connecting paragraph}
+The remainder of this work will further analyze the capabilities of BPMN to express event-usage scenarios and propose solutions to the mentioned problems...

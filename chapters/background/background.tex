@@ -136,7 +136,7 @@ In either case, the process ends with an \textit{End Event} after the customer w
 \missingfigure{Sample BPMN choreoraphy model, maybe the same as before, but with 2 lanes and communication in-between}
 
 
-\section{Complex Event Processing}
+\section{Complex Event Processing}\label{ch:bg:cep}
 The IT world is facing an exponential increase in the amount of produced data. A significant part of this data are pieces of information about real-life occurrences, such as a current sensor value, an interaction on a website or the location of a vehicle on the road.
 We call this kind of strongly time-related information an \textit{Event} and the according computer science field \ac{CEP}~\cite{evtprocessing}.
 - events are of a certain type
@@ -158,6 +158,7 @@ Their main purpose is to accept incoming events from event producers, filter and
 In event-based architectures, communication takes place according to the \textit{Publish/Subscribe Principle}.
 The concept essentially demands that an event processing middleware publishes events to processes only after they have issued a subscription for these events.
 Consequently, there is a strict temporal order between the actions subscribe, consume and un-subscribe. The consumption and un-subscription can only happen after the subscription. Once an un-subscription has been issued, no consumption can follow.~\cite{tanenbaum:2007}
+\missingfigure{state-transition-diagram of temporal order}
 
 One of the main advantages of this principle is, that the involved parties are \textit{referentially decoupled}. They do not need to explicitly refer to each other, an aspect that is also acknowledged in~\cite{evtprocessing}.
 Their decoupled nature facilitates the management and development of event processing networks. Event producers and consumers might change frequently.
