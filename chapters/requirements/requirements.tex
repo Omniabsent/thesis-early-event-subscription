@@ -165,15 +165,18 @@ If a subscription dependency resolves before the process execution reaches the e
 For that reason, in addition to the four subscription-time options presented earlier, an additional option \textit{at any time during process execution} must be available.
 
 
-\section{Requirements Definition}
+\section{Requirements Definition}\label{ch:requirements}
 The previous sections have exemplified how the BPMN execution semantics and notation capabilities limit users when using events in business processes. 
-Now, these shortcomings are formalized into a set of requirements additional to the features offered by BPMN.
+Now, these shortcomings are formalized into an initial set of requirements additional to the features offered by BPMN.
 They build the foundation for enhancing BPM solutions towards flexible event subscription management~(\autoref{ch:flexibleeventsubscription}).
-Before, the formal requirements will be used to evaluate the capabilities of current Process Management Solutions~(\autoref{ch:assessment}), which results in an additional set of requirements \textit{R4-R6} presented in \autoref{ch:ass:reqextension}.
+Before that, the formal requirements will be used to evaluate the capabilities of current Process Management Solutions~(\autoref{ch:assessment}), which results in an additional set of requirements \textit{R4-R6} presented in \autoref{ch:ass:reqextension}.
 
-\medskip \noindent
-It shall be noted that the requirements \textit{R2} and \textit{R3} introduced in this chapter are mostly in line with the ones outlined by Mandal~et.\,al. in their work on early subscription and event buffering\,\cite{mandal:2017}.
+%\medskip \noindent
+%It shall be noted that the requirements \textit{R2.2} and \textit{R3} introduced in this chapter have also been pointed out by Mandal~et.\,al. in their work on early subscription and event buffering\,\cite{mandal:2017}.
+%Note that the need for flexible event subscription has also been pointed out by Mandal~et.\,al. in their work on early subscription and event buffering\,\cite{mandal:2017}. The authors follow a similar line of argumentation and also specify the requirement for a flexible time of subscription and event buffering.
 
+
+%Andreas: Dein Kommentar im Text sollte eigentlich überflüssig sein, weil du die Begrifflichkeit zuvor in Kapitel 2 geklärt haben solltest. Hier würde ich maximal einen kurzen Recap mit Verweis auf Ch.2 machen.
 \todo[inline]{by event I usually mean event from a cep pub/sub event source. The requirements relate to external intermediate message events. A limitation that is made in accordance with the motivated scenario. though some of the aspects might apply to other types of eventy, like the start event.}
 
 
@@ -183,7 +186,7 @@ It shall be noted that the requirements \textit{R2} and \textit{R3} introduced i
 	\item[R1.1 Information Availability:]
 	For each event that is used in a business process, all information necessary to execute an event subscription in the given execution environment must be available.
 	That information generally includes the event query, the address of an event processing platform and auxiliary information to establish the communication, for instance authentication data.
-	While the event query is associated to a specific event element and must therefor be part of the process model, the process platform information might be valid for potentially all processes and can be made available through a global data store.
+	%While the event query is associated to a specific event element and must therefor be part of the process model, the process platform information might be valid for potentially all processes and can be made available through a global data store.
 	\item[R1.2 Variables in Event Queries] 
 	To adapt an event subscription to execution- or time-specific information, variables can be utilized as part of the query string.
 	At the time of event subscription, these variables must be replaced their current values before the subscription is executed.
@@ -197,7 +200,7 @@ It shall be noted that the requirements \textit{R2} and \textit{R3} introduced i
 	\item[R2.2 Flexibility:] 
 	The time of subscription can be influenced independently from the place the event element takes in the model. Timing options are made available to catch events according to any of the event occurrence scenarios EOS1, EOS3, EOS4 and EOS5. 
 	Consequently, the options must include but are not limited to the subscription before process deployment, during  pr. deployment, at process instantiation, subscription at an arbitrary but explicit time during process execution or when the event element is enabled.
-	Thereby, also events that occur after the time of subscription, but before the event element is enabled shall be available to be consumed.
+	Thereby, also events that occur after the time of subscription, but before the event element is enabled shall be available to be consumed.~(cf.\,\cite{mandal:2017})
 	%By that means, the variability of the time of event occurrence can be specifically addressed in the process model and unnecessary delay or blocking of the execution can be reduced.
 	\item[R2.3 Awareness of Subscription Dependencies:]
 	The additional flexibility provided through \textit{R2.2} is limited by the use of variables in event queries~(\textit{R1.2}) and the implicit dependencies on context information.
@@ -224,11 +227,12 @@ It shall be noted that the requirements \textit{R2} and \textit{R3} introduced i
 	To implement all event subscription times stated in \textit{R2.2}, the execution environment must support event buffering in each of the three scopes. The provided concept must make clear to the user, which scope is referenced at any point in time.
 	
 	\item[R3.3 Buffer Policies:]
-	Buffer parameters specifying the behavior of the buffer in further detail are referred to as \textit{Buffer~Policies}, a notion introduced by Mandal~et.\,al.\,\cite{mandal:2017}.
+	The behavior of a buffer in any occurring situation must be specific.
+	The parameters necessary to specify the behavior are referred to as \textit{Buffer Policies}, following the notion chosen by  Mandal~et.\,al.\,\cite{mandal:2017}.
 	
-	\item[R3.3.1 Lifetime Policy:]
+	\item[R3.3.1 Lifespan Policy:]
 	Given that the time between the event subscription and its consumption may be indefinitely long, process designs can require to limit the maximum time an event is held in the buffer.
-	A parameter must be offered to specify this timespan.
+	%A parameter must be offered to specify this timespan.
 	
 	\item[R3.3.2 Consumption Policy:]
 	Requirement \textit{R3.2} implies that buffers can be shared among process instances of the same process and other processes.
@@ -236,14 +240,13 @@ It shall be noted that the requirements \textit{R2} and \textit{R3} introduced i
 		
 	\item[R3.3.3 Size Policy:]
 	Provided that multiple events can occur between the time of subscription and the enabling of the event element, it must be specified for each buffer, how many events should be stored for later consumption.
-	In basic scenarios, where a buffer is only accessed a single time by one catch event in one process instance, a fixed buffer size of one element will be sufficient. However, if a buffer is accessed multiple times or shared among instances, the buffer size may vary between~1~and infinity.
+	%In basic scenarios, where a buffer is only accessed a single time by one catch event in one process instance, a fixed buffer size of one element will be sufficient. However, if a buffer is accessed multiple times or shared among instances, the buffer size may vary between~1~and infinity.
 	
 	\item[R3.3.4 Retrieval Order Policy:]
-	If multiple events are stored in the buffer~(\textit{R3.3.3}), it will make a difference in which order the events are provided for consumption. The order can be chosen as \textit{First in first out}~(FIFO) or \textit{Last in first out}~(LIFO) 
+	If multiple events are stored in the buffer~(\textit{R3.3.3}), it must be defined, in which order the events are provided for consumption. 
+	%The order can be chosen as \textit{First in first out}~(FIFO) or \textit{Last in first out}~(LIFO) 
 	
 \end{description}
 
 
-\medskip \noindent
-\todo[inline]{write connecting paragraph}
-The remainder of this work will further analyze the capabilities of BPMN to express event-usage scenarios and propose solutions to the mentioned problems...
+
