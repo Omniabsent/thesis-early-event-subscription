@@ -2,50 +2,67 @@
 \chapter{Assessment of current Business Process Management Solutions}\label{ch:assessment}
 %************************************************
 
-The lack of flexibility in handling event subscription in business processes has been outlined in the previous chapters and a set of extended requirements to process management solutions have been presented.
-In this section I take a closer look at the capabilities of current solutions with regards to the event occurrence scenarios to get a better understanding of the issues that arise when working with event subscription in business processes.
-The assessment will be carried out using BPMN and Camunda, a state-of-the art and widely adopted business process engine.
-The main goal is to identify and illustrate the shortcomings of the current process technology stack. These shortcomings will be referenced in addition to the presented requirements to develop a more refined subscription handling model in the following chapter. \todo[inline]{"subscription handling model"?}
+The lack of flexibility in handling event subscription in business processes has been outlined in the previous chapters, and a set of additional requirements \textit{R1} to \textit{R3} for process management solutions have been presented.
+In this section, we take a closer look at the capabilities of current solutions with regards to the event occurrence scenarios~(see~\autoref{ch:ps:eos}) to get a better understanding of the issues that arise when working with event subscription in business processes.
+
+The assessment will be carried out on the basis of the \ac{BPMN} and Camunda, a state-of-the art and widely adopted business process engine~(\autoref{ch:bg:bpms}). Both tools shall be used \textit{as they are}, that means without utilizing their comprehensive extension mechanisms.
+The main goal is to identify and illustrate the shortcomings of the current process technology stack by attempting to implement the requirements identified previously.
+We therefor first investigate options to handle the \acs{EOS}s on the BPMN model level~(\autoref{ch:ass:models}) and then proceed to implementing early event subscription and event buffering in a set of Camunda processes~(\autoref{ch:assessment-implementation}).
+
+Finally, the findings are discussed in \autoref{ch:ass:discussion} which leads to the presentation of three additional requirements, \textit{R4} to \textit{R6}.
+The extended requirements will be referenced in \autoref{ch:flexibleeventsubscription} to develop a more refined subscription handling model.
 
 \todo[inline]{which functionality should be evaluated exactly?: all occurrence scenarios, but no buffer policies. The buffer will always store the last version of the event and also deliver that version.}
 
-\section{BPMN Models in presence of the Event Occurrence Scenarios}
-Chapter X has revealed that processes can run into deadlocks if events do not occur at the right time \todo[inline]{.}
+\section{BPMN Models in presence of the Event Occurrence Scenarios}\label{ch:ass:models}
+
+According the BPMN specification, the listening for an event starts only when the event element is enabled. The start of the listening is interpreted as the time of event subscription.
+The motivating examples illustrate that process executions can be delayed or even blocked because of a late time of event subscription~(\autoref{ch:motivatingexamples}).
+The subscription-time is put in relation to the time of event occurrence by the help of the event occurrence scenarios.
+
+In this section, I first describe for each \ac{EOS} how a basic event implementation behaves in presence of the given scenario.
+I then evaluate if it is possible to create a BPMN model that is free from unnecessary delay in these situations.
+The investigations are carried out on the basis of the abstract process model shown in \autoref{fig:abstract-process-with-event}.
+It uses an intermediate message catch event which follows an arbitrary process flow, represented through a collapsed sub-process.
+The process terminates after the event is received.
+It is assumed, that the event can occur independently from the preceding subprocess and therefor in accordance with any of the event occurrence scenarios. That enables us to investigate each EOS using this simple model.
+The event behavior is comparable with the \textit{Eurotunnel Delay Event} considered in \textit{Example~1.1}\,. Depending on the discussed EOS, the motivating examples will be used for further illustration of the situations.
+
+
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=1\linewidth]{chapters/assessment/process-with-intermediate-event.png}}
-	\caption{Abstract Process using an Intermediate Catch Event}\label{fig:abstract-process-with-event}
+	\caption{Abstract Process using an intermediate message catch event}\label{fig:abstract-process-with-event}
 \end{figure}
 
-\autoref{fig:abstract-process-with-event} shows a generalized process that uses an Intermediate Catch Event just before process termination.
-In this section I first describe for each Event Occurrence Scenario how this simple event implementation behaves in presence of the given scenario. I then evaluate if it is feasible to create a BPMN model that is free from deadlock in these situations. 
 
-\paragraph{Scenario O1: The event occurs after the enabling of the BPMN event}
-\begin{figure}[]
-	\myfloatalign
-	{\includegraphics[width=1\linewidth]{chapters/assessment/standard-intermediate-event.png}}
-	\caption{Standard Intermediate Catch Event}\label{fig:excerpt-standard-event}
-\end{figure}
+\paragraph{EOS1: The event occurs while the catch element is enabled}
 
-The first scenario represents the most simple case, that is also natively supported by the BPMN 2.0 specification. When the event occurs after the Event element has been enabled, the event will be received and the process can proceed normally. The use of a standard Intermediate Catch Event does suffice to cover this situation.
+The first scenario represents the case that is assumed by the BPMN 2.0 specification: 
+The event occurs after the event element has been enabled and before it has terminated. It will be consumed by the catch event and the process flow can proceed without unnecessary delay.
+In this scenario, the use of a simple intermediate catch event is sufficient.
 
-\paragraph{Scenario O2: The event does not occur}
+\todo[inline]{Notably, there always is a certain delay when consuming an event through an intermediate catch event. The BPMN specification itself states that \textit{the handling consists of waiting for the Event to occur}.
+However, that delay can theoretically be infinitely small. <-- maybe mention this at the beginning of 'problem statement' to differentiate between normal delay and unnecessary delay?}
+
+\paragraph{EOS2: The event does not occur}
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=1\linewidth]{chapters/assessment/parallel-timer-event.png}}
-	\caption{Intermediate Event with a parallel Timer Event}\label{fig:excerpt-event-with-timer}
+	\caption{Intermediate message event accompanied by a parallel timer event}\label{fig:excerpt-event-with-timer}
 \end{figure}
-\todo[inline]{alternatively: a receive task with boundary timer event}
+\todo[inline]{alternatively: a receive task with boundary timer event. when gateway: don't join with exclusive}
 
-In certain situations an event might not occur at all. Given a basic event implementation like in \autoref{fig:abstract-process-with-event}, the process flow will get to a halt once it reaches the Intermediate Catch Event and will not be able to proceed. While, depending on the process design, this might be the desired behavior, in many situations this is not acceptable.
+In certain situations an event might not occur at all. Given a basic event implementation like in \autoref{fig:abstract-process-with-event}, the process flow will get to a halt once it reaches the intermediate catch event and will not be able to proceed. While, depending on the process design, this might be the desired behavior, in many situations this is not acceptable.
+In \textit{Example~1.2}, the process relies on the \textit{final arrival time} information from the customer. If the event does not occur, for example due to a mistake in a factory work-flow, the process execution waits for the event indefinitely.
+To improve the process design, the logistics company decides that after waiting for the event for 30~minutes, an arbitrary delivery window shall be assumed. The waiting for the event shall be terminated so that the goods can be delivered immediately.
 
-Let's consider a process that is supposed to wait for approval for a certain amount of time and trigger an additional request if the approval has not been issued before the deadline. \autoref{fig:excerpt-event-with-timer} shows how this behavior can be implemented using an Event-based Gateway which puts a Timer Event in parallel to the Intermediate Catch Event. This extension will make sure that a process does not run into a deadlock state if the expected event does not occur.
+\autoref{fig:excerpt-event-with-timer} shows how this behavior can be implemented by the help of an event-based gateway which puts a timer event in parallel to the intermediate catch event. If the timer event occurs before the message event is consumed, the message event is terminated immediately and the process flow proceeds from the timer event.
+An alternative solution with equivalent semantics is depicted in \autoref{}, using a receive task and an interrupting boundary timer event. Once the timer event fires, the receive activity is canceled and the process continues along the outgoing flow of the time event.
+Any of the two model improvements will make sure that a process does not run into a lock if the expected event does not occur.
 
-\todo[inline]{I mention an example, but that example is not exactly illustrated in the process}
-\todo[inline]{according to the spec: what exactly will happen to the active catch event once the timer fires?}
 
-
-\paragraph{Scenario O3: Occurrence between Process instantiation and the enabling of the BPMN event}
+\paragraph{EOS3: Occurrence between Process instantiation and the enabling of the BPMN event}
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=1\linewidth]{chapters/assessment/parallel-gateway-early-subscription.png}}
@@ -55,7 +72,7 @@ Let's consider a process that is supposed to wait for approval for a certain amo
 In case the event occurs during process execution, but before the BPMN event element is enabled and thus listening for events, the occurrence will not be considered in the execution. The process will get stuck at the Event Process Element as if the event did not happen at all.
 To avoid a deadlock in this scenario, a solution is to execute the Intermediate Catch Event in parallel to the rest of the process flow using a Parallel Gateway. This is illustrated in \autoref{fig:excerpt-parallel-gateway-event}. The time of subscription to the event can be controlled by the position of the parallel split: To implement an event subscription right after process instantiation, the Parallel Gateway has to be the first element after the Start Event (that means \textit{Part~1} in the illustration is empty). To implement event subscription at a specific point during process execution, part of the process can execute before reaching the Parallel Gateway. In \autoref{fig:excerpt-parallel-gateway-event}, the event may occur at any time during the execution of the collapsed sub-process \textit{Part~2}. 
 
-\paragraph{Scenarios O4 and O5: Before Process Instantiation}
+\paragraph{EOS4 and EOS5: Before Process Instantiation}
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=1\linewidth]{chapters/assessment/aux-buffer-process.png}}
@@ -153,9 +170,9 @@ If no events have been received yet, all the involved processes remain active: t
 \todo[inline]{note that this is an investigative implementation that matches exactly the given use-case and is not meant to be used in production. It is neither flexible nor robust enough for that purpose, but suits very well in understanding the capabilities and the shortcomings of BPMN and Camunda when it comes to handling the Event Occurrence Scenarios}
 
 
-\section{Discussion}
+\section{Discussion}\label{ch:ass:discussion}
 The goal of this chapter was to get a better understanding of the capabilities of the tools when it comes to covering all event occurrence scenarios. 
-Even though is has proven possible to to implement a flexible event subscription time using standard BPMN 2.0 and Camunda, the success comes at a cost.
+Even though it has proven possible to implement a flexible event subscription time using standard BPMN 2.0 and Camunda, the success comes at a cost.
 The downsides of the presented approach are presented in the following.
 
 It was necessary to create two generic auxiliary processes for event buffering, to connect to a MySQL data-store and use ExecutionListeners to execute custom Java code in Camunda to cover all scenarios, \textit{O1} to \textit{O5}.

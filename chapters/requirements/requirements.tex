@@ -7,15 +7,15 @@ While the use of external events is an active topic in research, most approaches
 \todo[inline]{ref}
 Though event subscription is not directly addressed in the BPMN~specification, the descriptions on intermediate events state:
 
-\paragraph{}
+\medskip
 \textit{"For Intermediate Events, the handling consists of waiting for the Event to occur. Waiting starts when the
-Intermediate Event is reached. Once the Event occurs, it is consumed."}~\cite{bpmnspec},~p.~440\newline
+Intermediate Event is reached. Once the Event occurs, it is consumed."}~\cite{bpmnspec},~p.~440
 
-\noindent The usual interpretation of this excerpt is that the subscription to the event takes place as soon as the event gets enabled, the un-subscription when the event terminates.
+\medskip \noindent The usual interpretation of this excerpt is that the subscription to the event takes place as soon as the event gets enabled, the un-subscription when the event terminates.
 \todo[inline]{I need to work with a precise lifecycle}
 As pointed out by Mandal~et.~al.~\cite{mandal:2017}, these subscription semantics significantly limit the flexibility of using events in business processes and can cause undesired behavior and fault.
 Due to the strict temporal order between event subscription, occurrence and un-subscription as required by the publish-subscribe paradigm, any events that occur before the enabling of the event element will be ignored by the process execution.
-That reduces the timespan for events to occur to a potentially small part of the total execution time and means that crucial events might be missed.
+That reduces the timespan for events to occur to a potentially small part of the total execution time and means that crucial events might be missed which can delay or block a process execution unnecessarily.
 
 In the following section, the problem is further illustrated at the example of two sample scenarios.
 The observed situations then lead to the definition of \textit{Event Occurrence Scenarios} and the derivation of a set of requirements that must be fulfilled by a mechanism for flexible event subscription in business processes.
@@ -111,7 +111,7 @@ Differences have been pointed out as to how exactly the event is placed in the p
 Motivated by this complexity and the possible implications, it is the goal of this work to evaluate the capabilities of BPMN and to present a concept for the flexible handling of event subscription in business processes.
 
 
-\section{Event Occurrence Scenarios}
+\section{Event Occurrence Scenarios}\label{ch:ps:eos}
 Given the motivating examples, a generic set of \textit{Event Occurrence Scenarios} is defined in this section. 
 Each of the scenarios represents a real-world situation and process implementations need to be capable of handling them to avoid negative effects.
 
@@ -119,7 +119,7 @@ Each of the scenarios represents a real-world situation and process implementati
 The dominant variable to consider is the event occurrence time.
 According to the BPMN specification, it is possible to catch an event if it occurs after the event element is enabled. As shown before, it is often impossible to control occurrence time and events do occur outside of the listening time intervals.
 An \ac{EOS} describes the time of event occurrence in relation to a specific step in process or engine execution.
-The life-cycle of a process within a process engine is explained in \autoref{ch:bg:bpm} and taken as reference. It is assumed that the process and event engine are configured and running.W
+The life-cycle of a process within a process engine is explained in \autoref{ch:bg:bpm} and taken as reference. It is assumed that the process and event engine are configured and running.
 An event is considered to always occur before or after a life-cycle step or in between two consecutive steps. 
 Given the life cycle steps \textit{process deployment}, \textit{process instantiation} and \textit{event enabling}, the following occurrence scenarios are distinguished in this work:
 % they have an implicit temporal order
