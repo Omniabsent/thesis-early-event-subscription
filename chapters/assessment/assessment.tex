@@ -36,7 +36,7 @@ The event behavior is comparable with the \textit{Eurotunnel Delay Event} consid
 \end{figure}
 
 
-\paragraph{EOS1: The event occurs while the catch element is enabled}
+\subsection*{EOS1: The event occurs while the catch element is enabled}
 
 The first scenario represents the case that is assumed by the BPMN 2.0 specification: 
 The event occurs after the event element has been enabled and before it has terminated. It will be consumed by the catch event and the process flow can proceed without unnecessary delay.
@@ -45,7 +45,7 @@ In this scenario, the use of a simple intermediate catch event is sufficient.
 \todo[inline]{Notably, there always is a certain delay when consuming an event through an intermediate catch event. The BPMN specification itself states that \textit{the handling consists of waiting for the Event to occur}.
 However, that delay can theoretically be infinitely small. <-- maybe mention this at the beginning of 'problem statement' to differentiate between normal delay and unnecessary delay?}
 
-\paragraph{EOS2: The event does not occur}
+\subsection*{EOS2: The event does not occur}
 
 \begin{figure}[bth]
 	\myfloatalign
@@ -67,7 +67,7 @@ An alternative solution with equivalent semantics is depicted in~(b), using a re
 Any of the two model improvements will make sure that a process does not run into a lock if the expected event does not occur.
 
 
-\paragraph{EOS3: Occurrence between Process instantiation and the enabling of the BPMN event}
+\subsection*{EOS3: Occurrence between Process instantiation and the enabling of the BPMN event}
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=1\linewidth]{chapters/assessment/parallel-gateway-early-subscription.png}}
@@ -83,66 +83,86 @@ To avoid a lock in this scenario, the intermediate catch event can be placed in 
 This is illustrated in \autoref{fig:excerpt-parallel-gateway-event}. The time of subscription to the event can be controlled by the position of the parallel split: To implement an event subscription right after process instantiation, the Parallel Gateway has to be the first element after the Start Event~(that means \textit{Part~1} in the illustration is empty). 
 To implement the event subscription at a specific point during process execution, part of the process must execute before reaching the Parallel Gateway. As modeled in \autoref{fig:excerpt-parallel-gateway-event}, the event may occur at any time during the execution of the collapsed sub-process \textit{Part~2}. 
 
-\paragraph{EOS4 and EOS5: Before Process Instantiation}
+\subsection*{EOS4 and EOS5: Before Process Instantiation}\label{ass:model:buffered}
 \begin{figure}[]
 	\myfloatalign
 	{\hspace*{-0.0cm}\includegraphics[width=1.2\linewidth]{chapters/assessment/2A_buffer_pushing.png}}
 	\caption{Event Buffering through an auxiliary buffering process}\label{fig:aux-buffering-process}
 \end{figure}
 
-Any Events that happen before process instantiation will not be considered in a standard intermediate catch event. That applies to both scenarios, the occurrence between deployment and instantiation (\textit{EOS4}) and an occurrence time before the deployment of the process in the Process Engine (\textit{EOS5}).
+%intro
+Any Events that happen before process instantiation will not be considered in a standard intermediate catch event. That applies to both scenarios, the occurrence between deployment and instantiation~(\textit{EOS4}) and an occurrence time before the deployment of the process in the Process Engine~(\textit{EOS5}).
 
-To create a process model that allows to catch an event before the process instance exists, three new elements are introduced in addition to the existing process referred to as \textit{target} or \textit{original process}. The elements are: (1)~An additional \textit{Auxiliary Buffering Process} that can catch an incoming event independently from the target process; (2)~an \textit{Event~Buffer}, a temporary data-store that keeps event data until it is ready for consumption; (3)~an \textit{Auxiliary Event Delivery Process}, that retrieves events from the buffer and makes them available to the target process.
+%new elements
+To create a process model that allows to catch an event before the process instance exists, three new elements are introduced in addition to the existing process referred to as \textit{target-} or \textit{original process}. The elements are: (1)~An additional \textit{Auxiliary Buffering Process} that can catch an incoming event independently from the target process; (2)~an \textit{Event~Buffer}, a temporary data-store that keeps event data until it is ready for consumption; (3)~an \textit{Auxiliary Event Delivery Process}, that retrieves events from the buffer and makes them available to the target process.
+By introducing an additional process for listening to the event, the subscription time to the \textit{Event Engine} can be before instantiation or even deployment of the original process.
+\autoref{fig:aux-buffering-process} shows the interaction of the original process, the two auxiliary processes and the data-store.
 
-\todo[inline]{a receive task must be used at the beginning to allow data output}
+%how does that work in detail
+%Auxiliary buffering
+\paragraph{The execution flow}
+To start listening for an event, the auxiliary buffering process has to be instantiated through a message start event containing the information necessary for the event subscription. 
+The process subscribes to the event engine through a throwing event. It then waits for an event to occur in a receive activity \textit{Receive external event} and outputs the received event data to a DataObject. That object is then written to a persistent, global data-store \textit{Event Buffer} by the service task \textit{Write to buffer}. 
+The design is able to handle multiple event occurrences, because, after writing to the buffer, the receiving activity is executed again. The buffering process terminates only once the \textit{Unsubscribe} event is received.
+The implementation of the service task decides about the exact semantics of the buffering and hence about requirement~\textit{R3.3}. For the sake of simplicity, it is assumed that the buffer can hold a maximum of 1~element~(\textit{Size~Policy}) and the service task overwrites that element whenever a new one is available, specifying the retrieval order~(R3.3.4).
+An implementation of the \textit{Lifetime Policy} is not provided. 
+The consumption behavior~(\textit{R3.3.2}) is defined by the service task of the auxiliary delivery process: After the retrieval of an event from the buffer it remains available.
 
-\autoref{fig:aux-buffering-process} is a BPMN diagram showing the interaction of the original process, the two auxiliary processes and the data-store. To start listening for an event, the auxiliary buffering process has to be instantiated through a message start event containing the information necessary for the event subscription. The process starts listening for the event and writes the received event to the temporary data-store. 
-The presented process design is able to handle multiple event occurrences, because the receiving activity is looping. The buffering process terminates once the \textit{Unsubscribe} event is received.
+%original process and event delivery
+After the buffering process is running, the original process can be instantiated. 
+In the presented model, its intermediate catch event has been explicitly split into three events to fulfill the publish/subscribe paradigm: An initial send event to request events, a catch event to receive and a final send event to signal that no events shall be received anymore.
+The initial send event instantiates the \textit{Auxiliary Event Delivery Process}, which tries to read from the event buffer and delivers the event to the original process if there is one available. 
+The central looping activity will retry reading from the buffer until data becomes available and will only be terminated once the \textit{Unsubscribe}-event occurs.
 
-\todo[inline]{how should the ABP be started? manually?}
+%conclusions
+\paragraph{Conclusions}
+Thanks to the complex interaction of the three processes, the original process can consume the desired event, even though the event occurs before process instantiation. Consequently, \textit{EOS4}~can be handled by the model. 
+Moreover, the \textit{Auxiliary Buffering Process} is not bound to a specific event, it works generically with any event information that is passed to it. For that reason it is also not bound to a specific process deployment and can buffer events even before a process has been deployed, so it handles scenario~\textit{EOS5}.
+The buffering process can alternatively be started using an explicit message send event during process execution, similar to the \textit{Explicit Subscription Task} introduced in \cite{mandal:2017}. By that means, \textit{EOS1}~and \textit{EOS3} are also supported, which results in the fulfillment of requirement~\textit{R2.2}.
 
-The original process can be started any time after the buffering process. In \autoref{fig:aux-buffering-process}, the Intermediate Catch Event has been explicitly split into three events: An initial Send Event to request events, a Catch Event to receive and a final Send Event to signal that no events shall be received anymore.
-The initial Send Event instantiates the \textit{Auxiliary Event Delivery Process}, which tries to read from the Event Buffer and deliver the event to the Original Process. Once there is data available in the buffer, it is sent by the sending activity. The central looping activity will retry reading from the buffer until data becomes available and will only be terminated once the \textit{Stop}-event occurs. 
-The Original Process can receive the event using a standard Intermediate Catch Event even when the event occurs before the instantiation of \textit{Original Process}, so it handles scenario \textit{O4}. 
-Moreover the \textit{Auxiliary Buffering Process} is not bound to a specific event, it works generically with any event information that is passed on to it. For that reason it is also not bound to a specific process deployment and can buffer events even before a process has been deployed, so it handles scenario \textit{O5}.
-Given that the buffering process can alternatively be started using an explicit Message Send Event during process execution and the process does not stop listening until the Original Process has received the event, scenarios \textit{O1} and \textit{O3} are also supported.
+%BUT
+It remains to be highlighted that this approach will only work for \textit{EOS4} and \textit{EOS5} if the buffering process is instantiated before the associated event occurs. As there are no other systems in place to automatically instantiate the process, it must be assumed that the process is manually started for each event and each process model that requires an early event subscription.
+Furthermore, the number of processes running in the execution environment increases significantly. An instance of the buffering process is required for each event element that ought to make use of an event subscription time before deployment. For each instance of the original process and each buffered event, an instance of the auxiliary event delivery process must be started.
+That puts additional load on the process engine which can endanger the reliability of business-critical processes and makes the management of processes and their instances more complex.
+The downsides of the presented approaches are discussed in more detail in \autoref{ch:ass:discussion}.
 
-\todo[inline]{what exactly is passed around|how many instances of each process|overwrite or append to buffer|this is only one solution to do this, one that requires minimal changes in the original process}
+\todo[inline]{Do I want to work with the requirements or not???}
 
-\todo[inline]{this means that there are a lot more instances than necessary, performance and management overhead. further discussed in ...}
 
 \section{Implemention of Early Event Subscription using standard Camunda}\label{ch:assessment-implementation}
-The previous chapter has shown that that it is possible to create BPMN models to match each of the Event Occurrence Scenarios, though for the scenarios \textit{O4} and \textit{O5} the solution becomes increasingly complex.
-In the next step I investigate the capabilities of Camunda, a modern and actively developed Business Process Engine that is available under an open source license.
-Camunda shall be used without any code customization, that means as offered on the website.
-The solution presented for the last two scenarios has proven capable enough to handle all Event Occurrence Scenarios, therefor the goal is to implement this solution. It will be necessary to create the two auxiliary processes and a data-store in addition to the original process that makes use of the event buffering.
+The previous chapter has shown that it is possible to create BPMN models to match each of the Event Occurrence Scenarios, though for the scenarios \textit{EOS4} and \textit{EOS5} the solution becomes increasingly complex.
+In the next step I investigate the capabilities of Camunda as an example for a state-of-the-art business process engine.
+Camunda shall be used without any code customization, that means as offered through the deployment package.
+The solution presented in \autoref{ass:model:buffered} (\textit{EOS4} and \textit{EOS5}) has proven capable enough to handle all event occurrence scenarios, it is therefor the goal to implement a prototypical solution in Camunda in strong accordance with the BPMN model shown in \autoref{fig:aux-buffering-process}.
 
-Two generic sample processes have been modeled for demonstration purposes. \autoref{fig:camunda-example-o3} shows a simple process with an explicit subscription activity to represent the listening to the event after process instantiation but before reaching the Catch Event (Scenario \textit{O3}). It follows a sample activity that takes 15 seconds (implemented using a \textit{Script Task}), the Intermediate Catch Event and another Script Task that displays the content of the received message.
-The example for scenarios \textit{O4} and \textit{O5} (see \autoref{fig:camunda-example-o4-o5}) comprises the following elements: After the start event follows an Intermediate Catch Event, then an activity that prints the message of the event to console and last the Process End Event. Both figures show the processes as modeled in the Camunda Modeler.
+Two generic sample processes have been modeled for evaluate the functionality of the system. \autoref{fig:camunda-example-o3} shows a simple process with an explicit subscription activity to represent the listening to the event after process instantiation but before reaching the Catch Event (Scenario~\textit{EOS3}). It follows a sample activity that takes 15 seconds (implemented using a \textit{Script~Task}), the intermediate catch event and another script task that displays the content of the received message.
+The example for scenarios \textit{EOS4} and \textit{EOS5}~(\autoref{fig:camunda-example-o4-o5}) comprises the following elements: After the start event follows an intermediate catch event, then an activity that prints the message of the event to console and last the process end event. Both figures show screen captures from the Camunda Modeler.
 
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=1\linewidth]{chapters/assessment/example-o3.PNG}}
-	\caption{Generic Example Process in Camunda for Occurrence Scenario \textit{O3}}\label{fig:camunda-example-o3}
+	\caption{Generic Example Process in Camunda for Occurrence Scenario \textit{EOS3}}\label{fig:camunda-example-o3}
 \end{figure}
 
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=1\linewidth]{chapters/assessment/example-o4-o5.PNG}}
-	\caption{Generic Example Process in Camunda for Occurrence Scenarios \textit{O4} and \textit{O5}}\label{fig:camunda-example-o4-o5}
+	\caption{Generic Example Process in Camunda for Occurrence Scenarios \textit{EOS4} and \textit{EOS5}}\label{fig:camunda-example-o4-o5}
 \end{figure}
 
 \paragraph{Auxiliary Buffering Process}
 The task of this process is to subscribe to a CEP Platform using a provided event query and start listening for events. Any incoming event must be stored in a data-store (\textit{Event Buffer}).
-UNICORN, an Esper-based academic event processing platform, will be used in this example.
-A local MySQL database has been chosen for buffering the event data because it's freely available, quick to set up, offers standardized access via SQL queries and Java connectors and will persist data to the local harddrive by default. As UNICORN also requires an SQL database, the MySQL instance can be used in both cases.
+A local MySQL database has been chosen for persisting the event data because it is freely available, easy to set up, offers standardized access via SQL queries and Java connectors.
+As complex event processing functionality itself is not required to demonstrate the use-case, the role of the \textit{Event Engine} is taken by a basic web-service which was specifically implemented in Python. It exposes a \textit{subscribe} method via \acs{HTTP} and can be used to trigger event messages associated to registered subscriptions.
 
 \autoref{fig:camunda-aux-buffering-process} shows the final Buffering Process modeled in the Camunda Process Modeler. The process can be instantiated by issuing a \textit{Buffering Task} message. This message must contain three data fields: \textit{processDefinitionId}, to know which process definition the buffered messages belong to; \textit{messageName}, the name of the message event within the process; \textit{query}, the event query in the Esper Query Language.
 Camunda will make the message data automatically available in the process instance as process variables, so they can be used during the execution of the Buffering Process.
-After instantiation, the process reaches the activity \textit{Subscribe to Event Source}, a \textit{Java Service Task} that executes a HTTP call to the UNICORN platform. That call registers the event query in UNICORN. \todo[inline]{it tells unicorn its own instanceId, so that unicorn can correlate events to that exact instance}
-Afterwards, the process reaches the receiving activity \textit{Wait for unsubscribe event} that will terminate the process as soon as the \textit{Unsubscribe} event has been received.
-As long as this activity is active, events can be received through the attached Non-Interrupting Boundary Event. Incoming events have a field \textit{eventBody}, which contains the event information and becomes available through a process variable with the same name. \todo[inline]{does the message from UC have a field 'eventBody'?}
-The boundary event triggers the service task \textit{Write eventBody to datastore}, which takes the data from the process variable and writes it to the MySQL Database Instance (\textit{Global Event Buffer}).
+After instantiation, the process reaches the activity \textit{Subscribe to Event Source}, a \textit{Java Service Task} that executes a HTTP call to the event engine. That call registers the event query in the platform, providing the process instance identifier and the message name. Based on this information, Camunda can correlate received events back to a specific process instance and message element.
+After the subscription, the process reaches the receiving activity \textit{Wait for unsubscribe event} that will terminate the process as soon as the \textit{Unsubscribe} event has been received.
+As long as this activity is active, events can be received through the attached non-interrupting boundary event. Incoming events have a field \textit{eventBody}, which contains the event information and becomes available through a process variable with the same name.
+The boundary event triggers the service task \textit{Write eventBody to datastore}, which takes the data from the process variable and writes it to the MySQL Database (\textit{Global Event Buffer}).
+
+Notably, the Camunda process model appears less complex than the one presented in \autoref{ass:model:buffered} while still implementing the same functionality. That is possible because in Camunda, the information received in intermediate message events is written to process variables for further use, a feature that the BPMN specification only considers for the receive task.
 
 \begin{figure}[]
 	\myfloatalign
@@ -151,11 +171,10 @@ The boundary event triggers the service task \textit{Write eventBody to datastor
 \end{figure}
 
 \paragraph{Auxiliary Event Delivery Process}
-The delivery process (see \autoref{fig:camunda-aux-event-delivery}) reads the latest data from the buffer and sends it to the process instance. It can be started with a message that contains the \textit{processInstanceId} and the \textit{processDefinitionId} of the requesting process and the \textit{messageName} of the Message Event that is requested from the buffer.
-A \textit{Delay} Timer Event has been inserted to make sure that the receiving process is already in listening state, the execution happens asynchronously.
+The delivery process (see \autoref{fig:camunda-aux-event-delivery}) reads the latest data from the buffer and sends it to the process instance. It can be started with a message that contains the \textit{processInstanceId} and the \textit{processDefinitionId} of the requesting process and the \textit{messageName} of the message event that is requested from the buffer.
+A timer event \textit{Delay Timer} has been inserted to make sure that the requesting process is already listening for an event, when the delivery process sends the message. The outgoing execution flow is treated asynchronously.
 It follows the service task \textit{Retrieve event from buffer}, which executes Java code to read from the MySQL Database \textit{Event Buffer} and store the event information in a process variable named \textit{eventMessage}.
-The content of that process variable is sent to the \textit{Original Process} in the Send Event, afterwards the execution is finished.
-
+The content of that process variable is sent to the original process in the send event, afterwards the execution is finished.
 
 \begin{figure}[]
 	\myfloatalign
@@ -165,10 +184,10 @@ The content of that process variable is sent to the \textit{Original Process} in
 
 
 \paragraph{Interaction of the Processes}
-In this implementation of flexible event subscription, the action of subscribing to the event source and the reception of events in the Original Process are splitted into two separate parts, each supported by an auxiliary process.
+%In this implementation of flexible event subscription, the action of subscribing to the event source and the reception of events in the Original Process are splitted into two separate parts, each supported by an auxiliary process.
 To initiate the subscription at the event source, the Auxiliary Event Buffering process has to be started.
-For scenario \textit{O3}, this happens through an extra activity (\textit{Trigger Buffering Process}) during process execution, so that events after process instantiation are received by the Buffering Process.
-In scenarios \textit{O4} and \textit{O5}, the subscription and thus the instantiation of the Buffering Process must happen before the instantiation of the Target Process. As there is no such mechanism in the standard Camunda Process Engine, the Buffering Process must be started by hand, providing the \textit{processDefinitionId}, the \textit{messageName} and the \textit{eventQuery}.
+For scenario \textit{EOS3}, this happens through an extra activity (\textit{Trigger Buffering Process}) during process execution, so that events after process instantiation are received by the Buffering Process.
+In scenarios \textit{EOS4} and \textit{EOS5}, the subscription and thus the instantiation of the Buffering Process must happen before the instantiation of the Target Process. As there is no such mechanism in the standard Camunda Process Engine, the Buffering Process must be started manually, providing the \textit{processDefinitionId}, the \textit{messageName} and the \textit{eventQuery}.
 
 Now that the \textit{Buffering Process} is running, any events matching the query will be stored to the buffer.
 When the Target Process reaches the Catch Event, a request for buffered events is sent as a message to trigger the \textit{Auxiliary Event Delivery Process}.
@@ -177,13 +196,15 @@ The code is invoked by a Start ExecutionListener attached to the Catch Event. Ex
 While the Original Process will now start listening for the desired events, the Event Delivery Process will send the buffered events as messages to the Original Process.
 
 If no events have been received yet, all the involved processes remain active: the Buffering Process will keep listening for an external event. The Delivery Process will send an event to the Original Process as soon as there is one in the buffer. The Catch Event in the Original Process will keep listening for an Event.
+The necessary communication for the termination of the processes and the unsubscribe-operation have not been implemented in this prototypical implementation, as they would not add particular value to the evaluation.
 
-\todo[inline]{the termination of the processes is not yet implemented in Camunda}
-\todo[inline]{get wording straight: Original process, target process, requesting process, main process | also always italic or never}
+\paragraph{Conclusion}
+The described implementation of the BPMN buffering concept presented in \autoref{ass:model:buffered} serves as a brief evaluation of the model. As illustrated by the help of the two examples, the resulting set of process applications allows to issue an event subscription flexibly according to the event occurrence scenarios.
+While a thorough analysis was not the target of this section, it still provides an introduction to the capabilities of the Camunda process engine, which will take an important role again in \ref{ch:implementation}.
 
-\missingfigure{overview of the 3 processes, mysql and UNICORN}
+\todo[inline]{where is the code?}
 
-\todo[inline]{note that this is an investigative implementation that matches exactly the given use-case and is not meant to be used in production. It is neither flexible nor robust enough for that purpose, but suits very well in understanding the capabilities and the shortcomings of BPMN and Camunda when it comes to handling the Event Occurrence Scenarios}
+Note that this is an investigative implementation that matches exactly the given use-case and is not meant to be used in production. It is neither flexible nor robust enough for that purpose, but suits very well in understanding the capabilities and the shortcomings of BPMN and Camunda when it comes to handling the Event Occurrence Scenarios.
 
 
 \section{Discussion}\label{ch:ass:discussion}

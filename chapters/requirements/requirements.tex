@@ -238,7 +238,7 @@ It shall be noted that the requirements \textit{R2} and \textit{R3} introduced i
 	Provided that multiple events can occur between the time of subscription and the enabling of the event element, it must be specified for each buffer, how many events should be stored for later consumption.
 	In basic scenarios, where a buffer is only accessed a single time by one catch event in one process instance, a fixed buffer size of one element will be sufficient. However, if a buffer is accessed multiple times or shared among instances, the buffer size may vary between~1~and infinity.
 	
-	\item[R3.3.4 Order Policy:]
+	\item[R3.3.4 Retrieval Order Policy:]
 	If multiple events are stored in the buffer~(\textit{R3.3.3}), it will make a difference in which order the events are provided for consumption. The order can be chosen as \textit{First in first out}~(FIFO) or \textit{Last in first out}~(LIFO) 
 	
 \end{description}
