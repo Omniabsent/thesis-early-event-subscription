@@ -31,8 +31,8 @@ The event behavior is comparable with the \textit{Eurotunnel Delay Event} consid
 
 \begin{figure}[]
 	\myfloatalign
-	{\includegraphics[width=1\linewidth]{chapters/assessment/process-with-intermediate-event.png}}
-	\caption{Abstract Process using an intermediate message catch event}\label{fig:abstract-process-with-event}
+	{\includegraphics[width=0.7\linewidth]{chapters/assessment/generic-process-with-interm-event.png}}
+	\caption{Generic process terminating after an intermediate message catch event}\label{fig:abstract-process-with-event}
 \end{figure}
 
 
@@ -46,19 +46,24 @@ In this scenario, the use of a simple intermediate catch event is sufficient.
 However, that delay can theoretically be infinitely small. <-- maybe mention this at the beginning of 'problem statement' to differentiate between normal delay and unnecessary delay?}
 
 \paragraph{EOS2: The event does not occur}
-\begin{figure}[]
+
+\begin{figure}[bth]
 	\myfloatalign
-	{\includegraphics[width=1\linewidth]{chapters/assessment/parallel-timer-event.png}}
-	\caption{Intermediate message event accompanied by a parallel timer event}\label{fig:excerpt-event-with-timer}
+	\subfloat[Parallel timer event]
+	{\includegraphics[width=.45\linewidth]{chapters/assessment/parallel-timer-event.png}} \quad
+	\subfloat[Boundary timer event]
+	{%\label{fig:example-b}%
+		\includegraphics[width=.45\linewidth]{chapters/assessment/boundary-timer-event.png}}
+	\caption[Tu duo titulo debitas latente]{Receipt of an intermediate message event, either interrupted by a~boundary event\,(a) or parallel timer event\,(b).}
+	\label{fig:excerpt-event-with-timer}
 \end{figure}
-\todo[inline]{alternatively: a receive task with boundary timer event. when gateway: don't join with exclusive}
 
 In certain situations an event might not occur at all. Given a basic event implementation like in \autoref{fig:abstract-process-with-event}, the process flow will get to a halt once it reaches the intermediate catch event and will not be able to proceed. While, depending on the process design, this might be the desired behavior, in many situations this is not acceptable.
 In \textit{Example~1.2}, the process relies on the \textit{final arrival time} information from the customer. If the event does not occur, for example due to a mistake in a factory work-flow, the process execution waits for the event indefinitely.
 To improve the process design, the logistics company decides that after waiting for the event for 30~minutes, an arbitrary delivery window shall be assumed. The waiting for the event shall be terminated so that the goods can be delivered immediately.
 
-\autoref{fig:excerpt-event-with-timer} shows how this behavior can be implemented by the help of an event-based gateway which puts a timer event in parallel to the intermediate catch event. If the timer event occurs before the message event is consumed, the message event is terminated immediately and the process flow proceeds from the timer event.
-An alternative solution with equivalent semantics is depicted in \autoref{}, using a receive task and an interrupting boundary timer event. Once the timer event fires, the receive activity is canceled and the process continues along the outgoing flow of the time event.
+\autoref{fig:excerpt-event-with-timer} shows how this behavior can be implemented in two ways: (a)~By the help of an event-based gateway which puts a timer event in parallel to the intermediate catch event: If the timer event occurs before the message event is consumed, the message event is terminated immediately and the process flow proceeds from the timer event.
+An alternative solution with equivalent semantics is depicted in~(b), using a receive task and an interrupting boundary timer event. Once the timer event fires, the receive activity is canceled and the process continues along the outgoing flow of the time event.
 Any of the two model improvements will make sure that a process does not run into a lock if the expected event does not occur.
 
 
@@ -69,31 +74,42 @@ Any of the two model improvements will make sure that a process does not run int
 	\caption{Event Element in parallel process flow}\label{fig:excerpt-parallel-gateway-event}
 \end{figure}
 
-In case the event occurs during process execution, but before the BPMN event element is enabled and thus listening for events, the occurrence will not be considered in the execution. The process will get stuck at the Event Process Element as if the event did not happen at all.
-To avoid a deadlock in this scenario, a solution is to execute the Intermediate Catch Event in parallel to the rest of the process flow using a Parallel Gateway. This is illustrated in \autoref{fig:excerpt-parallel-gateway-event}. The time of subscription to the event can be controlled by the position of the parallel split: To implement an event subscription right after process instantiation, the Parallel Gateway has to be the first element after the Start Event (that means \textit{Part~1} in the illustration is empty). To implement event subscription at a specific point during process execution, part of the process can execute before reaching the Parallel Gateway. In \autoref{fig:excerpt-parallel-gateway-event}, the event may occur at any time during the execution of the collapsed sub-process \textit{Part~2}. 
+In case the event occurs during process execution, but before the BPMN event element is enabled and thus listening for events, the occurrence will not be available for consumption. 
+The execution will come to a halt at the event element as if the event did not happen at all.
+
+\todo[inline]{could exemplify this at ex1.2, In the previously mentioned \textit{Example~1.2}}
+
+To avoid a lock in this scenario, the intermediate catch event can be placed in parallel to the rest of the process flow using a parallel gateway. 
+This is illustrated in \autoref{fig:excerpt-parallel-gateway-event}. The time of subscription to the event can be controlled by the position of the parallel split: To implement an event subscription right after process instantiation, the Parallel Gateway has to be the first element after the Start Event~(that means \textit{Part~1} in the illustration is empty). 
+To implement the event subscription at a specific point during process execution, part of the process must execute before reaching the Parallel Gateway. As modeled in \autoref{fig:excerpt-parallel-gateway-event}, the event may occur at any time during the execution of the collapsed sub-process \textit{Part~2}. 
 
 \paragraph{EOS4 and EOS5: Before Process Instantiation}
 \begin{figure}[]
 	\myfloatalign
-	{\includegraphics[width=1\linewidth]{chapters/assessment/aux-buffer-process.png}}
-	\caption{Event Buffering through an auxiliary Buffering Process}\label{fig:aux-buffering-process}
+	{\hspace*{-0.0cm}\includegraphics[width=1.2\linewidth]{chapters/assessment/2A_buffer_pushing.png}}
+	\caption{Event Buffering through an auxiliary buffering process}\label{fig:aux-buffering-process}
 \end{figure}
 
-Any Events that happen before process instantiation will not be considered in a standard Intermediate Catch Event. That applies to both scenarios, the occurrence between deployment and instantiation (\textit{O4}) and an occurrence time before the deployment of the process in the Process Engine (\textit{O5}).
+Any Events that happen before process instantiation will not be considered in a standard intermediate catch event. That applies to both scenarios, the occurrence between deployment and instantiation (\textit{EOS4}) and an occurrence time before the deployment of the process in the Process Engine (\textit{EOS5}).
 
-To create a Process Model that allows to catch an event before the process instance exists, three new elements are introduced: (1) An additional \textit{Auxiliary Buffering Process} that can catch an incoming event, (2) an \textit{Event~Buffer}, a temporary data-store that keeps event data until required by the \textit{Original~Process}, (3) an \textit{Auxiliary Event Delivery Process}, that retrieves events from the buffer and makes them available to the \textit{Original~Process}.
-\autoref{fig:aux-buffering-process} reveals the interaction of the \textit{Original Process}, the two auxiliary processes and the data-store. To start listening for an event, the \textit{Auxiliary Buffering Process} has to be instantiated through the a message start event containing the information necessary for the event subscription. The process starts listening for the event and writes the received event to the temporary data-store. 
-The given process design is able to handle multiple event occurrences, because the receiving activity is looping. The buffering process terminates once the \textit{Unsubscribe} event is received.
+To create a process model that allows to catch an event before the process instance exists, three new elements are introduced in addition to the existing process referred to as \textit{target} or \textit{original process}. The elements are: (1)~An additional \textit{Auxiliary Buffering Process} that can catch an incoming event independently from the target process; (2)~an \textit{Event~Buffer}, a temporary data-store that keeps event data until it is ready for consumption; (3)~an \textit{Auxiliary Event Delivery Process}, that retrieves events from the buffer and makes them available to the target process.
+
+\todo[inline]{a receive task must be used at the beginning to allow data output}
+
+\autoref{fig:aux-buffering-process} is a BPMN diagram showing the interaction of the original process, the two auxiliary processes and the data-store. To start listening for an event, the auxiliary buffering process has to be instantiated through a message start event containing the information necessary for the event subscription. The process starts listening for the event and writes the received event to the temporary data-store. 
+The presented process design is able to handle multiple event occurrences, because the receiving activity is looping. The buffering process terminates once the \textit{Unsubscribe} event is received.
 
 \todo[inline]{how should the ABP be started? manually?}
 
-The \textit{Original Process} can be started any time after the buffering process. In \autoref{fig:aux-buffering-process}, the Intermediate Catch Event has been explicitly split into three events: An initial Send Event to request events, a Catch Event to receive and a final Send Event to signal that no events shall be received anymore.
+The original process can be started any time after the buffering process. In \autoref{fig:aux-buffering-process}, the Intermediate Catch Event has been explicitly split into three events: An initial Send Event to request events, a Catch Event to receive and a final Send Event to signal that no events shall be received anymore.
 The initial Send Event instantiates the \textit{Auxiliary Event Delivery Process}, which tries to read from the Event Buffer and deliver the event to the Original Process. Once there is data available in the buffer, it is sent by the sending activity. The central looping activity will retry reading from the buffer until data becomes available and will only be terminated once the \textit{Stop}-event occurs. 
 The Original Process can receive the event using a standard Intermediate Catch Event even when the event occurs before the instantiation of \textit{Original Process}, so it handles scenario \textit{O4}. 
 Moreover the \textit{Auxiliary Buffering Process} is not bound to a specific event, it works generically with any event information that is passed on to it. For that reason it is also not bound to a specific process deployment and can buffer events even before a process has been deployed, so it handles scenario \textit{O5}.
 Given that the buffering process can alternatively be started using an explicit Message Send Event during process execution and the process does not stop listening until the Original Process has received the event, scenarios \textit{O1} and \textit{O3} are also supported.
 
 \todo[inline]{what exactly is passed around|how many instances of each process|overwrite or append to buffer|this is only one solution to do this, one that requires minimal changes in the original process}
+
+\todo[inline]{this means that there are a lot more instances than necessary, performance and management overhead. further discussed in ...}
 
 \section{Implemention of Early Event Subscription using standard Camunda}\label{ch:assessment-implementation}
 The previous chapter has shown that that it is possible to create BPMN models to match each of the Event Occurrence Scenarios, though for the scenarios \textit{O4} and \textit{O5} the solution becomes increasingly complex.
