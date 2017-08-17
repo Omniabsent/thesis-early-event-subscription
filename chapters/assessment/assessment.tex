@@ -47,6 +47,12 @@ The extended requirements will be referenced in \autoref{ch:flexibleeventsubscri
 - dataObject
 
 
+- as bpmn offers a lot of modeling flexiblity, only a selection of options is presented.
+- show an example with service task that determines subscription payload from data object, then throw event
+
+\todo[inline]{after writing this, compare with table}
+
+
 \section{BPMN Models in presence of the Event Occurrence Scenarios}\label{ch:ass:models}
 \todo[inline]{To keep the illustrations simple, implicit subscription and unsubscription as part of the event-element is assumed}
 According the BPMN specification, the listening for an event starts only when the event element is enabled. The start of the listening is interpreted as the time of event subscription.
@@ -248,22 +254,14 @@ While a thorough analysis was not the target of this section, it still provides 
 Note that this is an investigative implementation that matches exactly the given use-case and is not meant to be used in production. It is neither flexible nor robust enough for that purpose, but suits very well in understanding the capabilities and the shortcomings of BPMN and Camunda when it comes to handling the Event Occurrence Scenarios.
 
 \section{Discussion and Requirements Extension}\label{ch:ass:discussion}
+
 - goal was to evaluate current bpm solutions against the requirements presented in ...
 - the evaluation was performed at the example of bpmn and camunda.
 - table ... shows the results. +/o/-
 
-
-- it has become apparent that bpmn provides a lot of flexibility to express even complex subscription scenarios
-- a model of buffered event handling and event subscription in bpmn has been presented and successfully implemented in Camunda.
-- However...
-> as can also be seen on the tabular overview
-- these shortcomings motivate X additional requirements:
-
-(requirements)
-
 \begin{table}%[h]
 	\myfloatalign
-	\begin{tabularx}{\textwidth}{p{0.35\linewidth} | c | p{0.44\linewidth}}
+	\begin{tabularx}{\textwidth}{p{0.3\linewidth} | c | p{0.555\linewidth}}
 		\toprule
 		\tableheadline{Requirement} & \tableheadline{Ev.} & \tableheadline{Explanation} \\ 
 		\midrule
@@ -271,26 +269,26 @@ Note that this is an investigative implementation that matches exactly the given
 		\multicolumn{3}{p{\linewidth}}{\rule{0pt}{4ex} R1: Subscription Fundamentals} \\
 		\midrule
 		
-		R1.1 and R1.2\newline(Un-)Subscription to an Event Source & o & requires additional model elements, \eg~throw/catch event, send/receive task, service task \\
-		R1.3 Availability of Information & o & possible through Annotation or DataObject \\
-		R1.4 Variables in Event Queries & o & defined by impl. if service task is used for subscription \\
+		R1.1 and R1.2\newline(Un-)\,Subscription to/from Event Source & o & requires additional model elements, \eg~throw/catch event, send/receive task, service task \\
+		R1.3 Availability of Information & o & possible by using Annotation or DataObject  \\
+		R1.4 Variables in Event Queries & o & supported through custom implementation in service task \\
 		
 		\midrule
 		\multicolumn{3}{p{\linewidth}}{\rule{0pt}{4ex} R2: Event Subscription Time} \\
 		\midrule
 		
-		R2.1 Explicitness & o & not explicitly stated by BPMN, but interpretable \\
+		R2.1 Explicitness & o & not explicitly stated by BPMN, but possible to derive \\
 		R2.2 Flexibility & & \\
 		> EOS1 & + & natively supported \\
 		> EOS2, EOS3 & o & added complexity through parallel process flow \\
-		> EOS4, EOS5 & - & requires auxiliary processes, significant increase in model elements \\
-		R2.3 Awareness of Subscription Dependencies & o & if subscription is modeled explicitely, DataInput can be used \\
+		> EOS4, EOS5 & - & requires auxiliary processes, significant increase of model elements \\
+		R2.3 Awareness of Subscription Dependencies & o & if subscription is modeled explicitly, DataInput can be used \\
 		
 		\midrule
 		\multicolumn{3}{p{\linewidth}}{\rule{0pt}{4ex} R3: Event Buffering} \\
 		\midrule
 		
-		R3.1 Buffering Principle & + & can be expressed through DataObjects \\
+		R3.1 Buffering Principle & + & Temporary storage can be expressed through DataObjects \\
 		R3.2 Buffer Scope & o & DataObjects for instance-scope, DataStore otherwise. Interaction with data-store adds complexity. \\
 		R3.3 Buffer Policies & o & by textual description or the implementation-specifics of a service task; pure graphical representation will become extremely complex. \\
 			%Note that complex policies like the retrieval order, buffer size and consumption behavior can theoretically be expressed in a BPMN graph, but become exponentially complex.} 
@@ -302,6 +300,13 @@ Note that this is an investigative implementation that matches exactly the given
 \end{table}
 
 
+- it has become apparent that bpmn provides a lot of flexibility to express even complex subscription scenarios
+- a model of buffered event handling and event subscription in bpmn has been presented and successfully implemented in Camunda.
+- However...
+> as can also be seen on the tabular overview
+- these shortcomings motivate X additional requirements:
+
+(extended requirements)
 
 
 
