@@ -127,15 +127,16 @@ To implement the event subscription at a specific point during process execution
 \subsection*{EOS4 and EOS5: Before Process Instantiation}\label{ass:model:buffered}
 \begin{figure}[]
 	\myfloatalign
-	{\hspace*{-0.0cm}\includegraphics[width=1.2\linewidth]{chapters/assessment/EOS5_buffer_pushing.png}}
+	{\hspace*{-1.0cm}\includegraphics[width=1.2\linewidth]{chapters/assessment/EOS5_buffer_pushing.png}}
 	\caption{Event Buffering through an auxiliary buffering process}\label{fig:aux-buffering-process}
 \end{figure}
+\todo[inline]{watch that the full-page figure is correctly hspaced (left/right)}
 
 %intro
 Any Events that happen before process instantiation will not be considered in a standard intermediate catch event. That applies to both scenarios, the occurrence between deployment and instantiation~(\textit{EOS4}) and an occurrence time before the deployment of the process in the Process Engine~(\textit{EOS5}).
 
 %new elements
-To create a process model that allows to catch an event before the process instance exists, three new elements are introduced in addition to the existing process referred to as \textit{target-} or \textit{original process}. The elements are: (1)~An additional \textit{Auxiliary Buffering Process} that can catch an incoming event independently from the target process; (2)~an \textit{Event~Buffer}, a temporary data-store that keeps event data until it is ready for consumption; (3)~an \textit{Auxiliary Event Delivery Process}, that retrieves events from the buffer and makes them available to the target process.
+To create a process model that allows to catch an event before the process instance exists, three new elements are introduced in addition to the existing process referred to as \textit{target-} or \textit{original process}. The elements are: (1)~An additional \textit{Auxiliary Buffering Process}~(or \textit{buffering process}) that can catch an incoming event independently from the target process; (2)~an \textit{Event~Buffer}, a temporary data-store that keeps event data until it is ready for consumption; (3)~an \textit{Auxiliary Event Delivery Process}~(or \textit{delivery process}), that retrieves events from the buffer and makes them available to the target process.
 By introducing an additional process for listening to the event, the subscription time to the \textit{Event Engine} can be before instantiation or even deployment of the original process.
 \autoref{fig:aux-buffering-process} shows the interaction of the original process, the two auxiliary processes and the data-store.
 \todo[inline]{thus also addressing requirement 3}
@@ -169,7 +170,16 @@ The buffering process can alternatively be started using an explicit message sen
 %BUT
 It remains to be highlighted that this approach will only work for \textit{EOS4} and \textit{EOS5} if the buffering process is instantiated before the associated event occurs. As there are no other systems in place to automatically instantiate the process, it must be assumed that the process is manually started for each event and each process model that requires an early event subscription.
 Furthermore, the number of processes running in the execution environment increases significantly. An instance of the buffering process is required for each event element that ought to make use of an event subscription time before deployment. For each instance of the original process and each buffered event, an instance of the auxiliary event delivery process must be started.
-That puts additional load on the process engine which can endanger the reliability of business-critical processes and makes the management of processes and their instances more complex.
+
+\medskip \noindent
+More precisely: Given a process $P1$ with a number~$n_{bea}$ of event elements that subscribe after instantiation, and a number~$n_{beb}$ of elements that subscribe before instantiation of $P1$. Furthermore, the buffering process~$BP$ and the delivery process~$DP$, then the number of instances~$instances(P)$ with $P$ being an arbitrary process is as follows:
+
+\begin{itemize}
+	\item $instances(BP) = n_{beb} + instances(P) \times n_{bea} $
+	\item $instances(DP) = instances(P) \times (n_{beb} + n_{bea})$, assuming that exactly 1 instance of each event is currently in waiting state.
+\end{itemize}
+
+\noindent That puts additional load on the process engine which can endanger the reliability of business-critical processes and makes the management of processes and their instances more complex.
 The downsides of the presented approaches are discussed in more detail in \autoref{ch:ass:discussion}.
 
 \todo[inline]{Do I want to work with the requirements or not???}
@@ -245,19 +255,29 @@ While the Original Process will now start listening for the desired events, the 
 If no events have been received yet, all the involved processes remain active: the Buffering Process will keep listening for an external event. The Delivery Process will send an event to the Original Process as soon as there is one in the buffer. The Catch Event in the Original Process will keep listening for an Event.
 The necessary communication for the termination of the processes and the unsubscribe-operation have not been implemented in this prototypical implementation, as they would not add particular value to the evaluation.
 
+\todo[inline]{where is the code?}
+
+
 \paragraph{Conclusion}
 The described implementation of the BPMN buffering concept presented in \autoref{ass:model:buffered} serves as a brief evaluation of the model. As illustrated by the help of the two examples, the resulting set of process applications allows to issue an event subscription flexibly according to the event occurrence scenarios.
 While a thorough analysis was not the target of this section, it still provides an introduction to the capabilities of the Camunda process engine, which will take an important role again in \ref{ch:implementation}.
 
-\todo[inline]{where is the code?}
 
 Note that this is an investigative implementation that matches exactly the given use-case and is not meant to be used in production. It is neither flexible nor robust enough for that purpose, but suits very well in understanding the capabilities and the shortcomings of BPMN and Camunda when it comes to handling the Event Occurrence Scenarios.
 
 \section{Discussion and Requirements Extension}\label{ch:ass:discussion}
+It was the goal of this chapter to evaluate the capabilities of current \acs{BPM} solutions against the requirements presented in \autoref{ch:requirements}.
+The evaluation was performed at the example of the \acs{BPMN} without allowing the use of the in-built extension mechanism. Furthermore, the developed BPMN solution for buffered event handling~(\autoref{ass:model:buffered}) was implemented prototypically in Camunda to evaluate the applicability of the concept to a business process engine. % which provides an additional understanding 
 
-- goal was to evaluate current bpm solutions against the requirements presented in ...
-- the evaluation was performed at the example of bpmn and camunda.
-- table ... shows the results. +/o/-
+Thanks to the flexibility of the BPMN standard, all of the requirements could be expressed in a model, but the solutions significantly vary in complexity.
+\autoref{tab:assessment-bpmn} summarizes the results, categorizing the findings into three classes: 
+\textit{(+)}~means that the requirement is fulfilled natively and without the necessity for additional elements int the model; 
+\textit{(o)}~signifies that there are acceptable ways to express the desired behavior, but additional elements are necessary for that purpose which increases model complexity; 
+if the aspect is marked as \textit{(-)}, the solution requires a drastic increase of complexity, which might not be acceptable.
+The categorization is based on the findings of the previous sections and a brief explanation is provided in the last column.
+
+%this is all subjective
+%note that no aspect could NOT be implemented
 
 \begin{table}%[h]
 	\myfloatalign
@@ -269,7 +289,7 @@ Note that this is an investigative implementation that matches exactly the given
 		\multicolumn{3}{p{\linewidth}}{\rule{0pt}{4ex} R1: Subscription Fundamentals} \\
 		\midrule
 		
-		R1.1 and R1.2\newline(Un-)\,Subscription to/from Event Source & o & requires additional model elements, \eg~throw/catch event, send/receive task, service task \\
+		R1.1 and R1.2\newline(Un-)\,Subscription to/from the Event Source & o & requires additional model elements, \eg~throw/catch event, send/receive task, service task \\
 		R1.3 Availability of Information & o & possible by using Annotation or DataObject  \\
 		R1.4 Variables in Event Queries & o & supported through custom implementation in service task \\
 		
@@ -282,7 +302,7 @@ Note that this is an investigative implementation that matches exactly the given
 		> EOS1 & + & natively supported \\
 		> EOS2, EOS3 & o & added complexity through parallel process flow \\
 		> EOS4, EOS5 & - & requires auxiliary processes, significant increase of model elements \\
-		R2.3 Awareness of Subscription Dependencies & o & if subscription is modeled explicitly, DataInput can be used \\
+		R2.3 Awareness of Subscription Dependencies & o & if subscription is modeled explicitly, a DataInput can be used \\
 		
 		\midrule
 		\multicolumn{3}{p{\linewidth}}{\rule{0pt}{4ex} R3: Event Buffering} \\
@@ -299,61 +319,86 @@ Note that this is an investigative implementation that matches exactly the given
 	\label{tab:assessment-bpmn}
 \end{table}
 
+\medskip \noindent
+As revealed in the tabular overview, a means to express the required behavior could be found for each of the aspects.
+However, only two of them are considered to be natively supported by the standard while most of the solutions reveal certain shortcomings when it comes to modeling flexible event subscription using BPMN. 
+%requirements add additional complexity to the solution. %specific work-arounds had to be identified.
+In the following, the identified shortcomings are discussed one after the other, which leads to the definition of additional requirements.
 
-- it has become apparent that bpmn provides a lot of flexibility to express even complex subscription scenarios
-- a model of buffered event handling and event subscription in bpmn has been presented and successfully implemented in Camunda.
-- However...
-> as can also be seen on the tabular overview
-- these shortcomings motivate X additional requirements:
+%- a model of buffered event handling and event subscription in bpmn has been presented and successfully implemented in Camunda.
 
-(extended requirements)
+\subsection*{Shortcoming S1: The necessary additional process elements increase model complexity and hence reduce comprehensibility.}
 
+The topic of model complexity has been investigated for example by Mendling~et.\,al.\,\cite{mendling2008metrics,mendling2010seven} and Vanderfeesten~et.\,al.\,\cite{vf2007quality}.
+In their work on process modeling guidelines\,\cite{mendling2010seven}, Mendling~et.\,al. state that \textit{without a proper understanding of the business process [...] they are doomed to fail)}.
+One of the main reasons for decreased comprehensibility lies in the amount of elements and routing paths.
 
+Most of the presented approaches require additional process elements or even entire processes to implement the behavior.
+To cope with the event occurrence scenarios \textit{EOS2} and \textit{EOS3}, the introduction of additional gateways and therefor routing paths is necessary for each event element that is supposed to use flexible event subscription.
+Due to that dependency on the number of buffered events in the process, the added complexity will increase linearly with that number.
+Another dimension becomes apparent in the BPMN model for buffered event handling that is presented in \autoref{ass:model:buffered}. While it allows the subscription to events even before process deployment, it requires the execution of an additional set of auxiliary processes for that purpose.
+Consequently, the increase of process elements is accompanied by an increase of participants. A simple model involving only one event will blow up into a complex process model with three pools, being less concentrated on the actual business case.
 
----------------------
-The goal of this chapter was to get a better understanding of the capabilities of the tools when it comes to covering all event occurrence scenarios. 
-Even though it has proven possible to implement a flexible event subscription time using standard BPMN 2.0 and Camunda, the success comes at a cost.
-The downsides of the presented approach are presented in the following.
+The increased complexity will not only make the resulting model more difficult to understand, but also complicate the design phase by requiring a basic understanding of the publish/subscribe model, the usage semantics of the auxiliary processes and the patterns revealed to control subscription time within a process instance.
 
-It was necessary to create two generic auxiliary processes for event buffering, to connect to a MySQL data-store and use ExecutionListeners to execute custom Java code in Camunda to cover all scenarios, \textit{O1} to \textit{O5}.
+%how to create process models that analysts and business professionals can easily analyze and understand. 
 
-\todo[inline]{give them short names for reference? Or make one of them Requirement 5}
+\subsection*{Shortcoming S3: Event buffering and subscription are infrastructure tasks.}
 
+By their nature 
 
-\paragraph{Missing automatic subscription handling\newline}
+- more instances and processes to maintain and manage using the user interfaces
+- the it department has to do it
+- it has to be explicitly modeled
+- it might be too complicated for process designers to model
 
 In the presented process models, separate process elements had to be added to handle event subscription and initiate event delivery. 
 That conflicts with requirement \textit{R2}, which states that the subscription and un-subscription must be automatically handled by the process engine.
 For the scenarios \textit{O4} and \textit{O5} the Buffering Process has to be triggered manually, because it must be executed before the target process is running. Camunda does not handle external event subscription itself, especially not before the process is running.
 
-\paragraph{Additional model complexity\newline}
 
-As additional process elements have to be added to handle event subscription and delivery, the models become more complicated and are less concentrated on the business case.
-\todo[inline]{there could be a requirement that states that there should be no additional process elements unless there is an explicit subscription time}
 
-\paragraph{Buffering is an IT Task\newline}
+%\paragraph{Buffering is an infrastructure task\newline}
 
 The auxiliary processes are not business tasks and are thus not suited to be modeled in BPMN.
 Desired functionality can be put into Camunda BPMN models thanks to its flexibility to use Java code in Service Tasks or Event Listeners, but naturally the full functionality of the Event Buffer cannot be expressed using BPMN.
 \todo[inline]{what exactly is the issue here?}
+process designers are not it guys
 
-\paragraph{Added load on the Process Engine\newline}
 
-Because of the aux processes, two additional processes have to be deployed in the process engine and are potentially running in parallel to any given process instance. For each Event Element used in a process the engine has to run an instance of the Buffering Process and, eventually, an instance of the Buffer Delivery Process.
-That puts additional load on the process engine, which might prevent business critical processes from executing delay-free.
+\subsection*{Shortcoming S2: Implementing event buffering in the process engine is likely to cause performance issues}
 
-Even when the number of deployed and running auxiliary processes can be reduced through further optimizations there remains an event-management overhead as every event has to be handled twice: once when it is stored in the buffer and once when it's delivered to the target process.
+%buffering slows down execution of business-critical processes, makes less reliable
+Because of the buffering and delivery jobs, two additional processes are potentially running in parallel to any given process instance. For each Event Element used in a process, the engine has to execute an instance of the buffering process and, eventually, an instance of the buffer delivery process.
+For example in a process using two event elements, one subscribing at deployment time and one subscribing after event instantiation, \textbf{the maximum number of process instances for a single execution increases from~1~to~5}. An exact formula to determine the number of instances is provided in \ref{ass:model:buffered}.
+
+
+It is not only the increase in the number of processes, but also the kind of work the the processes are executing: Each instance of the auxiliary buffering process constantly listens to an event source, potentially receiving events and thus creating load in sub-second scale.
+Instead of only listening to an event source when the event element is reached, the process engine has to listen, receive, process and write to the buffer all the time. Even if no instance of the original process is about to use the events.
+That increase of running process instances puts additional load on the process engine, which might prevent business critical processes from executing without delays. 
+Taking into consideration that a process engine can only handle a limited number of process instances and operations, there is an increased possibility of complete engine failure.
+
+%process execution engine too slow for buffering
+Apart from the reduced reliability and the possible delay to the execution of the processes, there is a second performance-related perspective to the issue.
+Given the large amount and high frequency in that events can occur in reality, optimal performance is required for an event-buffering module. 
+Depending on the event query and frequency of event occurrence, the engine has to be ready to receive events at a very fast pace.
+When executing these operations from a BPMN model inside a process engine, the speed in that steps can be executed is only as fast as the process engine itself. While complex event processing platforms are optimized to handle many events in a short amount of time, a process engine is not built for that purpose and might fail to deliver the required performance.
+An aspect that cannot be influenced without tempering with the process engine code.
+
+
+% there remains an event-management overhead as every event has to be handled twice: once when it is stored in the buffer and once when it's delivered to the target process.
 
 %\paragraph{Hidden Performance Limitations of the Process Engine\newline}
-
-Given the large amount and high frequency in that events can occur in reality, optimal performance is required for an event-buffering module.
-Running essential parts of the buffering within the process engine might pose performance limitations that cannot be influenced without tempering with the process engine code.
-
-\medskip \noindent
-\todo[inline]{write connector to next chapter: it has been shown that... therefor we do ...}
+%The buffering process and the delivery process are designed to be generic so that only two more process definitions need to be available in the process repository.
+%The number of process instances instead will greatly increase 
 
 
-\section{Requirements extension}\label{ch:ass:reqextension}
+\subsection*{Requirements extension}\label{ch:ass:reqextension}
+
+- these shortcomings motivate X additional requirements:
+
+(extended requirements)
+
 \begin{description}
 	\item[R2 Automatic Subscription Handling:] 
 	The subscription to event sources is handled implicitly by the process execution environment based on the modeled subscription information as required by \textit{R1} and \textit{R2}. Similarly, the removal of a subscription is performed as soon as a subscription becomes unnecessary.	
