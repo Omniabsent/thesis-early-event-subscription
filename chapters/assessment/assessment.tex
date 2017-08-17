@@ -162,7 +162,7 @@ After the subscription, the process reaches the receiving activity \textit{Wait 
 As long as this activity is active, events can be received through the attached non-interrupting boundary event. Incoming events have a field \textit{eventBody}, which contains the event information and becomes available through a process variable with the same name.
 The boundary event triggers the service task \textit{Write eventBody to datastore}, which takes the data from the process variable and writes it to the MySQL Database (\textit{Global Event Buffer}).
 
-Notably, the Camunda process model appears less complex than the one presented in \autoref{ass:model:buffered} while still implementing the same functionality. That is possible because in Camunda, the information received in intermediate message events is written to process variables for further use, a feature that the BPMN specification only considers for the receive task.
+%Notably, the Camunda process model appears less complex than the one presented in \autoref{ass:model:buffered} while still implementing the same functionality.
 
 \begin{figure}[]
 	\myfloatalign

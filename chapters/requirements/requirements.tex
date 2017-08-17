@@ -111,7 +111,7 @@ Differences have been pointed out as to how exactly the event is placed in the p
 Motivated by this complexity and the possible implications, it is the goal of this work to evaluate the capabilities of BPMN and to present a concept for the flexible handling of event subscription in business processes.
 
 
-\section{Event Occurrence Scenarios}\label{ch:ps:eos}
+\section{Event Occurrence Scenarios and Time of Subscription}\label{ch:ps:eos}
 Given the motivating examples, a generic set of \textit{Event Occurrence Scenarios} is defined in this section. 
 Each of the scenarios represents a real-world situation and process implementations need to be capable of handling them to avoid negative effects.
 
@@ -224,7 +224,8 @@ Before that, the formal requirements will be used to evaluate the capabilities o
 	\item[R3.2 Buffer Scope:]
 	The flexible event subscription time~(\textit{R2.2}) allows an event subscription after process instantiation, but also before process instantiation or deployment.
 	It can be inferred that an event buffer operates either in the scope of a process instance, a process definition, or in the scope of the complete execution environment.
-	To implement all event subscription times stated in \textit{R2.2}, the execution environment must support event buffering in each of the three scopes. The provided concept must make clear to the user, which scope is referenced at any point in time.
+	%To implement all event subscription times stated in \textit{R2.2}, the execution environment must support event buffering in each of the three scopes. 
+	The provided concept must make clear to the user, which scope is referenced at any point in time.
 	
 	\item[R3.3 Buffer Policies:]
 	The behavior of a buffer in any occurring situation must be specific.
