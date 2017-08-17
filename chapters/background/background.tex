@@ -160,6 +160,7 @@ In event-based architectures, communication takes place according to the \textit
 The concept essentially demands that an event processing middleware publishes events to processes only after they have issued a subscription for these events.
 Consequently, there is a strict temporal order between the actions subscribe, consume and un-subscribe. The consumption and un-subscription can only happen after the subscription. Once an un-subscription has been issued, no consumption can follow.~\cite{tanenbaum:2007}
 \missingfigure{state-transition-diagram of temporal order}
+% mandal also references Barros, A., Decker, G., Grosskopf, A.: Complex events in business processes. In: Business Information Systems. Springer (2007)
 
 One of the main advantages of this principle is, that the involved parties are \textit{referentially decoupled}. They do not need to explicitly refer to each other, an aspect that is also acknowledged in~\cite{evtprocessing}.
 Their decoupled nature facilitates the management and development of event processing networks. Event producers and consumers might change frequently.
