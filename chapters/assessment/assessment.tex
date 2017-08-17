@@ -356,7 +356,7 @@ Given that even the simplest process involves the execution of two additional in
 Just like in the design phase, the maintenance will require knowledge of event subscription and buffering, which is probably not available by default.
 
 
-\subsection*{Shortcoming S3: Implementing event buffering in the process engine is likely to cause performance issues}
+\subsection*{Shortcoming S3: Implementing event buffering through process models is likely to cause performance issues.}
 
 %buffering slows down execution of business-critical processes, makes less reliable
 Because of the buffering and delivery jobs, two additional processes are potentially running in parallel to any given process instance. For each Event Element used in a process, the engine has to execute an instance of the buffering process and, eventually, an instance of the buffer delivery process.
@@ -373,8 +373,7 @@ Apart from the reduced reliability and the possible delay to the execution of th
 Given the large amount and high frequency in that events can occur in reality, optimal performance is required for an event-buffering module. 
 Depending on the event query and frequency of event occurrence, the engine has to be ready to receive events at a very fast pace.
 When executing these operations from a BPMN model inside a process engine, the speed in that steps can be executed is only as fast as the process engine itself. While complex event processing platforms are optimized to handle many events in a short amount of time, a process engine is not built for that purpose and might fail to deliver the required performance.
-An aspect that cannot be influenced without tempering with the process engine code.
-
+An aspect that cannot be influenced without customizing the process engine code.
 
 % there remains an event-management overhead as every event has to be handled twice: once when it is stored in the buffer and once when it's delivered to the target process.
 
@@ -385,13 +384,21 @@ An aspect that cannot be influenced without tempering with the process engine co
 
 \subsection*{Requirements extension}\label{ch:ass:reqextension}
 
-- these shortcomings motivate X additional requirements:
+The previously discussed shortcomings S1 to S3 show that even though the basic functional requirements \textit{R1} to \textit{R3} are fulfilled, the resulting solution is not acceptable for application in a production environment.
+Inspired by the highlighted issues, three additional requirements are formulated in the following. While \textit{R4} is an additional functional requirement, \textit{NFR1} and \textit{NFR2} are considered non-functional requirements~(NFRs).
 
-(extended requirements)
 
 \begin{description}
-	\item[R2 Automatic Subscription Handling:] 
+	\item[R4 Automatic Subscription Handling:] 
 	The subscription to event sources is handled implicitly by the process execution environment based on the modeled subscription information as required by \textit{R1} and \textit{R2}. Similarly, the removal of a subscription is performed as soon as a subscription becomes unnecessary.	
+\end{description}
+
+\begin{description}
+	\item[NFR1 Minimal increase in Model Complexity:] 	
+\end{description}
+
+\begin{description}
+	\item[NFR2 :] 	
 \end{description}
 
 + model complexity
