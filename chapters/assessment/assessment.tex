@@ -336,37 +336,27 @@ One of the main reasons for decreased comprehensibility lies in the amount of el
 Most of the presented approaches require additional process elements or even entire processes to implement the behavior.
 To cope with the event occurrence scenarios \textit{EOS2} and \textit{EOS3}, the introduction of additional gateways and therefor routing paths is necessary for each event element that is supposed to use flexible event subscription.
 Due to that dependency on the number of buffered events in the process, the added complexity will increase linearly with that number.
-Another dimension becomes apparent in the BPMN model for buffered event handling that is presented in \autoref{ass:model:buffered}. While it allows the subscription to events even before process deployment, it requires the execution of an additional set of auxiliary processes for that purpose.
+Another dimension becomes apparent in the BPMN model for buffered event handling that is presented at the end of \autoref{ass:model:buffered}. While it allows the subscription to events even before process deployment, it requires the execution of an additional set of auxiliary processes for that purpose.
 Consequently, the increase of process elements is accompanied by an increase of participants. A simple model involving only one event will blow up into a complex process model with three pools, being less concentrated on the actual business case.
 
 The increased complexity will not only make the resulting model more difficult to understand, but also complicate the design phase by requiring a basic understanding of the publish/subscribe model, the usage semantics of the auxiliary processes and the patterns revealed to control subscription time within a process instance.
 
 %how to create process models that analysts and business professionals can easily analyze and understand. 
 
-\subsection*{Shortcoming S3: Event buffering and subscription are infrastructure tasks.}
+\subsection*{Shortcoming S2: Event buffering and subscription are infrastructure tasks.}
+Arguably, the buffering of data and the subscription and un-subscription from events are not business tasks and should hence not be entirely modeled in a business process.
+Though necessary to allow the successful execution of the process, the effort to enable flexible event subscription stands in no relation to the business value it represents. The models essentially get polluted with non-business-related process segments.
+It can be observed from the findings of this chapter, that it is not handy to model the required functionality in the BPMN. After all, two essential activities within the auxiliary tasks are still service tasks. Although the notation allows these kind of code-based tasks, their detailed behavior is still hidden within the underlying implementation.
 
-By their nature 
+Moreover, as noted in \textit{S1}, the design of a process gets more complicated due to the increased number of elements.
+Another issue to consider in that matter is that the process designer who has to make use of the auxiliary processes usually does not have a comprehensive knowledge in information technology~(see~\cite{bpm-book},\,p.\,16). An additional stakeholder will have to be included in the design process, resulting in more complex workflows.
 
-- more instances and processes to maintain and manage using the user interfaces
-- the it department has to do it
-- it has to be explicitly modeled
-- it might be too complicated for process designers to model
-
-In the presented process models, separate process elements had to be added to handle event subscription and initiate event delivery. 
-That conflicts with requirement \textit{R2}, which states that the subscription and un-subscription must be automatically handled by the process engine.
-For the scenarios \textit{O4} and \textit{O5} the Buffering Process has to be triggered manually, because it must be executed before the target process is running. Camunda does not handle external event subscription itself, especially not before the process is running.
-
+Once a given process has been deployed in a process engine, it has to be monitored and maintained.
+Given that even the simplest process involves the execution of two additional instances for buffering, any maintenance and search for errors will be significantly more complicated.
+Just like in the design phase, the maintenance will require knowledge of event subscription and buffering, which is probably not available by default.
 
 
-%\paragraph{Buffering is an infrastructure task\newline}
-
-The auxiliary processes are not business tasks and are thus not suited to be modeled in BPMN.
-Desired functionality can be put into Camunda BPMN models thanks to its flexibility to use Java code in Service Tasks or Event Listeners, but naturally the full functionality of the Event Buffer cannot be expressed using BPMN.
-\todo[inline]{what exactly is the issue here?}
-process designers are not it guys
-
-
-\subsection*{Shortcoming S2: Implementing event buffering in the process engine is likely to cause performance issues}
+\subsection*{Shortcoming S3: Implementing event buffering in the process engine is likely to cause performance issues}
 
 %buffering slows down execution of business-critical processes, makes less reliable
 Because of the buffering and delivery jobs, two additional processes are potentially running in parallel to any given process instance. For each Event Element used in a process, the engine has to execute an instance of the buffering process and, eventually, an instance of the buffer delivery process.
