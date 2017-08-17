@@ -86,7 +86,7 @@ To implement the event subscription at a specific point during process execution
 \subsection*{EOS4 and EOS5: Before Process Instantiation}\label{ass:model:buffered}
 \begin{figure}[]
 	\myfloatalign
-	{\hspace*{-0.0cm}\includegraphics[width=1.2\linewidth]{chapters/assessment/2A_buffer_pushing.png}}
+	{\hspace*{-0.0cm}\includegraphics[width=1.2\linewidth]{chapters/assessment/EOS5_buffer_pushing.png}}
 	\caption{Event Buffering through an auxiliary buffering process}\label{fig:aux-buffering-process}
 \end{figure}
 
@@ -149,6 +149,7 @@ The example for scenarios \textit{EOS4} and \textit{EOS5}~(\autoref{fig:camunda-
 	{\includegraphics[width=1\linewidth]{chapters/assessment/example-o4-o5.PNG}}
 	\caption{Generic Example Process in Camunda for Occurrence Scenarios \textit{EOS4} and \textit{EOS5}}\label{fig:camunda-example-o4-o5}
 \end{figure}
+\todo[inline]{improve camunda modeler screenshots}
 
 \paragraph{Auxiliary Buffering Process}
 The task of this process is to subscribe to a CEP Platform using a provided event query and start listening for events. Any incoming event must be stored in a data-store (\textit{Event Buffer}).
