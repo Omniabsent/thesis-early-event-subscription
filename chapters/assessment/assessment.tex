@@ -321,9 +321,9 @@ The categorization is based on the findings of the previous sections and a brief
 
 \medskip \noindent
 As revealed in the tabular overview, a means to express the required behavior could be found for each of the aspects.
-However, only two of them are considered to be natively supported by the standard while most of the solutions reveal certain shortcomings when it comes to modeling flexible event subscription using BPMN. 
+However, only two of them are considered to be natively supported by the standard while most of the concepts reveal certain shortcomings when it comes to modeling flexible event subscription using BPMN. 
 %requirements add additional complexity to the solution. %specific work-arounds had to be identified.
-In the following, the identified shortcomings are discussed one after the other, which leads to the definition of additional requirements.
+In the following, the identified shortcomings are discussed one after the other. The discussion is arranged into three parts which are specifically marked as \textit{S1} to \textit{S3}. The shortcomings should be specifically addressed in addition to the requirements \textit{R1} to \textit{R3} when developing solutions to flexible event subscription.
 
 %- a model of buffered event handling and event subscription in bpmn has been presented and successfully implemented in Camunda.
 
@@ -333,9 +333,14 @@ The topic of model complexity has been investigated for example by Mendling~et.\
 In their work on process modeling guidelines\,\cite{mendling2010seven}, Mendling~et.\,al. state that \textit{without a proper understanding of the business process [...] they are doomed to fail)}.
 One of the main reasons for decreased comprehensibility lies in the amount of elements and routing paths.
 
+\subsubsection*{S1.1: Additional process elements are required within the additional process.}
+
 Most of the presented approaches require additional process elements or even entire processes to implement the behavior.
 To cope with the event occurrence scenarios \textit{EOS2} and \textit{EOS3}, the introduction of additional gateways and therefor routing paths is necessary for each event element that is supposed to use flexible event subscription.
 Due to that dependency on the number of buffered events in the process, the added complexity will increase linearly with that number.
+
+\subsubsection*{S1.2: Two more participants must be added to implement the subscription before instantiation.}
+
 Another dimension becomes apparent in the BPMN model for buffered event handling that is presented at the end of \autoref{ass:model:buffered}. While it allows the subscription to events even before process deployment, it requires the execution of an additional set of auxiliary processes for that purpose.
 Consequently, the increase of process elements is accompanied by an increase of participants. A simple model involving only one event will blow up into a complex process model with three pools, being less concentrated on the actual business case.
 
@@ -343,11 +348,14 @@ The increased complexity will not only make the resulting model more difficult t
 
 %how to create process models that analysts and business professionals can easily analyze and understand. 
 
-\subsection*{Shortcoming S2: Event buffering and subscription are infrastructure tasks.}
+\subsection*{Shortcoming S2: Event buffering and subscription are infrastructure tasks and therefor not suited to be implemented through a business process model.}
 Arguably, the buffering of data and the subscription and un-subscription from events are not business tasks and should hence not be entirely modeled in a business process.
+
+\subsubsection*{S2.1: The buffering and subscription activities pollute the model with non-business-related content.}
 Though necessary to allow the successful execution of the process, the effort to enable flexible event subscription stands in no relation to the business value it represents. The models essentially get polluted with non-business-related process segments.
 It can be observed from the findings of this chapter, that it is not handy to model the required functionality in the BPMN. After all, two essential activities within the auxiliary tasks are still service tasks. Although the notation allows these kind of code-based tasks, their detailed behavior is still hidden within the underlying implementation.
 
+\subsubsection*{S2.2: Process designers likely lack the skills to cope with event buffering and subscription.}
 Moreover, as noted in \textit{S1}, the design of a process gets more complicated due to the increased number of elements.
 Another issue to consider in that matter is that the process designer who has to make use of the auxiliary processes usually does not have a comprehensive knowledge in information technology~(see~\cite{bpm-book},\,p.\,16). An additional stakeholder will have to be included in the design process, resulting in more complex workflows.
 
@@ -357,6 +365,8 @@ Just like in the design phase, the maintenance will require knowledge of event s
 
 
 \subsection*{Shortcoming S3: Implementing event buffering through process models is likely to cause performance issues.}
+
+\subsubsection*{S3.1: The execution of additional buffering processes affects process engine reliability.}
 
 %buffering slows down execution of business-critical processes, makes less reliable
 Because of the buffering and delivery jobs, two additional processes are potentially running in parallel to any given process instance. For each Event Element used in a process, the engine has to execute an instance of the buffering process and, eventually, an instance of the buffer delivery process.
@@ -368,6 +378,8 @@ Instead of only listening to an event source when the event element is reached, 
 That increase of running process instances puts additional load on the process engine, which might prevent business critical processes from executing without delays. 
 Taking into consideration that a process engine can only handle a limited number of process instances and operations, there is an increased possibility of complete engine failure.
 
+\subsubsection*{S3.2: The execution of event buffering through a business process is limited by process engine performance.}
+	
 %process execution engine too slow for buffering
 Apart from the reduced reliability and the possible delay to the execution of the processes, there is a second performance-related perspective to the issue.
 Given the large amount and high frequency in that events can occur in reality, optimal performance is required for an event-buffering module. 
@@ -381,26 +393,9 @@ An aspect that cannot be influenced without customizing the process engine code.
 %The buffering process and the delivery process are designed to be generic so that only two more process definitions need to be available in the process repository.
 %The number of process instances instead will greatly increase 
 
-
-\subsection*{Requirements extension}\label{ch:ass:reqextension}
-
-The previously discussed shortcomings S1 to S3 show that even though the basic functional requirements \textit{R1} to \textit{R3} are fulfilled, the resulting solution is not acceptable for application in a production environment.
-Inspired by the highlighted issues, three additional requirements are formulated in the following. While \textit{R4} is an additional functional requirement, \textit{NFR1} and \textit{NFR2} are considered non-functional requirements~(NFRs).
-
-
-\begin{description}
-	\item[R4 Automatic Subscription Handling:] 
-	The subscription to event sources is handled implicitly by the process execution environment based on the modeled subscription information as required by \textit{R1} and \textit{R2}. Similarly, the removal of a subscription is performed as soon as a subscription becomes unnecessary.	
-\end{description}
-
-\begin{description}
-	\item[NFR1 Minimal increase in Model Complexity:] 	
-\end{description}
-
-\begin{description}
-	\item[NFR2 :] 	
-\end{description}
-
-+ model complexity
-+ no influence on performance
+\medskip \noindent
+\todo[inline]{write connecting paragraph}
+this and that has been done.
+now we in total have that. requirements and list of shortcomings to reference.
+In the next chapter a model extension to address the topic of flexible event subscription is introduced.
 
