@@ -45,37 +45,38 @@ Given that the subscription to an event must take place strictly before consumpt
 Naturally, in event processing, a large number of participants can be involved to cause a complex event. This high level of distribution and the inclusion of external sources implies that the time of event occurrence cannot be entirely controlled.
 
 As defined in the BPMN specification, an intermediate catch event will wait for the associated event to occur. In case the event does not occur or only after a significant amount of time, this behavior leads to a delay or even a complete halt of the process execution. %reduce process efficiency
-While some process designs require just these semantics, in others they cause an unnecessary reduction of efficiency or fault.%the variable time of event occurrence
+While some process designs require just these semantics, in others they cause an unnecessary reduction of efficiency and reliability.%the variable time of event occurrence
 \todo[inline]{short example, maybe harvesting?}
 This behavior is further illustrated by the help of two example scenarios in \autoref{ch:motivatingexamples}.
-
 An earlier subscription to an event source would increase the timespan in that events can be received and thus reduce the probability of missing events.
 This motivates the investigation of mechanisms to more flexibly incorporate subscribe operations in business processes.
 % also definition of subscription stuff in general, because there is no standard.
 
 %The ability to influence the event subscription time more flexibly 
-
-
 %- to ensure the efficient use of events in processes, a more flexible use of subscription is necessary
-
 %- that implies the additional need for buffers
-
-
 %This work investigates the consequences of this lack of specification and provides a design and implementation to overcome the identified shortcomings.
 
+\section{Contribution \& Structure}
+Aiming towards the extension of the BPMN modeling standard for the flexible use of event subscription, this thesis provides three main contributions:
+%(1) requirements through ? + shortcomings from assessment of the capabilities of standard bpmn
+(1)~From the analysis of motivating scenarios and the current state of research, an initial set of requirements~(\autoref{ch:requirements}) is derived in the course of \autoref{ch:problemstatement} and evaluated against current BPM solutions in \autoref{ch:assessment}.
+The requirements define the functionality necessary for representing event subscription mechanisms in business processes models. 
+They are supplemented by a list of shortcomings of BPMN~(\autoref{ch:ass:discussion}), which yields from the assessment of its meta model against the specified requirements.
 
+%Their assessment results in an additional list of shortcomings of , which is obtained by evaluating current BPM solutions% and the Camunda business process engine %against the requirements. %together, they form the foundation for...
+%and derives a set of requirements that a business process meta model must fulfill to enable the inclusion of subscription operations in the model and also to allow influencing the time of subscription
+%in the course of this assessment, an additional set of shortcomings is identified
 
-\section{Contribution}
-Working towards a more flexible use of event subscription in business processes...
+% (2) Proposition of a BPMN extension for flexible event subscription, its advantages and derived requirements to process engines and CEP platforms
+(2)~Based on the requirements and identified shortcomings of current solutions, \autoref{ch:flexibleeventsubscription} presents an extension to the notation and meta model of the BPMN including an XML-specification and a description of the expected execution semantics. 
+The extension enables the incorporation of subscription-related information in the process model, allowing to flexibly chose the time of event subscription~(\autoref{ch:bpmnx}).
+The concept hides the necessary underlying infrastructure tasks from the model by requiring automatic subscription handling within the process engine.
+A reference architecture stating the changes necessary to the behavior of the process engine and the event processing module is presented in \autoref{ch:automaticsubscription}. %automatic subscription handling
 
-> Maybe include structure
+%Event buffers are an essential part of the concept
 
-(0) reviewing the problem from different perspectives, deriving requirements
-(1) assessment of the capabilities of standard bpmn
-(2) Proposition of a BPMN extension for flexible event subscription, its advantages
-(3) derived requirements to process engines and CEP platforms
-(4) A reference implementation using Camunda and UNICORN
+% (3) A reference implementation using Camunda and UNICORN
+(3)~Finally, \autoref{ch:implementation} evaluates the presented concept through a reference implementation at the example of the Camunda business process engine and the Unicorn event processing platform.
+The resulting BPM system is capable of handling the extended BPMN process models, automatically handling event subscription, un-subscrption and event buffering.
 
-
-\section{Structure}
-\todo[inline]{write}

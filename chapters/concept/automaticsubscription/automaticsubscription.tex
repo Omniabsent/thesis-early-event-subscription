@@ -1,5 +1,5 @@
 %************************************************
-\chapter{Automatic Subscription Handling}\label{ch:automaticsubscription}
+\section{Automatic Subscription Handling}\label{ch:automaticsubscription}
 %************************************************
 
 After defining the notation options and functionality provided to the user of flexible event subscription, this chapter describes the changes necessary to the software infrastructure that is used for event-driven business process management.
@@ -13,7 +13,7 @@ The first section describes the necessary extension to the event processing to s
 The following \autoref{ch:extendedprocessengine} specifies the changes necessary to the behavior of the process engine as the connecting element between the BPMN model and the event processing platform.
 
 
-\section{Buffered Event Processing}\label{ch:bufferedcep}
+\subsection{Buffered Event Processing}\label{ch:bufferedcep}
 When reduced to the basics, a standard event processing platform works as follows: The user subscribes to events providing an event query and a notification-path. The platform responds with a unique identifier for that subscription.
 Whenever an event occurs that matches the provided query, the platform issues a notification to the notification-path. Subscriptions can be deleted through their unique identifier.
 These two operations, \textit{subscribe} and \textit{unsubscribe}, make the fundamental API of a CEP platform.
@@ -101,7 +101,7 @@ Though it must be noted, that if events occur rarely, but many process instances
 \todo[inline]{write}
 
 
-\section{Extended Process Engine Behavior}\label{ch:extendedprocessengine}
+\subsection{Extended Process Engine Behavior}\label{ch:extendedprocessengine}
 It is the task of the Business Process Engine to interpret and execute process models and connect to an event processing platform in event-driven setups.
 From the three relevant parts, two have already been defined, the BPMN extension and the buffered event processing module.
 Out of the box, a process engine like Camunda will ignore any proprietary BPMN extensions and the subscription to an event source must be especially implemented. An example for such an implementation is provided in \autoref{ch:assessment-implementation}.
