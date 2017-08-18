@@ -1,8 +1,8 @@
 \section{BPMN Extension}\label{ch:bpmnx}
 
-\todo[inline]{cite braun2015behind}
+% maybe cite braun2015behind
 
-\todo[inline]{this is the explanation for the process designer? or is there an additional event engineer?}
+
 
 Given the additional requirements and the shortcomings identified in the previous sections, the following two chapters present an extension to the BPMN event handling model.
 At first, an extension to the Business Process Model and Notation (BPMN) is described, which aims at providing the Process~Designer with more flexible Event Handling capabilities according to Requirement~\textit{R1}.
@@ -28,6 +28,9 @@ The proposed extension to the Message type is only to be used by Message Receive
 By specification, \textit{tMessage} comprises an attribute \textit{name}, the name of the message, and \textit{itemRef}, the reference to a BPMN \textit{ItemDefinition}. Additionally, it inherits all attributes from the BPMN \textit{RootElement}.
 In the following, the required additional attributes will be explained one after the other. A complete list is available in \autoref{tab:bpmn-extension}. The goal is to retain a stand-alone model that contains all information necessary to execute the subscription to the event source.
 
+\subsection{Overview}
+
+
 \begin{table}
 	\myfloatalign
 	\begin{tabularx}{\textwidth}{p{0.3\linewidth} p{0.4\linewidth} p{0.2\linewidth}}
@@ -52,8 +55,15 @@ In the following, the required additional attributes will be explained one after
 	\caption[]{Available attributes in the BPMN extension for flexible event subscription}  \label{tab:bpmn-extension}
 \end{table}
 
+\subsection{Usage Documentation}
 
-\subsection{Adding basic subscription information}\label{ch:bpmnx:basic}
+\subsubsection{Introducing Event Buffers}
+Any event message that occurs before reaching the event element but after the time of subscription will be kept in a buffer by the system.
+In its simplest version, the buffer is of length 1, that means it stores exactly one message received from a CEP platform. It always stores the latest message. When a newer message arrives, the old one is replaced in the buffer.
+\autoref{ch:bpmnx:bufferpolicies} introduces a set of advanced buffer policies to adapt this behavior further.
+\todo[inline]{By default, there is no interference between the buffers of different messages, process instances or processes. Each buffer instance will contain the latest information as if it was the only buffer in the system. Performance improvements to avoid duplicate buffer content will be managed by the system without explicit action by the user. Section ... later introduces a shared, more complex usage scenario of the event buffers.}
+
+\subsubsection{Adding basic subscription information}\label{ch:bpmnx:basic}
 
 For a basic event subscription, an event~query, the platform address and optionally authorization information of the CEP~Platform is required. \todo[inline]{ref background}
 It is assumed that only one CEP platform is in use, whose access information is configured centrally for the current process execution environment. Consequently, there is no need to specify these two parameters on message level. 
@@ -64,7 +74,7 @@ A similar approach has been taken by X and Y, who aim at enriching BPMN models w
 
 Given this first fundamental part of the BPMN extension, it is possible to execute the subscription, but the time of subscription cannot be influenced.
 
-\subsection{The time of event subscription modeled in BPMN}\label{ch:bpmnx:subscriptiontimes}
+\subsubsection{The time of event subscription modeled in BPMN}\label{ch:bpmnx:subscriptiontimes}
 
 This section specifically addresses the requirement \textit{R1.1}, aiming to provide a flexible event subscription time to be selected for each BPMN message when designing an event-driven process.
 Two different tools are to be offered to support all subscription times demanded by \textit{R1.1}: Firstly, the subscription can happen in the background . Alternatively, the subscription can be modeled explicitly as a flow-element in the process.
@@ -72,21 +82,6 @@ It is the task of the process designer to elaborate the correct time of subscrip
 
 The subscription will be executed automatically by the system based on the information given in the BPMN model. Further information on the exact execution flow is provided in chapter~XY.
 
-\paragraph{Introducing Event Buffers}
-Any event message that occurs before reaching the event element but after the time of subscription will be kept in a buffer by the system.
-In its simplest version, the buffer is of length 1, that means it stores exactly one message received from a CEP platform. It always stores the latest message. When a newer message arrives, the old one is replaced in the buffer.
-\autoref{ch:bpmnx:bufferpolicies} introduces a set of advanced buffer policies to adapt this behavior further.
-\todo[inline]{By default, there is no interference between the buffers of different messages, process instances or processes. Each buffer instance will contain the latest information as if it was the only buffer in the system. Performance improvements to avoid duplicate buffer content will be managed by the system without explicit action by the user. Section ... later introduces a shared, more complex usage scenario of the event buffers.}
-
-
-\paragraph{Interplay of Event Queries and Buffers}
-Modern event query languages are feature-rich and offer a large set of expressions to filter events from incoming streams. \todo[inline]{ref background}
-The introduced basic event buffer can be used in connection with any desired event query and will store the latest output of that query.
-These two features together suffice to implement even more complex use-cases: Query windows of length \textit{n} can be used to keep multiple events in the buffer, filter expressions allow to keep a subset of all events based on their attribute values, multiple streams can be joined together.
-As soon as the process flow reaches an event element, the latest CEP message is retrieved from the buffer. It is not consumed, that means a second event element that references the same BPMN Message will reuse the information from the buffer.
-If no information is available in the buffer, the flow element will remain in the waiting state until a message is received. Then, the process flow proceeds as usual.
-
-\todo[inline]{reorganize this chapter}
 
 \paragraph{Subscription time as part of the BPMN Message element\newline}
 To provide the Process Designer with a simple but powerful tool to influence the time of event subscription, a field \textit{subscriptionTime} is added the BPMN message element. 
@@ -120,9 +115,8 @@ That means for example if the \textit{subscriptionTime} is set to \textit{event 
 If \textit{subscriptionTime} is set to \textit{Process Deployment}, then the subscription will happen at that time and the explicit subscription task will remain without effect.
 In case neither of the two is used, the system falls back to the BPMN default and executes the subscription when the event element is reached.
 
-\subsection{Using Process Variables in Event Queries}
+\subsubsection{Using Process Variables in Event Queries}
 
-\todo[inline]{this could be added in the requirements and referenced}
 \todo[inline]{only if subscriptionTime not 'on depl'}
 
 % also see bpmn2 spec 10.3 pp. 233ff.
@@ -142,10 +136,7 @@ The use of dynamic process variable values introduces an additional complexity: 
 \todo[inline]{What does this mean for the process designer? A model that can take a state in that a subscription shall be issued, though the data is unavailable, is invalid. When will an error occur? }
 
 
-\subsection{Advanced Buffer Parameters}\label{ch:bpmnx:bufferpolicies}
-Inspired by \citeauthor{mandal:2017} \citep{mandal:2017}, a number of advanced buffer attributes are available through an extension attribute \textit{bufferPolicies}.
-\todo[inline]{add ref to sankalitas paper; do I elaborate on the changes made in comparison to the paper? + the reasons?}
- 
+\subsubsection{Advanced Buffer Parameters}\label{ch:bpmnx:bufferpolicies}
 
 \paragraph{Life-time of buffered events\newline}
 
@@ -157,8 +148,9 @@ Using the \textit{LifetimePolicy}, the process designer can express, that events
 That of course comes at the price that the process has to remain in waiting state until a new event message arrives.
 
 \paragraph{Consumption Behavior\newline}
-\todo[inline]{for the reader it would not be clear, what a 'buffer instance' is}
+
 So far, the event buffers can be used isolated from each other. There is no interference between buffer instances and events are not removed from the buffer after retrieval.
+\todo[inline]{for the reader it would not be clear, what a 'buffer instance' is}
 While for most use-cases this behavior is sufficient, more detailed control over the buffer can be desirable when a given message shall be used multiple times.
 Not always is it wanted, that events remain in the buffer after retrieval.
 An additional parameter \textit{ConsumptionPolicy} is introduced which can take the values \textit{Consume}, \textit{Reuse}(default) and \textit{Bounded Reuse(n)}.
@@ -190,3 +182,15 @@ The option \textit{Consume} will remove an element from the buffer immediately a
 \todo[inline]{write text for given keypoints}
 
 - what if messages are defined in different ways? => I want to reuse the buffer between processes, but the message definition (especially cep query) are not the same. how will the system behave?
+
+\paragraph{Interplay of Event Queries and Buffers}
+
+// even with the simplest settings
+
+Modern event query languages are feature-rich and offer a large set of expressions to filter events from incoming streams. \todo[inline]{ref background}
+The introduced basic event buffer can be used in connection with any desired event query and will store the latest output of that query.
+These two features together suffice to implement even more complex use-cases: Query windows of length \textit{n} can be used to keep multiple events in the buffer, filter expressions allow to keep a subset of all events based on their attribute values, multiple streams can be joined together.
+As soon as the process flow reaches an event element, the latest CEP message is retrieved from the buffer. It is not consumed, that means a second event element that references the same BPMN Message will reuse the information from the buffer.
+If no information is available in the buffer, the flow element will remain in the waiting state until a message is received. Then, the process flow proceeds as usual.
+
+\subsection{Execution Semantics}

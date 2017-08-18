@@ -17,6 +17,9 @@ The extended requirements will be referenced in \autoref{ch:flexibleeventsubscri
 \section{Explicitly modeling Event Subscription in BPMN}
 
 \todo[inline]{do or not to do!?}
+
+can cite braun2015behind
+
 - there are 2 ways to work with event subscription: implicit and explicit
 - implicit is assumed by... ; they extend the process engine to execute a subscription; thereby maybe extending bpmn execution semantics
 	> and also assumed in the problem statement
@@ -265,7 +268,7 @@ While a thorough analysis was not the target of this section, it still provides 
 
 Note that this is an investigative implementation that matches exactly the given use-case and is not meant to be used in production. It is neither flexible nor robust enough for that purpose, but suits very well in understanding the capabilities and the shortcomings of BPMN and Camunda when it comes to handling the Event Occurrence Scenarios.
 
-\section{Discussion and Requirements Extension}\label{ch:ass:discussion}
+\section{Overview \& Discussion}\label{ch:ass:discussion}
 It was the goal of this chapter to evaluate the capabilities of current \acs{BPM} solutions against the requirements presented in \autoref{ch:requirements}.
 The evaluation was performed at the example of the \acs{BPMN} without allowing the use of the in-built extension mechanism. Furthermore, the developed BPMN solution for buffered event handling~(\autoref{ass:model:buffered}) was implemented prototypically in Camunda to evaluate the applicability of the concept to a business process engine. % which provides an additional understanding 
 
