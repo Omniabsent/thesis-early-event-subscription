@@ -3,50 +3,65 @@
 %************************************************
 
 Given the increasing competition on the global market place, companies are seeking to improve their products while reducing costs.
-In many areas, Business Process Management has been chosen as one of the tools to help stay competitive.
-Especially large enterprises, but also small to medium businesses formalize their work-flows in business process models to allow automatized execution and management, archiving and documentation.
+In many areas, \ac{BPM} has been chosen as one of the tools to help stay competitive.
+Especially large enterprises, but also small to medium businesses formalize their work-flows in business process models to allow their automatized execution and management, archiving and documentation.
+
+% maybe a little more on BPM?
 
 With Business Process Technology in constant progression, the opportunities that the field has to offer are ever growing.
 Since the recent years, many efforts have been dedicated towards bringing together business processes and \ac{CEP}.
 By the help of event processing systems, companies are trying to get a hold of the exponentially growing amounts of data that occur in today's IT~environment.
-CEP Engines are designed to process thousands of events each second while supporting the integration multiple event types and sources to derive new information.
-Incoming data is evaluated according to query expressions, themselves producing new events by projection, filtering, aggregating or joining.
+Event Engines are designed to process thousands of events each second while supporting the integration of multiple event types and sources to derive new information.
+%Therefor, incoming data is evaluated according to query expressions, themselves producing new, enhanced events.% by projection, filtering, aggregating or joining.
 By having conglomerated information available almost in real-time, companies can react quickly on complex situations within their organization or anywhere on the world.
-
-The connection of events and business processes has developed into an own discipline, \acl{EdBPM}, which comprises two aspects.
+The connection of events and business processes has developed into an own discipline, \acl{EdBPM}, which is performed from two perspectives.
 %- 2 variants of doing edbpm
 %https://www.researchgate.net/profile/Oliver_Mueller5/publication/241635758_Extending_BPMN_for_Business_Activity_Monitoring/links/0deec52d00ef9276c9000000.pdf
 %(BAM) refers to the observation, analysis, and presentation of real-time information about business activities across systems’ and companies’ borders.
 During execution, business processes can take the role of an event producer and publish information about their status, errors or incidents. 
 Processed through complex event processing, this information can be utilized for business activity monitoring which aims at providing timeliness and effectiveness of operational business processes.
-In a second field of research, processes take the role of an event consumer so that their execution flow can be influenced and controlled.
-When utilized within process executions, events heavily increase capabilities and flexibility in process flows. They can enable intraorganizational communication between processes or business departments, but also allow to respond to external situations within seconds or milliseconds.
-The \ac{BPMN}, the most prominent industry standard for representing business processes both visually and through a textual model, natively supports the use of events in numerous fashions. Events are considered a main building block of a feature-rich process modeling language and can, for instance, be used for instantiating processes, communicating between process participants or to support decisions.
-Thereby, event-driven process control combines the advantages of Business Process Management and Complex Event Processing.
+In a second field of research, processes consume events so that the projected work-flow can be influenced and controlled.
+By that means, events heavily increase the capabilities and flexibility in process flows. They can enable intra-organizational communication between processes or business departments, but also allow to respond to external situations within seconds and milliseconds.
+
+The \ac{BPMN}, the most prominent industry standard for representing business processes,% both visually and through a textual model, 
+natively supports the use of events in numerous fashions. Event-related elements are a main building block of the modeling language and can, for instance, be used for instantiating processes, communicating between process participants or to support decisions.
+Thereby, event-driven process control combines the advantages of \acl{BPM} and Complex Event Processing.
 
 
 \section{Motivation}
-why?
-- cant live without complex event processing in business processes, increasing demand for using events in processes
 
-An interaction with a Complex Event Processing platform generally follows the publish/subscribe paradigm: The event consumer contacts the platform and issues a subscription to a specific subset of available events.
-An event producer, for example a vehicle providing its current GPS location, publishes information to the event processing platform, which is then forwarded to every consumer that had subscribed.
-Intermediate Events are a basic way to implement event-based communication in BPMN and facilitate the reception of external message events.
-Nevertheless, the BPMN specification does not specifically consider the publish/subscribe work-flow and provides limited capabilities when it comes to incorporating event subscription and un-subscription operations in business process models.
-- there is research on including the subscription query in the model, but the subscription time is not further defined
-- the bpmn specification says "..", that leaves us with a very limited listening time
+An interaction with a Complex Event Processing platform generally follows the publish-subscribe paradigm: The event consumer contacts the platform and issues a subscription to a specific subset of available events.
+The event producer, for example a vehicle providing its current GPS location, publishes information to the event processing platform, which is then forwarded to every consumer that had subscribed.
+As event processing has become an essential part of \ac{BPM}, there is a need for the available modeling frameworks to consider these interaction patterns.
 
-- considering distributed setup -> hard to control
-- we need subscription before occurrence time
-- issues will occur when mis-used, delay or blockage, significant time and financial loss
--> brief, textual example
-- to ensure the efficient use of events in processes, a more flexible use of subscription is necessary
+This work investigates the aspect at the example of the \ac{BPMN}, where \textit{Intermediate Events} enable event-based process control between the start and the end of a process. %and hence facilitate the consumption of complex events. %reception of external message events.
+However, the BPMN specification does not specifically consider the publish-subscribe work-flow and consequently provides only limited capabilities to represent event subscription and un-subscription operations in business process models.
+From the execution semantics of intermediate events, the common interpretation is that the subscription to an event source implicitly happens when an event is enabled, the un-subscription on termination of the element~(see~\cite{} re-eval, mandal, earlier paper).
+- mandal add the idea of issuing subscriptions explicitly through a customized service task.
+%- while other work on the use of complex events does not mention subscription and un-subscription at all
+% > probably assuming that a subscription is already active
+%- there is research on including the subscription query in the model, but the subscription time is not further defined
+Given that the subscription to an event must take place strictly before consumption, the time to listen to an event is limited to only a segment of the process execution.
+Naturally, in event processing, a large number of participants can be involved to cause a complex event. This high level of distribution and the inclusion of external sources implies that the time of event occurrence cannot be entirely controlled.
 
-- also pointed out by mandal
-- that implies the additional need for buffers
+As defined in the BPMN specification, an intermediate catch event will wait for the associated event to occur. In case the event does not occur or only after a significant amount of time, this behavior leads to a delay or even a complete halt of the process execution. %reduce process efficiency
+While some process designs require just these semantics, in others they cause an unnecessary reduction of efficiency or fault.%the variable time of event occurrence
+\todo[inline]{short example, maybe harvesting?}
+This behavior is further illustrated by the help of two example scenarios in \autoref{ch:motivatingexamples}.
+
+An earlier subscription to an event source would increase the timespan in that events can be received and thus reduce the probability of missing events.
+This motivates the investigation of mechanisms to more flexibly incorporate subscribe operations in business processes.
+% also definition of subscription stuff in general, because there is no standard.
+
+%The ability to influence the event subscription time more flexibly 
 
 
-This work investigates the consequences of this lack of specification and provides a design and implementation to overcome the identified shortcomings.
+%- to ensure the efficient use of events in processes, a more flexible use of subscription is necessary
+
+%- that implies the additional need for buffers
+
+
+%This work investigates the consequences of this lack of specification and provides a design and implementation to overcome the identified shortcomings.
 
 
 
