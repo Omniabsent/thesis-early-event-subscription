@@ -153,7 +153,7 @@ It is also their task to stop the buffering when it not required anymore, for ex
 The buffering process subscribes to the event engine through a throwing event. It then waits for an event to occur in a receive activity \textit{Receive external event} and outputs the received event data to a DataObject. That object is then written to a persistent, global data-store \textit{Event Buffer} by the service task \textit{Write to buffer}. 
 The design is able to handle multiple event occurrences, as the execution flow proceeds back to the receiving activity after writing to the buffer.
 The implementation of the service task decides about the exact semantics of the buffering and hence about requirement~\textit{R3.3}. For the sake of simplicity, it is assumed that the buffer can hold a maximum of 1~element~(\textit{Size~Policy}) and the service task overwrites that element whenever a new one is available, specifying the retrieval order~(R3.3.4).
-An implementation of the \textit{Lifetime Policy} is not provided. 
+An implementation of the \textit{Lifespan Policy} is not provided. 
 The consumption behavior~(\textit{R3.3.2}) is defined by the service task of the auxiliary delivery process: After the retrieval of an event from the buffer it remains available.
 
 %original process and event delivery

@@ -141,12 +141,14 @@ After implementing the necessary extensions to the event engine, it is the task 
 The adaptations to the process engine are presented in the following section.
 
 \section{Event Subscription Handling in Camunda}\label{ch:implcamunda}
+\todo[inline]{In Camunda, data objects can only be used for documentation purposes. The engine ignores them, so there is no way to set a value.}
+
 Through the BPMN extension for flexible event subscription, the information necessary to register event queries in a CEP platform can be made available in process models.
 \autoref{ch:extendedprocessengine} outlines how the business process engine must be adapted to execute the operations for subscription handling.
 Camunda is an open-source business process engine with support for the latest version of the BPMN and used to exemplify the modification process. Further information about Camunda is provided in \autoref{ch:bg:bpms}.
 
 \autoref{fig:architecture-camunda-unicorn} depicts a simplified architecure of Camunda, highlighting modifications in gray.
-Our workflow for flexible event subscription mainly involves the core components execution engine, model repository, correlation service and the Camunda modeler.
+Our workflow for flexible event subscription mainly involves the core components, execution engine, model repository, correlation service and the Camunda modeler.
 
 \subsection{Employing ExecutionListeners in a Process Engine Plugin}
 Being a community-driven open-source project, the Camunda project offers numerous options for customizing and extending its behavior.

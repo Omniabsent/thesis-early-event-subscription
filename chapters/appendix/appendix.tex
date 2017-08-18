@@ -4,11 +4,11 @@
 
 \begin{lstlisting}[basicstyle=\scriptsize,caption={XSD schema of the BPMN extension for flexible event subscription},label=lst:xsd-flexsub]
 <xsd:schema xmlns:flexsub="http://www.some.url/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.some.url/">
-<xsd:element name="explicitSubscriptionTask" type="tExplicitSubscriptionTask" />
-<xsd:complexType name="tExplicitSubscriptionTask">
+<xsd:element name="eventSubscriptionTask" type="tEventSubscriptionTask" />
+<xsd:complexType name="tEventSubscriptionTask">
 <xsd:complexContent>
 <xsd:extension base="tTask">
-<xsd:attribute name="messageRef" type="xsd:QName" use="required"/>
+<xsd:attribute name="messageId" type="xsd:QName" use="required"/>
 </xsd:extension>
 </xsd:complexContent>
 </xsd:complexType>
@@ -21,9 +21,9 @@
 <xsd:element name="bufferPolicies" minOccurs="0" maxOccurs="1">
 <xsd:complexType>
 <xsd:sequence>
-<xsd:element type="xsd:string" name="lifetimePolicy" minOccurs="0" maxOccurs="1" default="infinite"/>
+<xsd:element type="xsd:string" name="lifespanPolicy" minOccurs="0" maxOccurs="1" default="infinite"/>
 <xsd:element type="xsd:string" name="consumptionPolicy" minOccurs="0" maxOccurs="1" default="Reuse"/>
-<xsd:element type="xsd:integer" name="sizePolicy" minOccurs="0" maxOccurs="1" default="-1"/>
+<xsd:element type="xsd:integer" name="sizePolicy" minOccurs="0" maxOccurs="1" default="0"/>
 <xsd:element type="tOrderPolicy" name="orderPolicy" minOccurs="0" maxOccurs="1" default="FIFO"/>
 </xsd:sequence>
 </xsd:complexType>
