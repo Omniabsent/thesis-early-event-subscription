@@ -6,10 +6,9 @@ Given the requirements \textit{R1-R3}\,(see~\autoref{ch:requirements},\,p.\,\pag
 
 At first, \ref{ch:bpmnx} describes an extension to the \acf{BPMN}, which aims at providing the Process~Designer with a convenient solution for modeling events that must be obtained through the publish-subscribe interaction pattern.
 Afterwards, \autoref{ch:automaticsubscription} clarifies the changes necessary to the event handling platform and the process engine to implement the implicit subscription management required by the BPMN extension.
+The results are summed up in \autoref{ch:concept:conclusions}, also providing a tabular overview~(\autoref{tab:concept-vs-requirements}) of how the presented concept addresses the requirements and the identified shortcomings.
 
-\todo[inline]{ref: conclusion sums up the results and table X reveals how they address each R and S}
 \todo[inline]{maybe make new page for each section}
-
 
 \missingfigure{The concept for flexible event subscription involves three modules: A BPMN extension, enhanced process engine behavior and buffered event handling.}
 \label{fig:concept-modules}
@@ -18,13 +17,65 @@ Afterwards, \autoref{ch:automaticsubscription} clarifies the changes necessary t
 \input{chapters/concept/automaticsubscription/automaticsubscription}
 
 
-\section{Conclusions}
+\section{Conclusions}\label{ch:concept:conclusions}
 
 \todo[inline]{write chapter conclusions}
+
+overview table using the same eval scheme +/o/-
 
 an extension involving the message element and a custom task has been introduced.
 As the specified execution semantics are not implemented in a standard process engine / event engine, the necessary changes to them have been explained.
 the subscription engine must manage subscription and unsubscription at certain points during execution
 the event handling module must offer an extended api and an underlying buffering mechanism
 
-\todo[inline]{concept: make table of how each r/s is addressed}
+
+\begin{table}%[h]
+	\myfloatalign
+	\begin{tabularx}{\textwidth}{p{0.4\linewidth} | c | p{0.455\linewidth}}
+		\toprule
+		\tableheadline{Aspect} & \tableheadline{Ev.} & \tableheadline{Explanation} \\ 
+		\midrule
+		
+		\multicolumn{3}{p{\linewidth}}{\rule{0pt}{4ex} R1: Subscription Fundamentals} \\
+		\midrule
+		
+		R1.1 and R1.2\newline(Un-)\,Subscription & + & operations are explicitly considered. \\
+		R1.3 Avail. of Information & + & in <subscriptionDefinition> \\
+		R1.4 Vars. in Queries & + & allowed as \#{varName} \\
+		
+		\midrule
+		\multicolumn{3}{p{\linewidth}}{\rule{0pt}{4ex} R2: Event Subscription Time} \\
+		\midrule
+		
+		R2.1 Explicitness & + & either through \textit{subscriptionTime} or default fall-back \\
+		R2.2 Flexibility & + & by ext. attribute \textit{subscriptionTime} and \textit{EventSubscriptionTask} \\
+		R2.3 Awareness of Subscription Dependencies & o & recognized, but violation results in error \\
+		
+		\midrule
+		\multicolumn{3}{p{\linewidth}}{\rule{0pt}{4ex} R3: Event Buffering} \\
+		\midrule
+		
+		R3.1 Buffering Principle & + & as \textit{Event Buffers} \\
+		R3.2 Buffer Scope & + & explained for consuming behavior \\
+		R3.3 Buffer Policies & + & controlled through ext. element \textit{BufferPolicies} \\
+		%Note that complex policies like the retrieval order, buffer size and consumption behavior can theoretically be expressed in a BPMN graph, but become exponentially complex.} 
+		
+		\midrule
+		\multicolumn{3}{p{\linewidth}}{\rule{0pt}{4ex} Shortcomings} \\
+		\midrule
+		
+		\rule{0pt}{4ex}\underline{S1 Incr. model compl.} & & \\
+		S1.1 Add. process elements & o & added extension elements but no~additional nodes \\
+		S1.2 More participants & + & no add. participants in model \\
+		
+		\rule{0pt}{4ex}\underline{S2 Infrastructure tasks} & & \\
+		S2.1 Polluted models & + & minimal notation supported by default values \\
+		S2.2 Lack of IT-skills & o & subscr. \& buffering still modeled, but less complex \\
+		
+		\rule{0pt}{4ex}S3 Performance Issues & + & buffering implemented in specialized module \\		
+		
+		%\bottomrule
+	\end{tabularx}
+	\caption[]{Overview of how the requirements and shortcomings are addressed by the BPMN extension for flexible event subscription}
+	\label{tab:concept-vs-requirements}
+\end{table}

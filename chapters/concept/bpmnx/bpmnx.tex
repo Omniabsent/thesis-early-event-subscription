@@ -57,10 +57,10 @@ The extension elements are illustrated through a UML-representation in \autoref{
 		
 		\bottomrule
 	\end{tabularx}
-	\caption[]{Available attributes in the BPMN extension for flexible event subscription}  \label{tab:bpmn-extension}
+	\caption[]{Available attributes of <subscriptionDefinition> in the BPMN extension for flexible event subscription}  \label{tab:bpmn-extension}
 \end{table}
 
-\subsection{Usage Documentation}
+\subsection{Documentation}
 
 > why everything is added to the message element
 
@@ -78,6 +78,8 @@ Each of the three elements references a BPMN \textit{Message}, the common denomi
 By specification, \textit{tMessage} comprises an attribute \textit{name}, the name of the message, and \textit{itemRef}, the reference to a BPMN \textit{ItemDefinition}. Additionally, it inherits all attributes from the BPMN \textit{RootElement}.
 In the following, the required additional attributes will be explained one after the other. A complete list is available in \autoref{tab:bpmn-extension}. The goal is to retain a stand-alone model that contains all information necessary to execute the subscription to the event source.
 
+- information is added to <subscriptionDefinition>
+
 %\subsubsection{Introducing Event Buffers}
 %Any event message that occurs before reaching the event element but after the time of subscription will be kept in a buffer by the system.
 %In its simplest version, the buffer is of length 1, that means it stores exactly one message received from a CEP platform. It always stores the latest message. When a newer message arrives, the old one is replaced in the buffer.
@@ -86,8 +88,8 @@ In the following, the required additional attributes will be explained one after
 
 \subsubsection*{Adding basic subscription information}\label{ch:bpmnx:basic}
 
-For a subscribe operation, we consider the event~query, the platform address and optionally authorization information of the CEP~Platform.
-This extension assumes that only one CEP engine is in use, so that access information can be configured in a central configuration store for the current process execution environment.
+For a subscribe operation, we consider the event~query, the platform address and optionally authorization information of the CEP~platform.
+This extension assumes that only one event engine is in use, so that access information can be configured in a central configuration store for the current process execution environment and not redundantly for each message.
 The event query instead needs to be specified for every message and is added to the model as an extension attribute \textit{eventQuery} of type \textit{string}, which should contain the full query as interpretable by the CEP platform.
 
 A similar approach has been taken by X and Y, who aim at enriching BPMN models with subscription information without considering the time of subscription specifically.
@@ -145,7 +147,7 @@ As shown in example~1.2, it can be the case that the current values of process d
 Therefore, the name of the dataObject should be part of the event query. At the time of subscription, the mentioned variable is dynamically replaced by its current value.
 The exact notation for including process variables in event queries may vary depending on the employed query language so that it does not interfere with any existing notation schemes.
 For the use with the Esper EPL, the following is suggested: The exact name of the variable has to be surrounded by curly brackets and preceded by a \textit{\#} character: \textit{\#\{VARIABLENAME\}}.
-This notation is inspired by the usage of substitution parameters in SQL queries that are embedded in Esper EPL. They take a similar form, though using a \$ sign\footnote{see~\textit{5.13.1. Joining SQL Query Results}, \url{http://www.espertech.com/esper/release-5.3.0/esper-reference/html/epl_clauses.html}, accessed 2017-08-13}}.
+This notation is inspired by the usage of substitution parameters in SQL queries that are embedded in Esper EPL. They take a similar form, though using a \$ sign\footnote{see~\textit{5.13.1. Joining SQL Query Results}, \url{http://www.espertech.com/esper/release-5.3.0/esper-reference/html/epl_clauses.html}, accessed 2017-08-13}.
 
 \todo[inline]{brief recap of the example and show query using the variable. considering the value is stored in the dataObject ".."}
 \textit{SELECT lat, lng from GPSUPDATE where truckid = \#\{truckid\} }.
