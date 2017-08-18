@@ -42,7 +42,7 @@ The extension elements are illustrated through a UML-representation in \autoref{
 		\toprule
 		\tableheadline{Attribute Name} & \tableheadline{Value Options (\underline{default})} & \tableheadline{Req.} \\ 
 		\midrule
-		EventQuery & any string & y \\
+		EventQuery & any query string & y \\
 		SubscriptionTime & process-deployment,\newline process-instantiation,\newline manual, \underline{element reached} & n \\
 		BufferPolicies & Complex Type (see below) & n \\
 		
@@ -104,6 +104,8 @@ Two different means are to be offered to support all subscription times demanded
 It is a task of the process design phase, to elaborate the correct time of subscription necessary for the use case.
 
 The subscription will be executed automatically by the system based on the information given in the BPMN model. Further information on the exact execution flow is provided in chapter~XY.
+
+\todo[inline]{Time of un-subscription also must be clarified in bpmnx}
 
 
 \paragraph{Subscription time as part of the BPMN Message element\newline}

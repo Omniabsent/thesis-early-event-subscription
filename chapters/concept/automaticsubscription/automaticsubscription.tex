@@ -2,62 +2,38 @@
 \section{Automatic Subscription Handling}\label{ch:automaticsubscription}
 %************************************************
 
-After defining the notation options and functionality provided to the user of flexible event subscription, this chapter describes the changes necessary to the software infrastructure that is used for event-driven business process management.
-The concept requires that all subscription and event handling is executed by the system itself, without further interaction by the user.
-All necessary information for that purpose is provided by the BPMN model.
-
-As described in REF, an event-driven process management setup primarily consists of ...
-\todo[inline]{missingref}
-Changes are necessary to both, the Event Processing Module and the Process Engine. This chapter attempts to keep the change descriptions general so they can be applied to any common process engine and event processing platform.
-The first section describes the necessary extension to the event processing to support early subscription and event buffering.
+After defining the notation and functionality provided to the user through the BPMN extension for flexible event subscription, this chapter describes the changes necessary to the software infrastructure to implement the execution semantics.
+The concept requires that all subscription operations and event handling is executed by the system itself, solely based on the extended BPMN model.
+Changes are necessary to both, the event processing module and the process engine. This chapter attempts to keep the change descriptions general so they can be applied to any common process engine and event processing platform.
+The first section describes the necessary extension to the event processing so that a delayed delivery of events is supported.
 The following \autoref{ch:extendedprocessengine} specifies the changes necessary to the behavior of the process engine as the connecting element between the BPMN model and the event processing platform.
 
 
 \subsection{Buffered Event Processing}\label{ch:bufferedcep}
 When reduced to the basics, a standard event processing platform works as follows: The user subscribes to events providing an event query and a notification-path. The platform responds with a unique identifier for that subscription.
 Whenever an event occurs that matches the provided query, the platform issues a notification to the notification-path. Subscriptions can be deleted through their unique identifier.
-These two operations, \textit{subscribe} and \textit{unsubscribe}, make the fundamental API of a CEP platform.
-\todo[inline]{ref} 
+These two operations, \textit{subscribe} and \textit{unsubscribe}, make the fundamental \acs{API} of a CEP platform~(see \autoref{ch:bg:cep}).
 
+\paragraph{An API for buffered event processing}
+The novel BPMN extension for flexible event subscription allows to issue a subscription to an event source well before the events ought to be delivered to the process instance. The introduction of an event buffer as a separate entity between the notification-recipients and the event query makes an adaptation of the API necessary.
+In the following, we propose an API for buffered event processing which provides the functionality necessary to implement the execution semantics specified in the BPMN extension. Note that the proposal is not restricted to a certain kind of technology or protocol to implement the API.
 
-\paragraph{Evaluation of common CEP platforms}
-- looking at the new bpmn extension reveals that a different behavior is required: notifications need to be kept in a buffer until they are requested by an entity
-- three event platforms were studied to check if the required functionality can be implemented natively: wso2, esper and ...
-- wso2: ?
-- esper: 
-- ? : ?
-- a window will achieve something similar, but not exactly the same
-- moreover, it is desired that the same full-featured event queries as before can be used, no restrictions. 
-- as functionality wasn't available in any of the three, it was decided to specify an extended api.
-
-\todo[inline]{Maybe: we consider these two operations as given, because common event processing platforms have these in common, but there is not common event buffering concept yet. even though e.g. esper has something which goes in that direction: output clauses}
-
-\paragraph{An API for buffered Event Processing}
-The novel BPMN extension for flexible event subscription allows to issue a subscription for buffering well before the events ought to be delivered via the notification-path. The introduction of an event buffer as a separate entity between the varying list of notification-recipients and the event query makes an extension of the API necessary.
-
-\todo[inline]{note that splitting this into four actions is not a new concept. actually thats how event processing platforms normally operate, only without creation of the buffer and without delivering the buffered events}
-\todo[inline]{what kind of API should this be? REST? Java? none specifically, but the reader might want clarification when reading this.}
-
-Firstly, the \textit{subscribe} operation has to be divided into two steps:
+Firstly, the \textit{subscribe} operation has to be available in two steps:
 
 \begin{aenumerate}
 	\item \textit{registerQuery(queryString[, bufferPolicies]): queryId}\newline
 	The call registers an event query in the CEP platform and instantiates a buffer. Matching events will be held in the buffer according to the specified  policies. It returns a unique identifier to that new query registration and hence for the connected buffer. That identifier must be used to modify the query later.
 	
-	\textit{bufferPolicies} is an optional parameter which is provided as an object with four possible fields: \textit{LifetimePolicy}, \textit{ConsumptionPolicy}, \textit{SizePolicy}, \textit{OrderPolicy}. Refer to \autoref{ch:bpmnx:bufferpolicies} for a detailed specification of the semantics of the parameters. If \textit{bufferPolicies} is not or only partly specified, the system should fall back to the default values.
+	\textit{bufferPolicies} is an optional parameter which is provided as an object with four possible fields: \textit{LifetimePolicy}, \textit{ConsumptionPolicy}, \textit{SizePolicy}, \textit{OrderPolicy}. Refer to \autoref{ch:bpmnx:bufferpolicies} for a detailed specification of the semantics and possible values of the parameters. If \textit{bufferPolicies} is not or only partly specified, the system should fall back to the denoted default values.
 	
 	\item \textit{subscribe(queryId, notificationPath): subscriptionId}\newline
 	Initiates the delivery of notifications for a given queryId to a notification recipient.
 	The recipient is specified through the \textit{notificationPath}, the full address of the entity that is supposed to receive the message.
 	Notifications are delivered asynchronously as soon as they are available. If the buffer is not empty, a message will be sent right after the \textit{requestEvents} call.
-	A similar operation, \textit{addNotificationRecipient}, is available in existing CEP platforms. The difference is in the delivery of the first buffered message: \textit{requestEvents} sends out the message from the buffer, \textit{addNotificationRecipient} will send out notifications only for future query output.
-	\todo[inline]{be clearer about notificationPath. Specify in background and reference. also about addNotificationRecipient}
+	A similar operation, \textit{addNotificationRecipient}, is available in existing CEP platforms. It adds a notification recipient to a query that is already registered in the platform. The difference is in the delivery of the first buffered message: \textit{requestEvents} sends out the message from the buffer, \textit{addNotificationRecipient} will send out notifications only for future query output.
 \end{aenumerate}\label{def:apiextension-subscribe}
 
-\todo[inline]{add table with buffer policies, their possible values and the default val}
-
-A similar situation holds for the un-subscribe operation: Traditionally, a subscription is canceled through a unique identifier that is obtained as a result of the subscribe operation. After cancellation, no more notifications are delivered, the query is removed from the system.
-Given flexible event subscription, this operation must be split into two parts as well:
+A similar situation holds for the un-subscribe operation: Given flexible event subscription, the operation must also be available in two steps:
 
 \begin{aenumerate}
 	\setcounter{enumi}{2}
@@ -68,35 +44,37 @@ Given flexible event subscription, this operation must be split into two parts a
 \end{aenumerate}\label{def:apiextension-unsubscribe}
 
 \noindent
-All four methods must be available to execute a subscription on process deployment.
-The query must be registered using \textit{registerQuery} before the process instance, i.~e. notification-path, is available. For each process instance, a subscription can be issued individually using \textit{subscribe} and thereafter, the notification-recipient can be removed with \textit{unsubscribe}.
+All four methods must be available to execute a subscription before process deployment.
+The query must be registered using \textit{registerQuery} before the process instance, and hence the notification-path, is available. For each process instance, a subscription can be issued individually using \textit{subscribe} and thereafter, the notification-recipient can be removed with \textit{unsubscribe}.
 The query and its buffer will remain active even after any single instance has terminated. When the process gets un-deployed, the query can be deleted using \textit{removeQuery}.
-\autoref{ch:extendedprocessengine} describes the steps in detail.
+%\autoref{ch:extendedprocessengine} describes the steps in detail.
+
+
 \todo[inline]{show the steps with sample data from one of the examples}
 
 - to achieve the default behavior, each two steps have to be executed just after the other.
 
 
 \missingfigure{maybe a uml sequence diagram. Or other diagram format?}
-\todo[inline]{maybe provide a swagger definition for this?}
 
 
-\paragraph{Architectural options to implement the extended API}
 
-That extension can either be implemented by adopting the CEP platform itself, by implementing a separate middleware between process engine and CEP platform, or by implementing a buffering module as part of the process engine.
+\paragraph{Architectural options}
+
+Three options are considered to implement the explained functionality. 
+It can either be implemented by adopting the CEP platform itself, by implementing a separate middleware between process engine and CEP platform, or by implementing a buffering module as part of the process engine.
 Which of the three options suits best has to be evaluated for the given use-case and existing infrastructure. In some cases it might not be possible to adapt the code of process engine or event processing platform, which leaves a separate middleware as the only choice.
-\todo[inline]{Generally, extending the event processing platform is advisable? Or put up brief pros and cons of each of the options}
+
 \missingfigure{three options to implement the event buffering and api extension}
 
 A reference implementation for an extended complex event processing platform is presented in \autoref{ch:implunicorn} at the example of the Esper-based CEP~platform \textit{Unicorn}. It also explains, why extending the event platform was the preferred choice in the given scenario.
-
-\todo[inline]{the communication overhead must be considered: if many events are sent to the buffer, but they are rarely issued to a process instance, then it will make sense to place the buffer closer to the event engine w.r.t. the the involved comm overhead.
-Though it must be noted, that if events occur rarely, but many process instances consume them, than there will be an additional overhead to send events from the buffer to the instance. in that scenario, it might be advantageous to implement the event buffering close to the process engine}
 
 \paragraph{Performance Considerations}
 
 - performance improvements through shared windows
 - due to its performance optimizations, an extension of the cep itself would make perfect sense
+
+\medskip \noindent
 - given the extended api, it is now possible to implement early event subscription from the process engine
 \todo[inline]{write}
 
@@ -150,5 +128,5 @@ For each possible subscription time, the following briefly enumerates which oper
 - what happens if the data is not available?
 
 
-\todo[inline]{Time of un-subscription also must be clarified in bpmnx}
+
 \todo[inline]{write conclusions that repeat how each requirement has been fulfilled}
