@@ -2,15 +2,15 @@
 
 % maybe cite braun2015behind
 
-
-
-Given the additional requirements and the shortcomings identified in the previous sections, the following two chapters present an extension to the BPMN event handling model.
-At first, an extension to the Business Process Model and Notation (BPMN) is described, which aims at providing the Process~Designer with more flexible Event Handling capabilities according to Requirement~\textit{R1}.
-Afterwards, \autoref{ch:automaticsubscription} clarifies the changes necessary to the event handling platform and the process engine to cover Requirements \textit{R2} and \textit{R3}.
-While the presented concepts are kept as general as possible, they are grounded in an analysis of the Esper-based CEP Platform Unicorn and the open-source process engine Camunda.
-
-The extensibility mechanism allows to extend standard BPMN elements with additional attributes, while maintaining a valid BPMN core.
+The extensibility mechanism of the \ac{BPMN} allows to extend standard process elements with additional attributes, while maintaining conformity with the BPMN core~\cite[p.\,44]{bpmnspec}.
 Extensions are specified through an external definitions file and can be included into a BPMN process model by reference.
+
+\todo[inline]{write a little more about bpmn extensibility}
+
+- structure of this chapter: overview, usage documentation(, detailed execution semantics?)
+
+\subsection{Overview}
+
 To allow the flexible use of event subscription in BPMN models, a number of additional attributes must be added to BPMN process models.
 
 The presented extension is designed for use with intermediate catch events, boundary events and receive tasks. Start events and End events are not considered because flexible subscription time is not relevant in these cases.
@@ -18,18 +18,10 @@ The presented extension is designed for use with intermediate catch events, boun
 Each of the three elements references a BPMN \textit{Message}, the common denominator for communication within and across business processes.
 Semantically, the \textit{Message} type is most suited to be extended with subscription information.
 
-\todo[inline]{mention that others have extended the events instead, but this proposal goes another way}
 
-\missingfigure{A UML diagram of Message, MessageFlow, MessageEventDefinition, Catch Event, Boundary Event, ReceiveTask}
 
-\todo[inline]{explain that the Message is a common element in BPMN models. It is the main generic type used for communication, collaboration.
-The proposed extension to the Message type is only to be used by Message Receive situations in Intermediate Catch Event, the Boundary Catch Event and the Receive Task.}
 
-By specification, \textit{tMessage} comprises an attribute \textit{name}, the name of the message, and \textit{itemRef}, the reference to a BPMN \textit{ItemDefinition}. Additionally, it inherits all attributes from the BPMN \textit{RootElement}.
-In the following, the required additional attributes will be explained one after the other. A complete list is available in \autoref{tab:bpmn-extension}. The goal is to retain a stand-alone model that contains all information necessary to execute the subscription to the event source.
-
-\subsection{Overview}
-
+\missingfigure{UML-Diagram of BPMN extension: task>expl subscr task; message > messageeventdef > interm catch event; message > receive task}
 
 \begin{table}
 	\myfloatalign
@@ -56,6 +48,16 @@ In the following, the required additional attributes will be explained one after
 \end{table}
 
 \subsection{Usage Documentation}
+
+> why everything is added to the message element
+
+\todo[inline]{mention that others have extended the events instead, but this proposal goes another way}
+
+\todo[inline]{explain that the Message is a common element in BPMN models. It is the main generic type used for communication, collaboration.
+	The proposed extension to the Message type is only to be used by Message Receive situations in Intermediate Catch Event, the Boundary Catch Event and the Receive Task.}
+
+By specification, \textit{tMessage} comprises an attribute \textit{name}, the name of the message, and \textit{itemRef}, the reference to a BPMN \textit{ItemDefinition}. Additionally, it inherits all attributes from the BPMN \textit{RootElement}.
+In the following, the required additional attributes will be explained one after the other. A complete list is available in \autoref{tab:bpmn-extension}. The goal is to retain a stand-alone model that contains all information necessary to execute the subscription to the event source.
 
 \subsubsection{Introducing Event Buffers}
 Any event message that occurs before reaching the event element but after the time of subscription will be kept in a buffer by the system.
