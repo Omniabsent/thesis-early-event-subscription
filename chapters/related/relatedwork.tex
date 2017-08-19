@@ -5,41 +5,38 @@
 
 % luckham2011event: Event processing for business: organizing the real-time enterprise
 
-The field of \acf{EdBPM} has developed from connecting \ac{CEP} and \ac{BPM} in an attempt to increase the quality and performance of business processes~\cite{luckham2008power} and is an active field of research.
+The field of \acf{EdBPM} has developed from connecting \ac{CEP} and \ac{BPM} in an attempt to increase the quality and performance of business processes~\cite{luckham2008power}.
 The discipline is investigated from different perspectives.
 In event-driven business process monitoring and business activity monitoring, the process engine takes the role of an event producer that publishes information about its process executions to an event engine \cite{baumgrass2014bpmn, herzberg2013improving, bulow2013monitoring}. 
-This information can be used to detect process violations, evaluate execution performance and derive key performance indicators during process exeuction \cite{janiesch2011blueprint, janiesch:poc-eventdriven-bam}, whereas the field of process mining intends to derive process knowledge from historic processes~\cite{tiwari2008review}.
-In their comprehensive survey on \ac{EdBPM}~\cite{Krumeich2014EventDrivenBP}, Krumeich et. al. distinguish a application possibility, \acf{EdBPC}, where process executions consume events to control the execution flow~\cite{Cabanillas2014, Baumgrass2016}.
-An example application is shown by Estruch et. al. \cite{estruch2012event} who incorporate event in a manufacturing process in order to increase process performance.
-Pufahl \cite{Pufahl2017} presents a more generic application of business process control in her work on the re-evaluation of decisions based on events.
+This information can be used to detect process violations, evaluate execution performance and derive key performance indicators during process execution \cite{janiesch2011blueprint, janiesch:poc-eventdriven-bam}, whereas the field of process mining intends to derive process knowledge from historic information~\cite{tiwari2008review}.
+In their comprehensive survey on \ac{EdBPM}~\cite{Krumeich2014EventDrivenBP}, Krumeich et. al. distinguish a second application possibility, \acf{EdBPC}, where process executions consume events to control the execution flow. This thesis relates to this area of research.
+An example application is shown by Estruch\,et.\,al.\,\cite{estruch2012event} who incorporate events in a manufacturing process in order to increase process performance. \cite{Cabanillas2014, Baumgrass2016} apply the idea to logistics.
+Pufahl~\cite{Pufahl2017} presents a more generic application of business process control in her work on the re-evaluation of decisions based on events.
 
-\cite{chandy2010event} highlights that EdBPC requires an appropriate integration of the CEP component into the control of the business processes.
-an essential aspect is subscription and unsubscr. \cite{luckham2008power}
+The requirement for an appropriate integration of the CEP component into the control of the business processes is highlighted in~\cite{chandy2010event}.
+An essential aspect when interacting with an event engine is to consider the semantics according to the publish-subscribe paradigm~\cite{luckham2008power}. 
+While the need for event subscription is recognized, for example by Decker and Mendling~\cite{decker2008instantiation} in their investigation of process instantiation mechanisms and also by \cite{Pufahl2017} and \cite{von2010integrating}, the need for a flexible time of subscription is not considered in these works.
+Instead, they assume according to their interpretation of the the \acs{BPMN} specification, that the subscription is only issued once the event element is enabled.
+%The strict temporal order  barros2007complex
+The inferred possible loss of process efficiency, which also provides the basis of argumentation for this thesis, has first been pointed out by Mandal, Weidlich and Weske in their work on early event subscription~\cite{mandal:2017}.
+They argue that a late time of event subscription might lead to missed events and hence the delay or complete halt of the process execution. To address the issue, they introduce an extension to the BPMN service task, which can be used to explicitly model the subscribe-operation in the process flow. They derive the need for a temporary store of events and introduce formal execution semantics though not further elaborating on how buffer instances are correlated to event elements, process instances and processes.
 
-\cite{Cabanillas2014}: investigations on the connection between events and process models, leading to \cite{Baumgrass2016}: extension of bpmn for receiving events, process variables in the query
-\cite{Pufahl2017} makes use of events to control process executions and considers event subscription as an essential step in the process. However, the subscription time cannot be chosen flexibly.
+Following a congruent initial line of argumentation, this thesis first investigates the capabilities of the BPMN to express flexible event subscription semantics before assuming that the necessary modeling goals cannot be achieved. That leads to a more comprehensive list of requirements and the formulation of shortcomings of current solutions.
+The BPMN extension presented in \autoref{ch:concept} primarily builds upon adding subscription-related information to the Message-element to allow an implicit management of event subscriptions as opposed the explicit option that is provided through the event subscription task.
+To enable the implementation of automatic subscription handling, we provide guidelines on how to adapt process engine and the event handling module and provide a reference implementation at the example of Camunda and the Esper-based event engine Unicorn.
+While \cite{mandal:2017} does not further elaborate on the options to correlate an event buffer to an event element, process instance or process model, we define the scope of a buffer depending on the chosen subscription semantics.
+We show how the Camunda process engine can be extended to execute custom operations on process deployment, process instantiation and the enabling of the event element by using a portable and conveniently customizable process engine plugin. %We implement the event buffering as part of the event engine.
+%Taking a birds-eye view, it is the goal of this thesis to provide a more comprehensive analysis of the mechanisms necessary to provide flexible event subscription in business processes.
+%in total: a comprehensive investigation of using subscription mechanisms within BPMN.
 
-\cite{decker2008instantiation}: Process Instantiation, talks a lot about subscription, but no flexible subscr time, nobuffer, only for instantiation
-- maybe ref Barros, A., Decker, G., Grosskopf, A.: Complex events in business processes. In: Business Information Systems. Springer (2007), for example in pub/sub principle > temporal order (like mandal et al)
+%By this means, we facilitate the use of event subscription in business processes. 
+%Implicit subscription handling is especially advantageous when the subscription time is supposed to be before process instantiation, which would mean that a separate process would have to issue the related explicit subscription task.
 
-
-\cite{von2010integrating}: Integrating Complex Events for Collaborating and Dynamically Changing Business Processes; talk about un/subscription, extend ws-bpel with subscription, reporting, patterns, expression language, ..; scope, time of subscription and event buffering not discussed
-also: \cite{juric2010wsdl}
-
-
-
-
-
-
-%Control the flow: How to safely compose streaming services into business processes
-%Modeling and Execution of Event Stream Processing in Business Processes
-\cite{appel2014modeling}: includes the streams and stream processing right into the process model
-same: \cite{biornstad2006control}
-
-
-\cite{mandal:2017} has been the starting point for this thesis, not only acknowledging the discrepancy between the event occurrence time in the real world and the event subscription time as interpreted from the BPMN standard, but also incorporating event subscription in the BPMN model.
-Inspired by their work, this thesis revisits the topic from scratch
-however: ...
+%However mandal:2017...
+%> possible options to use plain bpmn to express subscription semantics are not discussed
+%> means to issue subscription is only explicit task
+%> their initial thoughts to not include the exact means to correlation event elements and buffer instances, nor does it mention how exactly buffers are shared between process instances
+%> they present an implementation based on extension of camunda behavior, not pep. in terms of buffering they only say that the correlation service has to take care of the buffer policies.
 
 
 
@@ -48,10 +45,18 @@ however: ...
 > Krumeich2014EventDrivenBP: In most cases these contributions propose an extension of the Business Process Modeling, for modeling goals, high-level events or even whole business situations; p.12 sec 4.1.6
 
 
+more generic but also more complicated extensions
+%\cite{von2010integrating}: Integrating Complex Events for Collaborating and Dynamically Changing Business Processes; talk about un/subscription, extend ws-bpel with subscription, reporting, patterns, expression language, ..; scope, time of subscription and event buffering not discussed
+also: \cite{juric2010wsdl}
 
-%> predictive: Schwegmann, B., Matzner, M. and Janiesch, C. (2013a), “A method and tool for predictive event-driven process analytics”, in Alt, R. and Franczyk, B. (Eds), Proceedings of the 11th International Conference on Wirtschaftsinformatik (WI2013), Universita¨ t Leipzig, Leipzig, pp. 721-735.
+
+%Control the flow: How to safely compose streaming services into business processes
+%Modeling and Execution of Event Stream Processing in Business Processes
+\cite{appel2014modeling}: includes the streams and stream processing right into the process model
+same: \cite{biornstad2006control}
 
 
+%# another important aspect
 - in this thesis, the queries must be formulated in complete epl. some related work argues that this is too difficult.
 \cite{Kunz2010}: acknowledge the lack of usability in CEP and address it by applying bpmn as graphical support for the definition of cep patterns
 \cite{gabriel2016konzeptionelle}: generate queries from new graphical notation, anbieterunabhängige Modellierung von EdBPM
@@ -69,4 +74,18 @@ also \cite{li2007historic}: historic data in pub/sub
 - event buffering for the application in a BPM environment may not be confused with internal buffering techniques used within event engines to perform load shedding, even out short term load peaks. 
 %see https://books.google.de/books?id=MWCfC9OKaToC&pg=PA198&lpg=PA198&dq=event+processing+optimization+overlapping+windows&source=bl&ots=yfcNb0YGAg&sig=qrYgyfRV-bLesOcCyxpeBdCQTr0&hl=de&sa=X&ved=0ahUKEwit2czXytbVAhVCD5oKHWdYAGAQ6AEIPjAC#v=onepage&q=event%20processing%20optimization%20overlapping%20windows&f=false
 % Stream Data Processing: A Quality of Service Perspective: Modeling von Sharma Chakravarthy,Jiang Qingchun, 9.3.6
+
+
+
+%+\cite{Cabanillas2014}: investigations on the connection between events and process models, leading to \cite{Baumgrass2016}: extension of bpmn for receiving events, process variables in the query
+%+\cite{Pufahl2017} makes use of events to control process executions and considers event subscription as an essential step in the process. However, the subscription time cannot be chosen flexibly.
+
+
+%+\cite{decker2008instantiation}: Process Instantiation, talks a lot about subscription, but no flexible subscr time, nobuffer, only for instantiation
+%+ maybe ref Barros, A., Decker, G., Grosskopf, A.: Complex events in business processes. In: Business Information Systems. Springer (2007), for example in pub/sub principle > temporal order (like mandal et al) | barros2007complex
+
+%> predictive: Schwegmann, B., Matzner, M. and Janiesch, C. (2013a), “A method and tool for predictive event-driven process analytics”, in Alt, R. and Franczyk, B. (Eds), Proceedings of the 11th International Conference on Wirtschaftsinformatik (WI2013), Universita¨ t Leipzig, Leipzig, pp. 721-735.
+
+
+
 
