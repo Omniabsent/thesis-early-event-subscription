@@ -25,11 +25,17 @@ An implementation of the processes using the Camunda business process engine was
 %By implementing the flexible event subscription concept in Unicorn and Camunda it could be demonstrated that state-of-the-art BPM and CEP technology is flexible enough to handle ..., but
 The results of that analysis where summarized in three shortcomings, S1-S3, complaining about the increase in model complexity, about the mis-use of BPMN for infrastructure tasks and about the possible performance limitations when implementing flexible subscription and event buffering in bpmn.
 
+together, the requirements and the shortcomings build a requirements framework to build solutions addressing the lack of subscription semantics in bpmn.
+
+- modeling subscription dependencies as data objects and automatically evaluating the earliest possible time of subscription, an aspect that can be validated mostly without runtime information
+
 %concept
-Together, the requirements and the shortcomings were taken as a foundation to develop a BPMN extension that allows an explicit and flexible use of event subscription in business process.
+In this thesis, a BPMN extension is developed on that foundation. It allows an explicit and flexible use of event subscription in business process.
 The extension builds upon the addition of subscription-related information to the BPMN Message type. it requires that all information necessary to issue a subscription can be obtained from the model.
 The extension aims to offer a convenient use of subscription operations by automatizing the subscription operations in the process engine.
 As the execution semantics of bpmn intermediate events and the receive task are extended with automatic subscription handling, there are additional requirements to the process engine and to the event processing platform, which are outlined as part of the extension.
+
+- no visual representation of the extended meta-model
 
 %implementation
 Given the model extension and the derived requirements to process engine and event processing API, Chapter XX describes a reference implementation at the example of Camunda and the event processing platform Unicorn.
@@ -39,30 +45,36 @@ Thanks to the plugin-mechanism, the resulting artifact is easily portable and ca
 To add the necessary functionality to Unicorn, its code-base has been extended with an event buffering module and additional webservice API calls.
 Combined, the two are able to process and execute process models using the newly introduced bpmn extension for flexible event subscription
 
+%- the concept is designed for use with a single cep engine. in the future, this could be extended to using the bpmn extension with multiple event engines
+
+% discussion, putting the results into perspective
+applying to the motivating scenarios, it could be shown that the fulfillment of the requirements leads to less missed events.
+but...
+what could be improvement?
+the work was carried out without empirical basis or user study, but solely based on fact inference and discussion with research colleagues.
+
+in the future this and that could be done
+formal execution semantics to allow/facilitate automatized model-checking
+
 %conclusions
 The results of this thesis provide a comprehensive study of event subscription mechanisms business processes. 
 The investigations have led to a bpmn extension to express subscription semantics in bpmn models and an according implementation to evaluate the results.
 
-% what were the limitations of this thesis and what can be done in the future
 
-
-\section{Discussion}
-
-- discussion:
-> it remains the problem, that epl knowledge is not available in process design, a problem that has been addressed in ...
-> while the event buffering can now be controlled from the process model level, events must still be acquired by the event engine before (set up event types and make sure that the events are pushed to the engine)
-> the concept tries to bridge the gap between event persistence/historic events and real-time event processing by arguing that event occurrences are kept for a limited time and can therefor still be treated as events. A contra argumentation might be that an event becomes a simple piece of information as soon as it is not instantaneously consumed. hence it should not be modeled as an event but simply as a data object, using a data store
-> many design decisions have been begründet with an improved usability though no empirical basis was available. Reasoning was only based on literature and chats with a small group of fellow researchers
-
-- it can be argued that at process design time you dont care about the subscription time itself, but about the maximum age you can accept for your events. this would connect the lifetimepolicy and the subscription time into one value. but make the processing more complex and more fuzzy
-
-\section{Future Work}
-
-- modeling subscription dependencies as data objects and automatically evaluating the earliest possible time of subscription
-- (Andreas:) using the bpmn extension with multiple event engines
 - this work attempts to provide a standard for handling event subscription in bpm architectures. given the necessity and the repeated attempts to address to topic, it would be a reasonable next step to discuss available solutions and start providing a foundation that is accepted and reused across the bpm community. No matter if based on the solutions of this work or not.
 > it must be evaluated if that's the way event buffering shall be used. > prove the value of flexible event subscription in an industry case study
-- future work: event data from other events could be used as historic data to allow the access even before process deployment
-- time of subscription could also be defined as "at termination of activity xy"
-- visual representation of the extended meta-model
-- formal execution semantics to allow/facilitate automatized model-checking
+> many design decisions have been begründet with an improved usability though no empirical basis was available. Reasoning was only based on literature and chats with a small group of fellow researchers
+% what were the limitations of this thesis and what can be done in the future
+
+- future work: event data from other buffers could be used as historic data to allow the access even before process deployment
+
+%\section{Discussion}
+> the concept tries to bridge the gap between event persistence/historic events and real-time event processing by arguing that event occurrences are kept for a limited time and can therefor still be treated as events. A contra argumentation might be that an event becomes a simple piece of information as soon as it is not instantaneously consumed. hence it should not be modeled as an event but simply as a data object, using a data store
+
+
+- it can be argued that at process design time you dont care about the subscription time itself, but about the maximum age you can accept for your events. this would connect the lifetimepolicy and the subscription time into one value. but make the processing more complex and more fuzzy
+> it remains the problem, that epl knowledge is not available in process design, a problem that has been addressed in ...
+> while the event buffering can now be controlled from the process model level, events must still be acquired by the event engine before (set up event types and make sure that the events are pushed to the engine)
+
+%\section{Future Work}
+%- time of subscription could also be defined as "at termination of activity xy"
