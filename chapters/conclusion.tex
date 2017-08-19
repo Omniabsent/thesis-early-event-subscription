@@ -1,10 +1,50 @@
 %************************************************
-\chapter{Conclusions}\label{ch:conclusion}
+\chapter{Conclusion}\label{ch:conclusion}
 %************************************************
 
+% what general topic was addressed and why
+As organizations have adopted comprehensive business process management solutions, they are constantly seeking to improve process capabilities, quality and performance.
+Integrating Complex Event Processing into their business workflows is a popular means to increase process flexibility.
+As event-driven architectures mostly operate according to the publish-subscribe paradigm, the support of this interaction pattern is increasingly important when modeling business processes.
+The industry-standard \acf{BPMN} offers comprehensive support for events but does not address subscribe-operations specifically.
+The common understanding is that the subscription to an event only takes place when it gets enabled, so that events that occur before cannot be consumed.
 
+% what has been done
+Motivated by the possible process execution issues implied by the bad BPMN specification, this work has investigated the topic of event subscription in bpmn.
+Initially, the motivating scenarios and related work has been translated into three requirements R1-R3 that a business process meta model must fulfill to address the previously stated problems.
+The core of these requirements is that there must be a possibility to influence the event subscription time, including subscription times before process instantiation and deployment. 
+The choice of event subscription times takes into consideration the event occurrence scenarios.
+Apart from that it was stated that the event subscription time must be explicit in the model to address the lack of specification in the BPMN model
+Given that event subscription and consumption are not performed at the same time, the need for a temporary storage of events was identified.
 
-By implementing the flexible event subscription concept in Unicorn and Camunda it could be demonstrated that state-of-the-art BPM and CEP technology is flexible enough to handle 
+%assessment
+In the following chapter REF we have investigated for each requirement, to what extent it can be expressed in the BPMN.
+For most of the aspects, it was possible to find acceptable solutions, though the complexity of the models did increase in every case.
+This became especially apparent when analyzing the event occurrence scenarios before instantiation and before deployment. A complex business process model involving two additional auxiliary processes was presented to enable event subscription and event buffering in these cases.
+An implementation of the processes using the Camunda business process engine was presented.
+%By implementing the flexible event subscription concept in Unicorn and Camunda it could be demonstrated that state-of-the-art BPM and CEP technology is flexible enough to handle ..., but
+The results of that analysis where summarized in three shortcomings, S1-S3, complaining about the increase in model complexity, about the mis-use of BPMN for infrastructure tasks and about the possible performance limitations when implementing flexible subscription and event buffering in bpmn.
+
+%concept
+Together, the requirements and the shortcomings were taken as a foundation to develop a BPMN extension that allows an explicit and flexible use of event subscription in business process.
+The extension builds upon the addition of subscription-related information to the BPMN Message type. it requires that all information necessary to issue a subscription can be obtained from the model.
+The extension aims to offer a convenient use of subscription operations by automatizing the subscription operations in the process engine.
+As the execution semantics of bpmn intermediate events and the receive task are extended with automatic subscription handling, there are additional requirements to the process engine and to the event processing platform, which are outlined as part of the extension.
+
+%implementation
+Given the model extension and the derived requirements to process engine and event processing API, Chapter XX describes a reference implementation at the example of Camunda and the event processing platform Unicorn.
+Camunda has been extended with subscription handling functionality, issuing event subscription and un-subscription in accordance with the extended process models.
+Therefor, a process engine plugin was implemented around a central ParseListener that injects custom code when a business process model is deployed and a number of ExecutionListeners that can control subscription and un-subscription during the execution of the process.
+Thanks to the plugin-mechanism, the resulting artifact is easily portable and can be used across different versions of the process engine.
+To add the necessary functionality to Unicorn, its code-base has been extended with an event buffering module and additional webservice API calls.
+Combined, the two are able to process and execute process models using the newly introduced bpmn extension for flexible event subscription
+
+%conclusions
+The results of this thesis provide a comprehensive study of event subscription mechanisms business processes. 
+The investigations have led to a bpmn extension to express subscription semantics in bpmn models and an according implementation to evaluate the results.
+
+% what were the limitations of this thesis and what can be done in the future
+
 
 \section{Discussion}
 
