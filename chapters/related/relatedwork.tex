@@ -22,7 +22,7 @@ The inferred possible loss of process efficiency, which also provides the basis 
 They argue that a late time of event subscription might lead to missed events and hence the delay or complete halt of the process execution. To address the issue, they introduce an extension to the BPMN service task, which can be used to explicitly model the subscribe-operation in the process flow. They derive the need for a temporary store of events and introduce formal execution semantics though not further elaborating on how buffer instances are correlated to event elements, process instances and processes.
 
 Following a congruent initial line of argumentation, this thesis first investigates the capabilities of the BPMN to express flexible event subscription semantics before assuming that the necessary modeling goals cannot be achieved. That leads to a more comprehensive list of requirements and the formulation of shortcomings of current solutions.
-The BPMN extension presented in \autoref{ch:concept} primarily builds upon adding subscription-related information to the Message-element to allow an implicit management of event subscriptions as opposed the explicit option that is provided through the event subscription task.
+The BPMN extension presented in \autoref{ch:flexibleeventsubscription} primarily builds upon adding subscription-related information to the Message-element to allow an implicit management of event subscriptions as opposed the explicit option that is provided through the event subscription task.
 To enable the implementation of automatic subscription handling, we provide guidelines on how to adapt process engine and the event handling module and provide a reference implementation at the example of Camunda and the Esper-based event engine Unicorn.
 While \cite{mandal:2017} does not further elaborate on the options to correlate an event buffer to an event element, process instance or process model, we define the scope of a buffer depending on the chosen subscription semantics.
 We show how the Camunda process engine can be extended to execute custom operations on process deployment, process instantiation and the enabling of the event element by using a portable and conveniently customizable process engine plugin. %We implement the event buffering as part of the event engine.
@@ -38,44 +38,41 @@ We show how the Camunda process engine can be extended to execute custom operati
 %> their initial thoughts to not include the exact means to correlation event elements and buffer instances, nor does it mention how exactly buffers are shared between process instances
 %> they present an implementation based on extension of camunda behavior, not pep. in terms of buffering they only say that the correlation service has to take care of the buffer policies.
 
-
-
-- to enable flexible event subscription in bpmn models, we have presented a bpmn extension in accordance with the in-built bpmn extension mechanism
-> BPMN extension mechanisms: braun2014classification (most of the extensions are not model conform), braun2015behind (implicit and explicit extension)
-> Krumeich2014EventDrivenBP: In most cases these contributions propose an extension of the Business Process Modeling, for modeling goals, high-level events or even whole business situations; p.12 sec 4.1.6
-
-
-more generic but also more complicated extensions
-%\cite{von2010integrating}: Integrating Complex Events for Collaborating and Dynamically Changing Business Processes; talk about un/subscription, extend ws-bpel with subscription, reporting, patterns, expression language, ..; scope, time of subscription and event buffering not discussed
-also: \cite{juric2010wsdl}
-
+To enable flexible event subscription in bpmn models, a BPMN extension in accordance with the built-in extension mechanism is presented.
+Krumeich\,et.\,al.\,\cite{Krumeich2014EventDrivenBP} recognize that this is the means of choice many related contributions.
+In \cite{braun2014classification} the authors Braun and Esswein present an overview and classification of extensions proposals made in the research environment, revealing the state-of-the-art of extension techniques and identifying the need for an integrated methodological support. This leads to a detailed analysis of the extension mechanism in \cite{braun2015behind}, considering that there is an explicit and an implicit extension mechanism in BPMN.
+%that only a very small percentage of extensions is in fact in conformance with the specification
+%+> BPMN extension mechanisms: braun2014classification (most of the extensions are not model conform), braun2015behind (implicit and explicit extension)
+%+> Krumeich2014EventDrivenBP: In most cases these contributions propose an extension of the Business Process Modeling, for modeling goals, high-level events or even whole business situations; p.12 sec 4.1.6
+Other notable approaches to cope with event processing in business processes aim at including streams and stream processing artifacts right into the business process model~\cite{appel2014modeling,biornstad2006control}. While offering a more generic and thus more powerful option to represent event processing semantics, the concepts contradict with the goal of this work to simplify event subscription handling given an existing event processing engine.
+The same argumentation holds for Juric and Matjaz~\cite{juric2010wsdl}, who developed WSDL and BPEL extensions for Event Driven Architectures.
 
 %Control the flow: How to safely compose streaming services into business processes
 %Modeling and Execution of Event Stream Processing in Business Processes
-\cite{appel2014modeling}: includes the streams and stream processing right into the process model
-same: \cite{biornstad2006control}
-
+%\cite{von2010integrating}: Integrating Complex Events for Collaborating and Dynamically Changing Business Processes; talk about un/subscription, extend ws-bpel with subscription, reporting, patterns, expression language, ..; scope, time of subscription and event buffering not discussed 
 
 %# another important aspect
-- in this thesis, the queries must be formulated in complete epl. some related work argues that this is too difficult.
-\cite{Kunz2010}: acknowledge the lack of usability in CEP and address it by applying bpmn as graphical support for the definition of cep patterns
-\cite{gabriel2016konzeptionelle}: generate queries from new graphical notation, anbieterunabhängige Modellierung von EdBPM
-- in monitoring this can be derived from the model:
-\cite{backmann2013model}: support the automated creation of CEP queries for process MONITORING 
-> an automatic generation of queries was also considered in  \cite{Pufahl2017}
+%- in this thesis, the queries must be formulated in complete epl. some related work argues that this is too difficult.
+%\cite{Kunz2010}: acknowledge the lack of usability in CEP and address it by applying bpmn as graphical support for the definition of cep patterns
+%\cite{gabriel2016konzeptionelle}: generate queries from new graphical notation, anbieterunabhängige Modellierung von EdBPM
+%- in monitoring this can be derived from the model:
+%\cite{backmann2013model}: support the automated creation of CEP queries for process MONITORING 
+%> an automatic generation of queries was also considered in  \cite{Pufahl2017}
 
-- maybe: persisting events in cep platforms | or delayed delivery of events | 
-to implement a flexible event subscription time, is has been noted that a temporary storage is required. Seen from the time of consumption, historic events are consumed.
+With a closer relation to the field of Complex Event Processing, this thesis discusses the need for a temporary event storage. 
+Seen from another perspective the usage of an event buffer implies that historic events are consumed, however the maximum age of the events depends on the described Lifespan Policy.
+Event persistence within CEP platforms can be seen as a means to implement event buffering.
+The topic of event persistence is considered by Roth\,\etal\,\cite{roth2010event} who present an architecture for event data warehousing, whereas Buchmann~\etal~\cite{buchmann2010event} describe an attempt to integrate information from logistics and manufacturing. 
+Both apply a persistent event store to allow historic analysis.
+More generally, \cite{li2007historic} presents a concept to retrieve historic information in a publish-subscribe work-flow.
+While these approaches can certainly be used to implement some kind of event buffer, this would still not diminish the need to consider subscription-related information in process models and, arguably, a persistent data-store poses performance limitations to implementing buffers in complex event processing.
+With regards to CEP, event buffering for the application in a BPM environment may not be confused with internal buffering techniques used within event engines to perform load shedding or even out short term load peaks~\cite{chakravarthy2009stream}.
+%+> \cite{roth2010event}: Event data warehousing for complex event processing and \cite{buchmann2010event}:Event-Driven services: Integrating production, logistics and transportation
+%+also \cite{li2007historic}: historic data in pub/sub
+%+> but if i want to have that historic information, than I would have to issue a subscription some time before. I integrate everything in the process model
 
-> \cite{roth2010event}: Event data warehousing for complex event processing and \cite{buchmann2010event}:Event-Driven services: Integrating production, logistics and transportation
-also \cite{li2007historic}: historic data in pub/sub
-> but if i want to have that historic information, than I would have to issue a subscription some time before. I integrate everything in the process model
-
-- event buffering for the application in a BPM environment may not be confused with internal buffering techniques used within event engines to perform load shedding, even out short term load peaks. 
 %see https://books.google.de/books?id=MWCfC9OKaToC&pg=PA198&lpg=PA198&dq=event+processing+optimization+overlapping+windows&source=bl&ots=yfcNb0YGAg&sig=qrYgyfRV-bLesOcCyxpeBdCQTr0&hl=de&sa=X&ved=0ahUKEwit2czXytbVAhVCD5oKHWdYAGAQ6AEIPjAC#v=onepage&q=event%20processing%20optimization%20overlapping%20windows&f=false
 % Stream Data Processing: A Quality of Service Perspective: Modeling von Sharma Chakravarthy,Jiang Qingchun, 9.3.6
-
-
 
 %+\cite{Cabanillas2014}: investigations on the connection between events and process models, leading to \cite{Baumgrass2016}: extension of bpmn for receiving events, process variables in the query
 %+\cite{Pufahl2017} makes use of events to control process executions and considers event subscription as an essential step in the process. However, the subscription time cannot be chosen flexibly.
@@ -85,7 +82,4 @@ also \cite{li2007historic}: historic data in pub/sub
 %+ maybe ref Barros, A., Decker, G., Grosskopf, A.: Complex events in business processes. In: Business Information Systems. Springer (2007), for example in pub/sub principle > temporal order (like mandal et al) | barros2007complex
 
 %> predictive: Schwegmann, B., Matzner, M. and Janiesch, C. (2013a), “A method and tool for predictive event-driven process analytics”, in Alt, R. and Franczyk, B. (Eds), Proceedings of the 11th International Conference on Wirtschaftsinformatik (WI2013), Universita¨ t Leipzig, Leipzig, pp. 721-735.
-
-
-
 
