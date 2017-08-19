@@ -33,7 +33,7 @@ Firstly, the \textit{subscribe} operation has to be available in two steps:
 	A similar operation, \textit{addNotificationRecipient}, is available in existing CEP platforms. It adds a notification recipient to a query that is already registered in the platform. The difference is in the delivery of the first buffered message: \textit{requestEvents} sends out the message from the buffer, \textit{addNotificationRecipient} will send out notifications only for future query output.
 \end{aenumerate}\label{def:apiextension-subscribe}
 
-A similar situation holds for the un-subscribe operation: Given flexible event subscription, the operation must also be available in two steps:
+\noindent A similar situation holds for the un-subscribe operation: Given flexible event subscription, the operation must also comprise of two steps:
 
 \begin{aenumerate}
 	\setcounter{enumi}{2}
@@ -55,9 +55,6 @@ The query and its buffer will remain active even after any single instance has t
 - to achieve the default behavior, each two steps have to be executed just after the other.
 
 
-\missingfigure{maybe a uml sequence diagram. Or other diagram format?}
-
-
 
 \paragraph{Architectural options}
 
@@ -65,24 +62,26 @@ Three options are considered to implement the explained functionality.
 It can either be implemented by adopting the CEP platform itself, by implementing a separate middleware between process engine and CEP platform, or by implementing a buffering module as part of the process engine.
 Which of the three options suits best has to be evaluated for the given use-case and existing infrastructure. In some cases it might not be possible to adapt the code of process engine or event processing platform, which leaves a separate middleware as the only choice.
 
+
 \missingfigure{three options to implement the event buffering and api extension}
 
 A reference implementation for an extended complex event processing platform is presented in \autoref{ch:implunicorn} at the example of the Esper-based CEP~platform \textit{Unicorn}. It also explains, why extending the event platform was the preferred choice in the given scenario.
 
 \paragraph{Performance Considerations}
 
+\todo[inline]{write paragraph}
 - performance improvements through shared windows
 - due to its performance optimizations, an extension of the cep itself would make perfect sense
 
 \medskip \noindent
 - given the extended api, it is now possible to implement early event subscription from the process engine
-\todo[inline]{write}
+\todo[inline]{connector}
 
 
 \subsection{Extended Process Engine Behavior}\label{ch:extendedprocessengine}
 It is the task of the Business Process Engine to interpret and execute process models and connect to an event processing platform in event-driven setups.
 From the three relevant parts, two have already been defined, the BPMN extension and the buffered event processing module.
-Out of the box, a process engine like Camunda will ignore any proprietary BPMN extensions and the subscription to an event source must be especially implemented. An example for such an implementation is provided in \autoref{ch:assessment-implementation}.
+Out of the box, a process engine like Camunda will ignore any proprietary BPMN extensions and the subscription to an event source must be especially implemented. An example for such an implementation is provided in \autoref{ass:model:buffered}.
 One goal of this work is to automatize the handling of event subscriptions solely based on the information available through the extended BPMN model. Additional process elements should not be required.
 This section will clarify, which operations need to be executed by the process engine to enable the automatic subscription handling.
 \autoref{ch:implcamunda} demonstrates the implementation of automatic subscription handling at the example of Camunda.
@@ -90,7 +89,7 @@ This section will clarify, which operations need to be executed by the process e
 \paragraph{Parsing additional information from the BPMN model}
 It is required that the process engine is able to read the additional information from the BPMN extension~(see~\autoref{ch:bpmnx}) so that it is available during process deployment and execution.
 This affects the BPMN message element, which can contain the additional attributes \textit{eventQuery}, \textit{subscriptionTime} and \textit{bufferPolicies}.
-Secondly, the \textit{Explicit Subscription Task} has to be processed. It contains a reference to a Message entity within the same model element.
+Secondly, the \textit{Event Subscription Task} has to be processed. It contains a reference to a Message entity within the same model element.
 The process engine might have to be adopted to read all relevant data from the extended model.
 
 
@@ -115,7 +114,6 @@ For each possible subscription time, the following briefly enumerates which oper
 \todo[inline]{be more precise about the time the calls should be executed (if possible). "reached"? "completed"? use the right bpmn words}
 
 
-\todo[inline] {Do I want to write about extended validity checks? soundness? The question would be: What happens if the model erroneous w.r.t. to the bpmn extension?}
 - handling subscription dependencies:
 - when are process variables replaced by their actual values
 - The use of dynamic process variable values introduces an additional complexity: Depending on the time of event subscription, the value of the process variable might not yet be available.

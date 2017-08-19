@@ -12,7 +12,6 @@ Though event subscription is not directly addressed in the BPMN~specification, t
 Intermediate Event is reached. Once the Event occurs, it is consumed."}~\cite{bpmnspec},~p.~440
 
 \medskip \noindent The usual interpretation of this excerpt is that the subscription to the event takes place as soon as the event gets enabled, the un-subscription when the event terminates.
-\todo[inline]{I need to work with a precise lifecycle}
 As pointed out by Mandal~et.~al.~\cite{mandal:2017}, these subscription semantics significantly limit the flexibility of using events in business processes and can cause undesired behavior and fault.
 Due to the strict temporal order between event subscription, occurrence and un-subscription as required by the publish-subscribe paradigm, any events that occur before the enabling of the event element will be ignored by the process execution.
 That reduces the timespan for events to occur to a potentially small part of the total execution time and means that crucial events might be missed which can delay or block a process execution unnecessarily.
