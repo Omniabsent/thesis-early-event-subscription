@@ -33,34 +33,10 @@ The action of making the process runnable in the execution environment is called
 After these preparations the process can be enacted in daily business while its current state is monitored and system maintenance is performed if necessary (\emph{Enactment Phase}). 
 A single process execution begins with the \emph{process instantiation}, when the process has succeeded or is aborted, we say the process is \emph{terminated}.
 During the enactment, system and stakeholders can start collecting performance indicators and process execution logs to allow evaluating the quality of the process specification. If that \emph{Evaluation} step reveals deficiencies, the life-cycle starts over by entering the design phase once again.
-The \emph{process un-deployment} is performed if necessary, so that no new instances of the old process can be started.
-\cite[p.~11~ff.]{weske:bpm-book}
-\todo[inline]{add reference to \cite{dumas:bpm}, mention that Weske says pretty much the same}
+The \emph{process un-deployment} is performed if necessary, so that no new instances of the old process can be started~\cite[p.~11~ff.]{weske:bpm-book}. A similar life-cycle is described by Dumas in \cite{dumas:bpm}.
+%\todo[inline]{add reference to \cite{dumas:bpm}, mention that Weske says pretty much the same}
 %the investigations undertaken in this work target the Design \& Analysis phase
 
-\subsection{Business Process Meta Model and Activity Lifecycle}\label{ch:bg:bpmetamodel}
-Attempting to...
-
-\begin{description}
-	\item[Definition 3 (Business Process Meta Model):]
-	Let $C$ be a set of control flow constructs. $P = (N,E,type)$ is a \textit{process model} if it consists of a set $N$ of nodes, and a set $E$ of edges. \cite{weske:bpm-book},~p.~91
-	\begin{itemize} 
-		\item
-		$N = N_{A}\cup N_{E}\cup N_{G}$, where $N_{A}$ is a set of activity models, $N_{E}$ is a set of event models and $N_{G}$ is a set of gateway models. These sets are mutually disjoint.
-		\item 
-		$E$ is a set of directed edges between nodes, such that $E\subseteq N \times N$, representing control flow.
-		\item
-		$type:N_{G}\rightarrow C$ assigns to each gateway model a control flow construct.
-	\end{itemize}
-\end{description}
-
-\todo[inline]{
-Much like the process instance lifecycle, each activity follows a cycle
-- introduce activity lifecycle/control flow
-}
-\missingfigure{activity lifecycle}
-
-%
 While traditionally activities are executed manually by company staff following the written process specifications, computer systems are used today to drive the execution and enforcement of business processes and organizational rules.
 The generic software systems utilized for that purpose are introduced in the following section.
 
@@ -97,15 +73,31 @@ Camunda is popular among the research community as the source code is openly ava
 
 
 \subsection{Business Process Model and Notation}
+
+A generic meta model of business process models is proposed in \cite{weske:bpm-book}.
+According to the model, all processes are composed of nodes and edges with each node representing either an activity model, an event model or a gateway model. The complete definition is provided in \textit{Definition~3}.
+
+\begin{description}
+	\item[Definition 3 (Business Process Meta Model):]
+	Let $C$ be a set of control flow constructs. $P = (N,E,type)$ is a \textit{process model} if it consists of a set $N$ of nodes, and a set $E$ of edges. \cite{weske:bpm-book},~p.~91
+	\begin{itemize} 
+		\item
+		$N = N_{A}\cup N_{E}\cup N_{G}$, where $N_{A}$ is a set of activity models, $N_{E}$ is a set of event models and $N_{G}$ is a set of gateway models. These sets are mutually disjoint.
+		\item 
+		$E$ is a set of directed edges between nodes, such that $E\subseteq N \times N$, representing control flow.
+		\item
+		$type:N_{G}\rightarrow C$ assigns to each gateway model a control flow construct.
+	\end{itemize}
+\end{description}
+
 Given the general semantics of business processes, a specific modeling notation has to be selected to express an informal process description in a formal, interchangeable way.
 Different languages and notations have become available over the years, each serving different specializations.
 Kossak~et~al.~\cite{kossak:bpmn2} organize some of the more popular languages as follows: A subset of them are focused on the control flow of business processes, for instance \ac{BPMN}~\cite{bpmnspec}, Yet Another Workflow Language and Petri Nets; some focus on object-orientation, like the \ac{UML} activity diagrams and use case diagrams; some are data-flow oriented, e.~g.~the Structured Analysis and Design Technique.
-\todo[inline]{references to the other languages}
+%\todo[inline]{references to the other languages}
 
-Among these, the \acs{BPMN} has developed into a widely-adopted industry standard, also becoming ISO-standard in 2013~\cite{iso2013bpmn}.
-The standard is developed by the Object Management Group~\cite{omghome} and now available in version 2.0~(January~2011) after being first released in January~2008.
-\todo[inline]{If we speak of the bpmn spec, we always mean version 2.0}
-\acs{BPMN} can be understood as an extension to the abstract business process meta model~(\autoref{ch:bg:bpmetamodel}) adding a comprehensive catalog of visual representations and semantic constructs on top of a meta model. Furthermore, one of the most important features of its latest version is the a standardized interchange format provided through an \acs{XML} specification, as \cite{weske:bpm-book} points out.
+Among these, the \acf{BPMN} has developed into a widely-adopted industry standard, also becoming ISO-standard in 2013~\cite{iso2013bpmn}.
+The specification is developed by the Object Management Group~\cite{omghome} and now available in version 2.0~(January~2011) after being first released in January~2008. Whenever referring to BPMN in this work, version 2.0 of the standard is meant.
+\acs{BPMN} can be understood as an extension to the abstract business process meta model adding a comprehensive catalog of visual representations and semantic constructs on top of a meta model. Furthermore, one of the most important features of its latest version is the a standardized interchange format provided through an \acs{XML} specification, as \cite{weske:bpm-book} points out.
 As emphasized by \citeauthor{Muehlen:2007}~\cite{Muehlen:2007}, the increased expressiveness of modern languages like \acs{BPMN} comes at the cost of an increased complexity. An aspect that, apparently, did not stop it from gaining popularity.
 
 \paragraph{Elements of a BPMN Model}
@@ -128,21 +120,23 @@ If the car is available, the quote must be created in two sequential activities 
 In either case, the process ends with an \textit{End Event} after the customer was informed about the result of his request.
 
 \todo[inline]{- introduce the other essential elements, types of events}
+commonly used gateways
+events
+activity types / tasks
+handling of data
+participants
+message flows
 
-\paragraph{Process Choreographies}
-- talk about how several parties can interact => choreography
-- Message
-- choreographies
 
-\missingfigure{Sample BPMN choreoraphy model, maybe the same as before, but with 2 lanes and communication in-between}
+\missingfigure{Sample BPMN model with 2 participants, maybe the same as before, but with 2 lanes and communication in-between. known participant hidden. use special task type and data}
 
 
 \section{Complex Event Processing}\label{ch:bg:cep}
 The IT world is facing an exponential increase in the amount of produced data. A significant part of this data are pieces of information about real-life occurrences, such as a current sensor value, an interaction on a website or the location of a vehicle on the road.
-We call this kind of strongly time-related information an \textit{Event} and the according computer science field \ac{CEP}~\cite{evtprocessing}.
+We call this kind of strongly time-related information an \textit{Event} and the according computer science field \acf{CEP}~\cite{evtprocessing}.
 - events are of a certain type
 
-\todo[inline]{More precisely, Events are defined as follows...}
+\todo[inline]{More precisely, Events are defined as follows... see heikos thesis? \cite{luckham2008power}}
 from http://www.softnet.tuc.gr/~minos/Papers/rtstreams15.pdf
 -Event tuples are defined by [11] as tuples e =< s, t >,
 where e represents the event of interest, s refers to a list
@@ -169,9 +163,6 @@ Their decoupled nature facilitates the management and development of event proce
 Whenever a new event source is available it can be connected to the CEP platform without considering all future consumers. Consumers can subscribe and un-subscribe without influencing the operations on the consumer side.
 
 
-
-\missingfigure{pub/sub and event processing architecture, e.g. mandal:2017 p.13}
-
 \paragraph{Stream Processing}
 To be able to cope with potentially large amounts of data, Complex Event Processing Platforms work on the basis of \textit{stream processing}.
 \todo[inline]{'relational' db}
@@ -193,7 +184,7 @@ When formulating event queries, it is essential to consider the stream processin
 
 For the illustration of the concepts, this thesis relies on the Esper \ac{EPL}~\cite{esperhome}, utilized in Esper-based event processing engines like the one employed in \autoref{ch:implementation}.
 
-\todo[inline]{more on epl, what can it do? windows, joins, filters,patterns}
+\todo[inline]{in short: more on epl, what can it do? windows, joins, filters,patterns}
 
 \begin{lstlisting}[language=sql,caption={Sample Query in Esper EPL},label=lst:epl-query-example]
 	SELECT time, delay, delayreason
@@ -201,32 +192,38 @@ For the illustration of the concepts, this thesis relies on the Esper \ac{EPL}~\
 	WHERE delay > 30
 \end{lstlisting}
 
-\section{Event-driven Business Process Management}
-- see opheretzion p.17 and where are we now
-- maybe also reference baumgrass paper / GET project | Towards a Methodology for the Engineering
-of Event-Driven Process Applications (BG2016)
-- + 
+\section{Event-driven Business Process Control}
+The disciplines of Complex Event Processing and Business Process Management are connected in \acf{EdBPM}, which discusses the uses of events to enhance business processes~\cite{evtprocessing}.
+There are two usage scenarios for events in BPM. In Business Activity Monitoring and analysis, events are published by the process engine and processed to obtain analytical information, for instance about process status, efficiency or errors.
+This thesis considers events from the second perspective, \acf{EdBPC}. The field focuses on the business process as an event consumer.
+Within business processes, event-based communication can for example be used to exchange information between participants or to react to external events. While the BPMN supports a large variety of different events, we are going to investigate message events specifically. Whenever talking of an event-occurrence, it can be assumed that the term \textit{event} implicitly refers to a message-event in the BPMN context.
 
-- there are 2 use cases for events in bp: 
-(1) for process monitoring (=> pe is event producer)
-> what's it about
-this thesis focusses on (2) as it investigates subscription mechanisms during the execution of a process
-%Brandl H.-M. and Guschakowski D. Complex Event Processing in the Context of Business Activity Monitoring
+\ac{EdBPC} using external event sources is facilitated by connecting the business process engine to an event engine.
+As explained in \autoref{ch:bg:cep}, interactions with a CEP platform follow the publish-subscribe paradigm.
+In the BPM scenario, this means that a subscription to events must be present, so that events can be received by the process engine and correlated to a specific message element within a process instance~\cite{Baumgrass2016}.
+The correlation has to be performed by the process engine on the basis of context information, for example a subscription identifier incorporated inside every CEP message. 
+An interaction between process engine and event engine is illustrated in \autoref{fig:bg:subscription-workflow}~\cite[,\,p.\,13]{mandal:2017} at the example of the event engine Unicorn.
+Note that a different event engine might implement the work-flow slightly differently, but still follow the same general concept.
+In the given case, the process engine first issues a \acs{HTTP} POST call containing the subscription query a notification-path. The path contains the address of the desired notification recipient in case a matching event occurs.
+The event engine answers that call with a unique identifier associated to that single subscription.
+As soon as an event occurs that matches the query, the event engine sends the query output along with the subscription identifier to the process engine which can correlate the event back to the associated instance.
+In the next chapter, we will discuss when exactly the event subscription is issued by the process engine.
 
-(2) for driving processes (=> pe is event consumer)
-%Chandy, K.M. and Schulte, W.R. (2010), Event Processing: Designing IT Systems for Agile Companies, McGraw-Hill, New York, NY
-> Event-Driven Process Control (event-driven business process management: where are we now)
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=0.6\linewidth]{chapters/background/subscription-workflow.png}}
+	\caption{Even-subscription work-flow between process engine and event engine.}
+	\label{fig:bg:subscription-workflow}
+\end{figure}
 
-- interplay BPT to CEP platforms, a subscription must be issued
-- no standard yet available to do subscription in bpmn
-- it must be assumed that the subscription is either already active or explicitly modeled in BPMN, e.g. using a service task
-- OR given the BPMN spec it is generally assumed that the subscription is executed as soon as en event is enabled
-- further analysis of this topic is provided in ...
-- the time of event subscription is clear for start events
+%- no standard yet available to do subscription in bpmn
+%- it must be assumed that the subscription is either already active or explicitly modeled in BPMN, e.g. using a service task
+%- OR given the BPMN spec it is generally assumed that the subscription is executed as soon as en event is enabled
+%- further analysis of this topic is provided in ...
+%- the time of event subscription is clear for start events
+%- Correlating events to process instances
 
-- Correlating events to process instances
 
-- exercise through one example
 
 
 
