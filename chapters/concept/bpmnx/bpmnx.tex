@@ -194,7 +194,7 @@ The option \textit{Consume} will remove an element from the buffer immediately a
 
 - given the option to consume from the buffer, it will now make a difference if the same buffer is accessed multiple times.
 - there are two scenarios to access the same buffer: (1) multiple times in the same instance, (2) multiple times because of parallel instances, (3) multiple times because of a shared buffer across processes
-- before proceding, we need to be clear about the buffer scope: it depends on the time of subscription. (1) after instantiation: buffer only instance-wide; (2) on pr depl: buffer reused across all instances; (3) system start: buffer reused across all processes
+- before proceding, we need to be clear about the buffer scope: it depends on the time of subscription. (1) after instantiation: buffer only instance-wide; (2) on pr depl: buffer reused across all instances; (3) buffer reused across all processes if messageId and query are the same.
 
 \begin{figure}[]
 	\myfloatalign

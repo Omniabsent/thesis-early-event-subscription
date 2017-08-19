@@ -2,35 +2,23 @@
 \chapter{Related Work}\label{ch:relatedwork}
 %************************************************
 % start broad, become narrower, explain differences
-Research in the area of event-driven business process management has been undertaken for several years now.
-The field of \acf{EdBPM} has developed from connecting \ac{CEP} and \ac{BPM} in an attempt to increase the quality and performance of business processes.
-\acs{EdBPM} must be viewed from different perspectives.
 
-%(1)> business activity monitoring
-%N. Herzberg, A. Meyer, O. Khovalko, M.Weske, Improving business process intelligence with object state transition events, in: 32nd International Conference on Conceptual Modeling (ER), China, 2013
-%Event-based monitoring of process execution violations
+% luckham2011event: Event processing for business: organizing the real-time enterprise
 
-In event-driven business process monitoring and business activity monitoring, the process engine is solely an event producer that publishes information to an event engine.
-A considerable amount of research was undertaken to make use of CEP to detect process violations and execution performance. 
+The field of \acf{EdBPM} has developed from connecting \ac{CEP} and \ac{BPM} in an attempt to increase the quality and performance of business processes~\cite{luckham2008power} and is an active field of research.
+The discipline is investigated from different perspectives.
+In event-driven business process monitoring and business activity monitoring, the process engine takes the role of an event producer that publishes information about its process executions to an event engine \cite{baumgrass2014bpmn, herzberg2013improving, bulow2013monitoring}. 
+This information can be used to detect process violations, evaluate execution performance and derive key performance indicators during process exeuction \cite{janiesch2011blueprint, janiesch:poc-eventdriven-bam}, whereas the field of process mining intends to derive process knowledge from historic processes~\cite{tiwari2008review}.
+In their comprehensive survey on \ac{EdBPM}~\cite{Krumeich2014EventDrivenBP}, Krumeich et. al. distinguish a application possibility, \acf{EdBPC}, where process executions consume events to control the execution flow~\cite{Cabanillas2014, Baumgrass2016}.
+An example application is shown by Estruch et. al. \cite{estruch2012event} who incorporate event in a manufacturing process in order to increase process performance.
+Pufahl \cite{Pufahl2017} presents a more generic application of business process control in her work on the re-evaluation of decisions based on events.
 
-BAM, process mining... \cite{janiesch:poc-eventdriven-bam}
-%- automatic query derivation
-In \cite{Krumeich2014EventDrivenBP}, the authors did a comprehensive survey of research efforts in the area event-driven business process management and conclude that... > they point out that most research is in this area
-
-
-This work has investigated how a flexible event subscription handling can be incorporated in BPMN models.
-
-%Control the flow: How to safely compose streaming services into business processes
-%Modeling and Execution of Event Stream Processing in Business Processes
-\cite{appel2014modeling}: includes the streams and stream processing right into the process model
-same: \cite{biornstad2006control}
-
-Event subscription is done to enable \ac{EdBPC}.
-in edbpc, the business process takes the role of an event consumer.
+\cite{chandy2010event} highlights that EdBPC requires an appropriate integration of the CEP component into the control of the business processes.
+an essential aspect is subscription and unsubscr. \cite{luckham2008power}
 
 \cite{Cabanillas2014}: investigations on the connection between events and process models, leading to \cite{Baumgrass2016}: extension of bpmn for receiving events, process variables in the query
-
 \cite{Pufahl2017} makes use of events to control process executions and considers event subscription as an essential step in the process. However, the subscription time cannot be chosen flexibly.
+
 \cite{decker2008instantiation}: Process Instantiation, talks a lot about subscription, but no flexible subscr time, nobuffer, only for instantiation
 - maybe ref Barros, A., Decker, G., Grosskopf, A.: Complex events in business processes. In: Business Information Systems. Springer (2007), for example in pub/sub principle > temporal order (like mandal et al)
 
@@ -38,24 +26,38 @@ in edbpc, the business process takes the role of an event consumer.
 \cite{von2010integrating}: Integrating Complex Events for Collaborating and Dynamically Changing Business Processes; talk about un/subscription, extend ws-bpel with subscription, reporting, patterns, expression language, ..; scope, time of subscription and event buffering not discussed
 also: \cite{juric2010wsdl}
 
+
+
+
+
+
+%Control the flow: How to safely compose streaming services into business processes
+%Modeling and Execution of Event Stream Processing in Business Processes
+\cite{appel2014modeling}: includes the streams and stream processing right into the process model
+same: \cite{biornstad2006control}
+
+
 \cite{mandal:2017} has been the starting point for this thesis, not only acknowledging the discrepancy between the event occurrence time in the real world and the event subscription time as interpreted from the BPMN standard, but also incorporating event subscription in the BPMN model.
 Inspired by their work, this thesis revisits the topic from scratch
 however: ...
 
-- use case implementations
-\cite{estruch2012event}: event-driven manufacturing process; 
+
 
 - to enable flexible event subscription in bpmn models, we have presented a bpmn extension in accordance with the in-built bpmn extension mechanism
 > BPMN extension mechanisms: braun2014classification (most of the extensions are not model conform), braun2015behind (implicit and explicit extension)
-> also mandal
-> extension for monitoring
+> Krumeich2014EventDrivenBP: In most cases these contributions propose an extension of the Business Process Modeling, for modeling goals, high-level events or even whole business situations; p.12 sec 4.1.6
+
+
+
+%> predictive: Schwegmann, B., Matzner, M. and Janiesch, C. (2013a), “A method and tool for predictive event-driven process analytics”, in Alt, R. and Franczyk, B. (Eds), Proceedings of the 11th International Conference on Wirtschaftsinformatik (WI2013), Universita¨ t Leipzig, Leipzig, pp. 721-735.
 
 
 - in this thesis, the queries must be formulated in complete epl. some related work argues that this is too difficult.
 \cite{Kunz2010}: acknowledge the lack of usability in CEP and address it by applying bpmn as graphical support for the definition of cep patterns
 \cite{gabriel2016konzeptionelle}: generate queries from new graphical notation, anbieterunabhängige Modellierung von EdBPM
-
-
+- in monitoring this can be derived from the model:
+\cite{backmann2013model}: support the automated creation of CEP queries for process MONITORING 
+> an automatic generation of queries was also considered in  \cite{Pufahl2017}
 
 - maybe: persisting events in cep platforms | or delayed delivery of events | 
 to implement a flexible event subscription time, is has been noted that a temporary storage is required. Seen from the time of consumption, historic events are consumed.
