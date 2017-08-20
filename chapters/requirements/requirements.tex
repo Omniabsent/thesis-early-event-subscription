@@ -129,11 +129,11 @@ Given the life cycle steps \textit{process deployment}, \textit{process instanti
 % they have an implicit temporal order
 
 \begin{aenumerate}
-	\item[$EOS_{1}$] While the BPMN event element is enabled
+	\item[$EOS_{1}$] Occurrence while the BPMN event element is enabled
 	\item[$EOS_{2}$] The event does not occur
-	\item[$EOS_{3}$] Between process instantiation and \\the enabling of the BPMN event
-	\item[$EOS_{4}$] Between process deployment and \\process instantiation
-	\item[$EOS_{5}$] Before process deployment
+	\item[$EOS_{3}$] Occ. between process instantiation and \\the enabling of the BPMN event
+	\item[$EOS_{4}$] Occ. between process deployment and \\process instantiation
+	\item[$EOS_{5}$] Occ. before process deployment
 \end{aenumerate}\label{def:occurrence-times}
 % they are ordered this way to be in line with the assessment chapter
 
@@ -163,7 +163,7 @@ More generally put, a \textit{subscription~dependency} is defined as follows:
 	In case of a dependence, the subscription cannot be issued before the associated information is available.
 \end{description}
 
-If a subscription dependency resolves before the process execution reaches the event element, it should still be possible to flexibly chose the subscription time in the process.
+\noindent If a subscription dependency resolves before the process execution reaches the event element, it should still be possible to flexibly chose the subscription time in the process.
 For that reason, in addition to the four subscription-time options presented earlier, an additional option \textit{at any time during process execution} must be available.
 
 
