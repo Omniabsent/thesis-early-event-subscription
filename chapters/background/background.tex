@@ -72,7 +72,7 @@ Camunda is popular among the research community as the source code is openly ava
 \autoref{ch:implementation} will provide further details about the engine architecture and extension mechanisms.
 
 
-\subsection{Business Process Model and Notation}
+\subsection{Business Process Model and Notation~(BPMN)}
 
 A generic meta model of business process models is proposed in \cite{weske:bpm-book}.
 According to the model, all processes are composed of nodes and edges with each node representing either an activity model, an event model or a gateway model. The complete definition is provided in \textit{Definition~3}.
@@ -122,7 +122,7 @@ In either case, the process ends with an \textit{End Event} after the customer w
 The example illustrates the basic use of activities, events and gateways in BPMN. However, for each type of element, activities, gateways and events, BPMN offers a variety of different kinds.
 %Each of them comes in a broad variety.
 The Task elements shown in the example~(\eg \,\textit{Check car availability}) are the most basic type of activities, representing \textit{a~unit of work}. The nature of a task can be further specified using task types, all activities can be additionally annotated with activity markers. Each of these modifications describes the activity semantics in a more detailed fashion.
-Apart from the utilized XOR-gateway~(the execution-flow will proceed in exactly one of the outgoing branches), there is for example the parallel gateway, activating all outgoing branches. Moreover, the Event-based Gateway, which is followed only by events and continues along the branch of the first event that occurs.
+Apart from the utilized XOR-gateway~(the execution-flow will proceed in exactly one of the outgoing branches), there is for example the parallel gateway, activating all outgoing branches. Moreover, the Event-based Gateway, which can be followed by events or tasks, and continues along the branch of the first element that completes.
 Last but not least, message events are used to represent the action of sending information in the form of a message to a certain recipient. Other available event types are, for instance, timer, signal or error events. Events can occur as \textit{Start Events} (\eg \,\textit{Receive Booking Request}), where they trigger the instantiation of a process. Furthermore as intermediate events (\eg \,\textit{Send Quote}) or as end events, being fired when the process terminates. They can be \textit{catching}, \ie \,receiving a trigger, or \textit{throwing}.
 
 Multiple participants taking part in a process can be expressed using \textit{pools}, which can be sub-divided into \textit{swimlanes}.

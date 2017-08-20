@@ -75,10 +75,12 @@ Each of the three elements references a BPMN \textit{Message}, the common denomi
 \todo[inline]{explain that the Message is a common element in BPMN models. It is the main generic type used for communication, collaboration.
 	The proposed extension to the Message type is only to be used by Message Receive situations in Intermediate Catch Event, the Boundary Catch Event and the Receive Task.}
 
-By specification, \textit{tMessage} comprises an attribute \textit{name}, the name of the message, and \textit{itemRef}, the reference to a BPMN \textit{ItemDefinition}. Additionally, it inherits all attributes from the BPMN \textit{RootElement}.
+By specification, the \textit{Message} element comprises an attribute \textit{name}, the name of the message, and \textit{itemRef}, the reference to a BPMN \textit{ItemDefinition} specifying the Message structure. Additionally, it inherits all attributes from the BPMN \textit{RootElement}~(see \cite{bpmnspec}\,p.\,93).
 In the following, the required additional attributes will be explained one after the other. A complete list is available in \autoref{tab:bpmn-extension}. The goal is to retain a stand-alone model that contains all information necessary to execute the subscription to the event source.
 
 - information is added to <subscriptionDefinition>
+
+\todo[inline]{not the subscription operation itself must be modeled, only the meta information. ==> Shortcoming2}
 
 %\subsubsection{Introducing Event Buffers}
 %Any event message that occurs before reaching the event element but after the time of subscription will be kept in a buffer by the system.
@@ -209,8 +211,9 @@ The option \textit{Consume} will remove an element from the buffer immediately a
 
 - what if messages are defined in different ways? => I want to reuse the buffer between processes, but the message definition (especially cep query) are not the same. how will the system behave?
 
-\paragraph{Interplay of Event Queries and Buffers}
+\paragraph{A Note on the Interplay of Event Queries and Buffers}
 
+\todo[inline]{do i keep this chapter?}
 // even with the simplest settings
 
 Modern event query languages are feature-rich and offer a large set of expressions to filter events from incoming streams. \todo[inline]{ref background}
@@ -220,3 +223,40 @@ As soon as the process flow reaches an event element, the latest CEP message is 
 If no information is available in the buffer, the flow element will remain in the waiting state until a message is received. Then, the process flow proceeds as usual.
 
 \subsection{Execution Semantics}
+
+The BPMN specification provides a separate chapter defining the \textit{Execution Semantics} of the element available in the standard.
+While the execution semantics must not be supported for a product to achieve \textit{Modeling Conformance}, they must be implemented to achieve \textit{Process Execution Conformance}.
+According to the BPMN specification, the purpose of the execution semantics is \textit{to describe a clear and precise understanding of the operation of the elements}.~\cite{bpmnspec},\,p.\,425\,ff.
+
+To...
+bpmn introduces an activity life cycle very similar to the generic activity life cycle introduced by weske
+every activity follows that life cycle
+For Event elements, no life cycle is specified. However, because we need to adapt the operational semantics of an event in reference to its lifecycle phases, a similar life-cycle is assumed(, though without \textit{Active}? actually Active=waiting for the event to occur).
+
+
+
+- general: we specify the time the following operations must be executed. register query (includes inst. of buffer), subscribe (to buffer), unsubscribe, remove query. on the basis of <subscriptionDefinition>
++ subscriptionTime controls when the operations must occur. in case of on depl, on inst, manual, element reached
+
+as the message element itself does not have an operational semantic, we extend the semantics of the elements that reference the Message.
+
+- process deployment
+> deployment of Business Processes [is] out of scope of this specification. bpmnspec,p.22
+however, from the general idea of process deployment and un-deployment (ref bg) + "when the listening to the start event starts. when it stops" this definitely has an executional aspect.
+at that time also ... is done
++ process undeployment
+
+- process instantiation
+> on completion of any start event, do registerQuery
+
+- Event Subscription Task: 
+> do stuff when active. once complete: terminate
+
+- catch event: (start/interm/boundary): 
+> register query
+
+
+\todo[inline]{write exec semantics}
+
+
+
