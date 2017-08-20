@@ -10,7 +10,7 @@ The discipline is investigated from different perspectives.
 In event-driven business process monitoring and business activity monitoring, the process engine takes the role of an event producer that publishes information about its process executions to an event engine \cite{baumgrass2014bpmn, herzberg2013improving, bulow2013monitoring}. 
 This information can be used to detect process violations, evaluate execution performance and derive key performance indicators during process execution \cite{janiesch2011blueprint, janiesch:poc-eventdriven-bam}, whereas the field of process mining intends to derive process knowledge from historic information~\cite{tiwari2008review}.
 In their comprehensive survey on \ac{EdBPM}~\cite{Krumeich2014EventDrivenBP}, Krumeich et. al. distinguish a second application possibility, \acf{EdBPC}, where process executions consume events to control the execution flow. This thesis relates to this area of research.
-An example application is shown by Estruch\,et.\,al.\,\cite{estruch2012event} who incorporate events in a manufacturing process in order to increase process performance. \cite{Cabanillas2014, Baumgrass2016} apply the idea to logistics.
+An example application is shown by Estruch\,et.\,al.\,\cite{estruch2012event} who incorporate events in a manufacturing process in order to increase process performance. \cite{Cabanillas2014}~and~\cite{Baumgrass2016} apply the idea to logistics.
 Pufahl~\cite{Pufahl2017} presents a more generic application of business process control in her work on the re-evaluation of decisions based on events.
 
 The requirement for an appropriate integration of the CEP component into the control of the business processes is highlighted in~\cite{chandy2010event}.
@@ -65,7 +65,7 @@ Event persistence within CEP platforms can be seen as a means to implement event
 The topic of event persistence is considered by Roth\,\etal\,\cite{roth2010event} who present an architecture for event data warehousing, whereas Buchmann~\etal~\cite{buchmann2010event} describe an attempt to integrate information from logistics and manufacturing. 
 Both apply a persistent event store to allow historic analysis.
 More generally, \cite{li2007historic} presents a concept to retrieve historic information in a publish-subscribe work-flow.
-While these approaches can certainly be used to implement some kind of event buffer, this would still not diminish the need to consider subscription-related information in process models and, arguably, a persistent data-store poses performance limitations to implementing buffers in complex event processing.
+While these approaches can certainly be used to implement some kind of event buffer, this would still not diminish the need to consider sub-scription-related information in process models and, arguably, a persistent data-store poses performance limitations to implementing buffers in complex event processing.
 With regards to CEP, event buffering for the application in a BPM environment may not be confused with internal buffering techniques used within event engines to perform load shedding or even out short term load peaks~\cite{chakravarthy2009stream}.
 %+> \cite{roth2010event}: Event data warehousing for complex event processing and \cite{buchmann2010event}:Event-Driven services: Integrating production, logistics and transportation
 %+also \cite{li2007historic}: historic data in pub/sub
