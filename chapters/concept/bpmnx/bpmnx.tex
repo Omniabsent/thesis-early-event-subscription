@@ -227,14 +227,30 @@ If no information is available in the buffer, the flow element will remain in th
 
 \subsection{Execution Semantics}
 
-The BPMN specification provides a separate chapter defining the \textit{Execution Semantics} of the element available in the standard.
-While the execution semantics must not be supported for a product to achieve \textit{Modeling Conformance}, they must be implemented to achieve \textit{Process Execution Conformance}.
-According to the BPMN specification, the purpose of the execution semantics is \textit{to describe a clear and precise understanding of the operation of the elements}.~\cite{bpmnspec},\,p.\,425\,ff.
+After the previous section has described the functionality and usage of the BPMN extension, the following section defines the additions necessary to the BPMN execution semantics.
+According to the specification, the purpose of the execution semantics is \textit{to describe a clear and precise understanding of the operation of the elements}.~\cite{bpmnspec},\,p.\,425\,ff.
+While the execution semantics in BPMN must not be supported for a product to achieve \textit{Modeling Conformance}, they must be implemented to achieve \textit{Process Execution Conformance}.
 
-To...
-bpmn introduces an activity life cycle very similar to the generic activity life cycle introduced by weske
-every activity follows that life cycle
-For Event elements, no life cycle is specified. However, because we need to adapt the operational semantics of an event in reference to its lifecycle phases, a similar life-cycle is assumed(, though without \textit{Active}? actually Active=waiting for the event to occur).
+\paragraph{Life cycle of event elements}
+The semantics are described in accordance with the activity instance life cycle \cite[p.\,84]{weske:bpm-book}, which defines the states and transitions any activity instance traverses during process execution (\autoref{fig:activity-lifecycle}).
+When a process is instantiated, also activities are initialized and enter the init state.
+Once the execution activates the incoming flow of an activity, its state changes to \textit{ready} and can enter the \textit{running} state any time. If the activity execution completes without interruption, it traverses into \textit{terminated}, if the execution is interrupted through a boundary event, it ends in the \textit{canceled} state.
+If an activity never enters the \textit{running} state because the process flow proceeded on a different branch, the activity is skipped.
+
+Originally, this life cycle specifically relates to activity instances.
+To specify the execution semantics of the presented extension, for example the time of subscription and un-subscription, a similar model is required for describing the life cycle of event elements.
+For this purpose, the activity live cycle is adopted to event elements as follows:
+Once an event is enabled, it immediately enters the state \textit{running}. 
+Event elements can be canceled when they appear after an event-based gateway and another event following the gateway occurs earlier.
+If the trigger of the event fires, it enters \textit{terminated}. Equivalent to activities, event elements can be skipped if the process execution choses a different path.
+
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=1\linewidth]{chapters/concept/bpmnx/activity-lifecycle.png}}
+	\caption{The activity instance life cycle}\label{fig:activity-lifecycle}
+\end{figure}
+
+\paragraph{Operational semantics of subscription handling}
 
 
 
