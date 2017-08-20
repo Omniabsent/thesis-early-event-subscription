@@ -116,33 +116,50 @@ This section will introduce a subset of the elements available through the \acs{
 Circular elements represent events, diamond-shaped elements are gateways. Activities are visualized by rectangles with rounded corners.
 The given process gets instantiated whenever a booking request request is received from a customer, shown as a Message Start event. 
 As a first step, the employee assigned to handle the request must check if the desired car is available. To that follows an exclusive OR-Gateway, distinguishing the further process flow depending on the availability of the car.
-If the car is available, the quote must be created in two sequential activities to be then sent out by the \textit{Send Message Event}. If the car is not available, the customer is informed about the closing of his request. 
+If the car is available, the quote must be created in two sequential tasks to be then sent out by the \textit{Send Message Event}. If the car is not available, the customer is informed about the closing of his request. 
 In either case, the process ends with an \textit{End Event} after the customer was informed about the result of his request.
 
-\todo[inline]{- introduce the other essential elements, types of events}
-commonly used gateways
-events
-activity types / tasks
-handling of data
-participants
-message flows
+The example illustrates the basic use of activities, events and gateways in BPMN. However, for each type of element, activities, gateways and events, BPMN offers a variety of different kinds.
+%Each of them comes in a broad variety.
+The Task elements shown in the example~(\eg \,\textit{Check car availability}) are the most basic type of activities, representing \textit{a~unit of work}. The nature of a task can be further specified using task types, all activities can be additionally annotated with activity markers. Each of these modifications describes the activity semantics in a more detailed fashion.
+Apart from the utilized XOR-gateway~(the execution-flow will proceed in exactly one of the outgoing branches), there is for example the parallel gateway, activating all outgoing branches. Moreover, the Event-based Gateway, which is followed only by events and continues along the branch of the first event that occurs.
+Last but not least, message events are used to represent the action of sending information in the form of a message to a certain recipient. Other available event types are, for instance, timer, signal or error events. Events can occur as \textit{Start Events} (\eg \,\textit{Receive Booking Request}), where they trigger the instantiation of a process. Furthermore as intermediate events (\eg \,\textit{Send Quote}) or as end events, being fired when the process terminates. They can be \textit{catching}, \ie \,receiving a trigger, or \textit{throwing}.
 
+Multiple participants taking part in a process can be expressed using \textit{pools}, which can be sub-divided into \textit{swimlanes}.
+Interactions between different pools take place using message flows, which are depicted by a dashed arrow.
+An example of such a \textit{Collaboration Diagram} is shown in \autoref{fig:bg:rental-car-customer}. It describes the previously discussed car rental process from the side of the customer, including the information exchange between rental company and customer.
+When the airline issues the booking confirmation of the flight, the customer has to book a rental car and a hotel. The hotel booking is modeled using a collapsed sub-process to reduce the complexity of the model.
+After issuing the rental car request, an event-based gateway shows that the process is ready to consume any one of the two event messages. If the booking was successful, the control flow proceeds to the inclusive join gateway and the process can terminate once the hotel booking is also completed. If the car rental company informs about unavailability, the customer starts looking for an alternative car option.
+A data object is used to model the \textit{Request} artifact as output of the \textit{Prepare~Request} task and as input to the message throw event.
 
-\missingfigure{Sample BPMN model with 2 participants, maybe the same as before, but with 2 lanes and communication in-between. known participant hidden. use special task type and data}
+\begin{figure}[]
+	\myfloatalign
+	{\hspace*{-0.8cm}\includegraphics[width=1.1\linewidth]{chapters/background/intro-rental-car-customer.png}}
+	\caption{Rental car booking process with multiple participants}
+	\label{fig:bg:rental-car-customer}
+\end{figure}
 
 
 \section{Complex Event Processing}\label{ch:bg:cep}
 The IT world is facing an exponential increase in the amount of produced data. A significant part of this data are pieces of information about real-life occurrences, such as a current sensor value, an interaction on a website or the location of a vehicle on the road.
 We call this kind of strongly time-related information an \textit{Event} and the according computer science field \acf{CEP}~\cite{evtprocessing}.
-- events are of a certain type
+More specifically, Etzion and Niblett define an event as \textit{an occurrence within a particular system or domain; it is something that has happened, or is contemplated as having happened in that domain}.
+It is understood that events are of a certain \textit{event type}, defining the attributes that each event instance of the event type is composed of. An attribute is described by a unique attribute name and a data type.
 
-\todo[inline]{More precisely, Events are defined as follows... see heikos thesis? \cite{luckham2008power}}
-from http://www.softnet.tuc.gr/~minos/Papers/rtstreams15.pdf
--Event tuples are defined by [11] as tuples e =< s, t >,
-where e represents the event of interest, s refers to a list
-of attributes and t is a list of timestamps, the first being
-the start of the event and the last the end of it
-%[11] N. P. Schultz-Moller, M. Migliavacca, and P. Pietzuch. Distributed complex event process
+\begin{description}
+	\item[Definition 4 (Event):]
+	An event is a tuple $e = (et, eventtime, c)$, whereas
+	\begin{itemize} 
+		\item
+		$et$ is the event type
+		\item 
+		$eventtime$ is the time the event happened
+		\item
+		$c$ is the content of the event consisting of a set of key-value-pairs according to the content description cd of the corresponding event type $et$.
+	\end{itemize}
+\end{description}
+
+%An event processing network is a collection of event processing agents, producers, consumers, and global state elements, connected by a collection of channels
 
 Four major components take part in an event processing network: (a) An \textit{event producer} provides information to the system, (b) an \textit{event agent} processes the occurring information, so that it can be delivered to the \textit{event consumer}~(c). The components are linked through \textit{event channels}~(d).
 Typically, a so-called \textit{\acs{CEP} Engine}~(also: CEP platform) is at the heart of the system, taking the role of an event agent.
@@ -154,9 +171,17 @@ Their main purpose is to accept incoming events from event producers, filter and
 \paragraph{The publish/subscribe Principle}
 In event-based architectures, communication takes place according to the \textit{Publish/Subscribe Principle}.
 The concept essentially demands that an event processing middleware publishes events to processes only after they have issued a subscription for these events.
-Consequently, there is a strict temporal order between the actions subscribe, consume and un-subscribe. The consumption and un-subscription can only happen after the subscription. Once an un-subscription has been issued, no consumption can follow.~\cite{tanenbaum:2007}
-\missingfigure{state-transition-diagram of temporal order}
+Consequently, there is a strict temporal order between the actions subscribe, consume and un-subscribe(\autoref{fig:bg:pubsub-workflow-temporal-order}). The consumption and un-subscription can only happen after the subscription. Once an un-subscription has been issued, no consumption can follow.~\cite{tanenbaum:2007}
+
 % mandal also references Barros, A., Decker, G., Grosskopf, A.: Complex events in business processes. In: Business Information Systems. Springer (2007)
+
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=0.6\linewidth]{chapters/background/pub-sub-statemachine.png}}
+	\caption{Publish-Subscribe workflow expressed in a state diagram}
+	\label{fig:bg:pubsub-workflow-temporal-order}
+\end{figure}
+
 
 One of the main advantages of this principle is, that the involved parties are \textit{referentially decoupled}. They do not need to explicitly refer to each other, an aspect that is also acknowledged in~\cite{evtprocessing}.
 Their decoupled nature facilitates the management and development of event processing networks. Event producers and consumers might change frequently.
@@ -165,30 +190,31 @@ Whenever a new event source is available it can be connected to the CEP platform
 
 \paragraph{Stream Processing}
 To be able to cope with potentially large amounts of data, Complex Event Processing Platforms work on the basis of \textit{stream processing}.
-\todo[inline]{'relational' db}
-In a traditional database, information is stored for an indefinite amount of time. When a user queries the data store, the system processes the tabular data and calculates the requested result. 
+In a traditional relational database, information is stored for an indefinite amount of time. When a user queries the data store, the system processes the tabular data and calculates the requested result. 
 The advantage of this approach is that the user can access historic data at any time, as long as it is not explicitly deleted from the database.
 In many occasions, the amount of available data significantly surpasses the storage capacities and that concept can no longer be followed.
 
 Stream processing addresses the mentioned challenge by largely reducing the amount of data that is persisted in the system. Instead, it is the goal to keep only those pieces of information, that are necessary to process a result for currently registered queries.
-Incoming data objects, or events in the case of a CEP platform, enter the event stream and are immediately evaluated against all existing query expressions. If the information is not required to process any of the queries, it is deleted instantly.
+Incoming data objects, or events in the case of a CEP platform, enter the event stream and are immediately evaluated against all existing query expressions. If the information is not required to process any of the queries, it is deleted instantly. If an event matches a query, a notification is sent to the subscribed consumers. \autoref{fig:bg:stream-processing} illustrates the concept.
 As a consequence, a certain event can not be part of a query result, if that query has been registered after the occurrence of the event.
 In case aggregated information is demanded by the query, the stream processor will internally store aggregated information, but not keep every information that led to the aggregated value.~\cite{streamprocessing} 
 
-\missingfigure{stream processing}
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=0.7\linewidth]{chapters/background/cep-stream-processing.png}}
+	\caption{Stream processing concept applied in a CEP Engine}
+	\label{fig:bg:stream-processing}
+\end{figure}
 
-\paragraph{Event Query Languages}
 The subscription to an event in a CEP platform is primarily defined by an \textit{Event Query}.
 Many modern event query languages are inspired by \acs{SQL}, but cannot be entirely compliant due to the different underlying data processing concept.
 When formulating event queries, it is essential to consider the stream processing principle.
-
-For the illustration of the concepts, this thesis relies on the Esper \ac{EPL}~\cite{esperhome}, utilized in Esper-based event processing engines like the one employed in \autoref{ch:implementation}.
-
-\todo[inline]{in short: more on epl, what can it do? windows, joins, filters,patterns}
+For the illustration of the concepts, this thesis relies on the Esper \ac{EPL}~\cite{esperhome}, utilized in Esper-based event processing engines like the one employed in the presented reference implementation, \autoref{ch:implementation}.
+A simple event query in Esper looks as follows:
 
 \begin{lstlisting}[language=sql,caption={Sample Query in Esper EPL},label=lst:epl-query-example]
-	SELECT time, delay, delayreason
-	FROM eurotunnel
+	SELECT occurrencetime, delay, delayreason 
+	FROM eurotunnel.win:time(2 hour)
 	WHERE delay > 30
 \end{lstlisting}
 

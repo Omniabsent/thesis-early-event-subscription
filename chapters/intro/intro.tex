@@ -46,7 +46,6 @@ Naturally, in event processing, a large number of participants can be involved t
 
 As defined in the BPMN specification, an intermediate catch event will wait for the associated event to occur. In case the event does not occur or only after a significant amount of time, this behavior leads to a delay or even a complete halt of the process execution. %reduce process efficiency
 While some process designs require just these semantics, in others they cause an unnecessary reduction of efficiency and reliability.%the variable time of event occurrence
-\todo[inline]{short example, maybe harvesting?}
 This behavior is further illustrated by the help of two example scenarios in \autoref{ch:motivatingexamples}.
 An earlier subscription to an event source would increase the timespan in that events can be received and thus reduce the probability of missing events.
 This motivates the investigation of mechanisms to more flexibly incorporate subscribe operations in business processes.
