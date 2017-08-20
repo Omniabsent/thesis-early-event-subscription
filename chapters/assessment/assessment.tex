@@ -16,7 +16,7 @@ The extended requirements will be referenced in \autoref{ch:flexibleeventsubscri
 
 
 \section{BPMN Models in presence of the Event Occurrence Scenarios}\label{ch:ass:models}
-\todo[inline]{To keep the illustrations simple, implicit subscription and unsubscription as part of the event-element is assumed}
+
 According the BPMN specification, the listening for an event starts only when the event element is enabled. The start of the listening is interpreted as the time of event subscription.
 The motivating examples illustrate that process executions can be delayed or even blocked because of a late time of event subscription~(\autoref{ch:motivatingexamples}).
 The subscription-time is put in relation to the time of event occurrence by the help of the event occurrence scenarios.
@@ -45,8 +45,9 @@ The first scenario represents the case that is assumed by the BPMN 2.0 specifica
 The event occurs after the event element has been enabled and before it has terminated. It will be consumed by the catch event and the process flow can proceed without unnecessary delay.
 In this scenario, the use of a simple intermediate catch event is sufficient.
 
-\todo[inline]{Notably, there always is a certain delay when consuming an event through an intermediate catch event. The BPMN specification itself states that \textit{the handling consists of waiting for the Event to occur}.
-However, that delay can theoretically be infinitely small. <-- maybe mention this at the beginning of 'problem statement' to differentiate between normal delay and unnecessary delay?}
+Notably, there always is a certain delay when consuming an event through an intermediate catch event. The BPMN specification itself states that \textit{the handling consists of waiting for the Event to occur}.
+However, that delay can theoretically be infinitely small. 
+We speak of an \textit{unnecessary} delay in the context of flexible event subscription if an earlier subscription time would have meant a reduced waiting time for the event.
 
 \subsection*{EOS2: The event does not occur}
 
@@ -57,7 +58,7 @@ However, that delay can theoretically be infinitely small. <-- maybe mention thi
 	\subfloat[Boundary timer event]
 	{%\label{fig:example-b}%
 		\includegraphics[width=.45\linewidth]{chapters/assessment/boundary-timer-event.png}}
-	\caption[Tu duo titulo debitas latente]{Receipt of an intermediate message event, either interrupted by a~boundary event\,(a) or parallel timer event\,(b).}
+	\caption{Receipt of an intermediate message event, either interrupted by a~boundary event\,(a) or parallel timer event\,(b).}
 	\label{fig:excerpt-event-with-timer}
 \end{figure}
 
@@ -80,8 +81,6 @@ Any of the two model improvements will make sure that a process does not run int
 In case the event occurs during process execution, but before the BPMN event element is enabled and thus listening for events, the occurrence will not be available for consumption. 
 The execution will come to a halt at the event element as if the event did not happen at all.
 
-\todo[inline]{could exemplify this at ex1.2, In the previously mentioned \textit{Example~1.2}}
-
 To avoid a lock in this scenario, the intermediate catch event can be placed in parallel to the rest of the process flow using a parallel gateway. 
 This is illustrated in \autoref{fig:excerpt-parallel-gateway-event}. The time of subscription to the event can be controlled by the position of the parallel split: To implement an event subscription right after process instantiation, the Parallel Gateway has to be the first element after the Start Event~(that means \textit{Part~1} in the illustration is empty). 
 To implement the event subscription at a specific point during process execution, part of the process must execute before reaching the Parallel Gateway. As modeled in \autoref{fig:excerpt-parallel-gateway-event}, the event may occur at any time during the execution of the collapsed sub-process \textit{Part~2}. 
@@ -92,7 +91,6 @@ To implement the event subscription at a specific point during process execution
 	{\hspace*{-1.0cm}\includegraphics[width=1.2\linewidth]{chapters/assessment/EOS5_buffer_pushing.png}}
 	\caption{Event Buffering through an auxiliary buffering process}\label{fig:aux-buffering-process}
 \end{figure}
-\todo[inline]{watch that the full-page figure is correctly hspaced (left/right)}
 
 %intro
 Any Events that happen before process instantiation will not be considered in a standard intermediate catch event. That applies to both scenarios, the occurrence between deployment and instantiation~(\textit{EOS4}) and an occurrence time before the deployment of the process in the Process Engine~(\textit{EOS5}).
@@ -144,8 +142,6 @@ More precisely: Given a process $P1$ with a number~$n_{bea}$ of event elements t
 \noindent That puts additional load on the process engine which can endanger the reliability of business-critical processes and makes the management of processes and their instances more complex.
 The downsides of the presented approaches are discussed in more detail in \autoref{ch:ass:discussion}.
 
-\todo[inline]{Do I want to work with the requirements or not???}
-
 
 \section{Flexible Event Subscription in standard Camunda}\label{ch:assessment-implementation}
 The previous chapter has shown that it is possible to create BPMN models to match each of the Event Occurrence Scenarios, though for the scenarios \textit{EOS4} and \textit{EOS5} the solution becomes increasingly complex.
@@ -159,15 +155,14 @@ The example for scenarios \textit{EOS4} and \textit{EOS5}~(\autoref{fig:camunda-
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=1\linewidth]{chapters/assessment/example-o3.PNG}}
-	\caption{Generic Example Process in Camunda for Occurrence Scenario \textit{EOS3}}\label{fig:camunda-example-o3}
+	\caption{Generic Example Process in Camunda for \textit{EOS3}}\label{fig:camunda-example-o3}
 \end{figure}
 
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=1\linewidth]{chapters/assessment/example-o4-o5.PNG}}
-	\caption{Generic Example Process in Camunda for Occurrence Scenarios \textit{EOS4} and \textit{EOS5}}\label{fig:camunda-example-o4-o5}
+	\caption{Generic Example Process in Camunda for the Event Occurrence Scenarios \textit{EOS4} and \textit{EOS5}}\label{fig:camunda-example-o4-o5}
 \end{figure}
-\todo[inline]{improve camunda modeler screenshots}
 
 \paragraph{Auxiliary Buffering Process}
 The task of this process is to subscribe to a CEP Platform using a provided event query and start listening for events. Any incoming event must be stored in a data-store (\textit{Event Buffer}).
@@ -217,7 +212,7 @@ While the Original Process will now start listening for the desired events, the 
 If no events have been received yet, all the involved processes remain active: the Buffering Process will keep listening for an external event. The Delivery Process will send an event to the Original Process as soon as there is one in the buffer. The Catch Event in the Original Process will keep listening for an Event.
 The necessary communication for the termination of the processes and the unsubscribe-operation have not been implemented in this prototypical implementation, as they would not add particular value to the evaluation.
 
-\todo[inline]{where is the code?}
+The code of the Camunda process application is provided as part of the deliverables of this thesis.
 
 
 \paragraph{Conclusion}
@@ -355,9 +350,4 @@ An aspect that cannot be influenced without customizing the process engine code.
 %The buffering process and the delivery process are designed to be generic so that only two more process definitions need to be available in the process repository.
 %The number of process instances instead will greatly increase 
 
-\medskip \noindent
-\todo[inline]{write connecting paragraph}
-this and that has been done.
-now we in total have that. requirements and list of shortcomings to reference.
-In the next chapter a model extension to address the topic of flexible event subscription is introduced.
 
