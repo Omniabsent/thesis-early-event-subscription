@@ -21,7 +21,7 @@ It follows \autoref{ch:assessment}, which assesses for each requirement to what 
 For most of the aspects, it was possible to find acceptable solutions, though the complexity of the models did increase in every case.
 This became especially apparent when analyzing the event occurrence scenarios before instantiation and before deployment. A complex business process model involving two additional auxiliary processes was presented to enable event subscription and event buffering in the corresponding cases. This model was also implemented in the Camunda business process engine to evaluate its applicability.
 %By implementing the flexible event subscription concept in Unicorn and Camunda it could be demonstrated that state-of-the-art BPM and CEP technology is flexible enough to handle ..., but
-The results of that analysis were summarized in three shortcomings, \textit{S1-S3}, criticizing the increase in model complexity, about the misuse of BPMN for infrastructure tasks and about the possible performance limitations when implementing flexible subscription and event buffering in BPMN.
+The results of that analysis were summarized in three shortcomings, \textit{S1-S3}, criticizing the increase in model complexity, the misuse of BPMN for infrastructure tasks and the possible performance limitations when implementing flexible subscription and event buffering in BPMN.
 
 Together, the requirements and the shortcomings form a general requirements framework to build solutions addressing the lack of subscription semantics in BPMN.
 
@@ -47,7 +47,7 @@ The system reads the subscription-related meta information from the model and ma
 
 % discussion, putting the results into perspective, future work
 %\medskip \noindent
-\paragraph{Discussion and Future Work}
+\section*{Discussion and Future Work}
 This thesis provides an end-to-end perspective on the topic of event subscription in business processes while focusing on the event subscription time and its implications.
 The BPMN extension was designed based on a theoretical analysis of the specification and related work, but without an empirical basis to evaluate usability and applicability in real-world use cases.
 This opens up a significant possibility for future research, as the design should be evaluated through user studies and the analyses of additional use cases. It will also be worth discussing whether a visual representation of the extended model properties is helpful to improve usability.
@@ -58,9 +58,7 @@ This influences the reference implementation, which exemplifies how the necessar
 A shortcoming identified in BPMN was that even if event subscription and buffering can be expressed in a model, process designers usually do not not have the required IT competencies to handle the topic.
 The extension addresses this subject by automating the event subscription operations and only requiring the definition of the subscription time and buffer policies in the model.
 However, one might argue that it is not the subscription time itself that is of interest in the design phase, but the implicit maximum age of the events that can be used in the process. Following this line of thought, there is room for further simplification of the modeling concept.
-In this regard, related work has also recognized that process designers usually lack the knowledge for formulating the necessary event queries. This issue that was not addressed in this work.
-\todo[inline]{some finishing sentence?}
-
+In this regard, related work has also recognized that process designers usually lack the knowledge for formulating the necessary event queries, though this issue was not addressed in the present work.
 
 
 %%%

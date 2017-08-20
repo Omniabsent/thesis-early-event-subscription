@@ -36,9 +36,7 @@ As event processing has become an essential part of \ac{BPM}, there is a need fo
 
 This work investigates the aspect at the example of the \ac{BPMN}, where \textit{Intermediate Events} enable event-based process control between the start and the end of a process. %and hence facilitate the consumption of complex events. %reception of external message events.
 However, the BPMN specification does not specifically consider the publish-subscribe work flow and consequently provides only limited capabilities to represent event subscription and un-subscription operations in business process models.
-From the execution semantics of intermediate events, the common interpretation is that the subscription to an event source implicitly happens when an event is enabled, the un-subscription on termination of the element~(see~\cite{} re-eval, mandal, earlier paper).
-- mandal add the idea of issuing subscriptions explicitly through a customized service task.
-\todo[inline]{write}
+From the execution semantics of intermediate events, the common interpretation is that the subscription to an event source implicitly happens when an event is enabled, the un-subscription on termination of the element~\cite{Pufahl2007, mandal:2017}.
 %- while other work on the use of complex events does not mention subscription and un-subscription at all
 % > probably assuming that a subscription is already active
 %- there is research on including the subscription query in the model, but the subscription time is not further defined
