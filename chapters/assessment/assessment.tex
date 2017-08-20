@@ -9,28 +9,21 @@ The assessment will be carried out on the basis of the \ac{BPMN} and Camunda, a 
 The main goal is to identify and illustrate the shortcomings of the current process technology stack by attempting to implement the requirements identified previously.
 We therefor first investigate options to handle the \acs{EOS}s on the BPMN model level~(\autoref{ch:ass:models}) and then proceed to implementing early event subscription and event buffering in a set of Camunda processes~(\autoref{ch:assessment-implementation}).
 
-Finally, the findings are discussed in \autoref{ch:ass:discussion} which leads to the presentation of three additional requirements, \textit{R4} to \textit{R6}.
-The extended requirements will be referenced in \autoref{ch:flexibleeventsubscription} to develop a more refined subscription handling model.
-
-\todo[inline]{which functionality should be evaluated exactly?: all requirements? all occurrence scenarios, but no buffer policies. The buffer will always store the last version of the event and also deliver that version.}
-
+Finally, the findings are discussed in \autoref{ch:ass:discussion} which leads to the formulation of three shortcomings, \textit{S1} to \textit{S3}.
+They will be referenced in \autoref{ch:flexibleeventsubscription} in addition to \textit{R1-R3} to develop a more refined subscription handling model.
 
 \section{BPMN Models in presence of the Event Occurrence Scenarios}\label{ch:ass:models}
 
 According the BPMN specification, the listening for an event starts only when the event element is enabled. The start of the listening is interpreted as the time of event subscription.
 The motivating examples illustrate that process executions can be delayed or even blocked because of a late time of event subscription~(\autoref{ch:motivatingexamples}).
-The subscription-time is put in relation to the time of event occurrence by the help of the event occurrence scenarios.
 
-In this section, I first describe for each \ac{EOS} how a basic event implementation behaves in presence of the given scenario.
-I then evaluate if it is possible to create a BPMN model that is free from unnecessary delay in these situations.
+In this section, I first describe for each \ac{EOS} how a BPMN intermediate event behaves in presence of the given scenario.
+I then investigate if it is possible to create a BPMN model that is free from unnecessary delay in these situations, thereby evaluating requirement \textit{R2}.
 The investigations are carried out on the basis of the abstract process model shown in \autoref{fig:abstract-process-with-event}.
 It uses an intermediate message catch event which follows an arbitrary process flow, represented through a collapsed sub-process.
 The process terminates after the event is received.
 It is assumed, that the event can occur independently from the preceding subprocess and therefor in accordance with any of the event occurrence scenarios. That enables us to investigate each EOS using this simple model.
 The event behavior is comparable with the \textit{Eurotunnel Delay Event} considered in \textit{Example~1.1}\,. Depending on the discussed EOS, the motivating examples will be used for further illustration of the situations.
-
-\todo[inline]{this evaluates requirement 2}
-
 
 \begin{figure}[]
 	\myfloatalign
@@ -97,9 +90,10 @@ Any Events that happen before process instantiation will not be considered in a 
 
 %new elements
 To create a process model that allows to catch an event before the process instance exists, three new elements are introduced in addition to the existing process referred to as \textit{target-} or \textit{original process}. The elements are: (1)~An additional \textit{Auxiliary Buffering Process}~(or \textit{buffering process}) that can catch an incoming event independently from the target process; (2)~an \textit{Event~Buffer}, a temporary data-store that keeps event data until it is ready for consumption; (3)~an \textit{Auxiliary Event Delivery Process}~(or \textit{delivery process}), that retrieves events from the buffer and makes them available to the target process.
-By introducing an additional process for listening to the event, the subscription time to the \textit{Event Engine} can be before instantiation or even deployment of the original process.
+The introduction of a temporary data store for events addresses \textit{R3}.
+By introducing an additional process for listening to the event, the subscription time to the \textit{Event Engine} can be before instantiation or even deployment of the original process and hence realizes~\textit{R2.2}.
 \autoref{fig:aux-buffering-process} shows the interaction of the original process, the two auxiliary processes and the data-store.
-\todo[inline]{thus also addressing requirement 3}
+
 
 %how does that work in detail
 %Auxiliary buffering
@@ -113,10 +107,12 @@ The implementation of the service task decides about the exact semantics of the 
 An implementation of the \textit{Lifespan Policy} is not provided. 
 The consumption behavior~(\textit{R3.3.2}) is defined by the service task of the auxiliary delivery process: After the retrieval of an event from the buffer it remains available.
 
+An implementation of \textit{R1} can be observed in the auxiliary buffering process, which models the subscribe and unsubscribe operation using an intermediate message throw event. The event subscription information is represented as a data object and used as input to the events, meaning that its contents are sent to the according API method of the event engine. It is assumed that the subscription information can be used for both operations, subscribe and unsubscribe.
+
 %original process and event delivery
 After the buffering process is running, the original process can be instantiated. 
 %In the presented model, its intermediate catch event has been explicitly split into three events to fulfill the publish/subscribe paradigm: An initial send event to request events, a catch event to receive and a final send event to signal that no events shall be received anymore.
-After completing the \textit{Arbitrary Process Flow}, a send event instantiates the \textit{Auxiliary Event Delivery Process}, which tries to read from the event buffer and delivers the event to the original process if there is one available. 
+It executes the \textit{Arbitrary Process Flow}, then a send event instantiates the \textit{Auxiliary Event Delivery Process}, which tries to read from the event buffer and delivers the event to the original process if there is one available. 
 The central looping activity will retry reading from the buffer until data becomes available.
 In the provided example, the original process will alternatively stop waiting for the message reception as soon as the time event fires. In that case, the delivery process is stopped by an additional message throw event and both processes stop.
 Note that the delivery process is designed to retrieve and deliver a single message from the buffer.
@@ -127,8 +123,9 @@ Thanks to the complex interaction of the three processes, the original process c
 Moreover, the \textit{Auxiliary Buffering Process} is not bound to a specific event, it works generically with any event information that is passed to it. For that reason it is also not bound to a specific process deployment and can buffer events even before a process has been deployed, so it handles scenario~\textit{EOS5}.
 The buffering process can alternatively be started using an explicit message send event during process execution, similar to the \textit{Explicit Subscription Task} introduced in \cite{mandal:2017}. By that means, the event subscription on process instantiation or at any time during process execution is also supported, which results in the fulfillment of requirement~\textit{R2.2}.
 
+
 %BUT
-It remains to be highlighted that this approach will only work for \textit{EOS4} and \textit{EOS5} if the buffering process is instantiated before the associated event occurs. As there are no other systems in place to automatically instantiate the process, it must be assumed that the process is manually started for each event and each process model that requires an early event subscription.
+It remains to be highlighted that this approach will work for \textit{EOS4} and \textit{EOS5} only if the buffering process is instantiated before the associated event occurs. As there are no other systems in place to automatically instantiate the process, it must be assumed that the process is manually started for each event and each process model that requires an early event subscription.
 Furthermore, the number of processes running in the execution environment increases significantly. An instance of the buffering process is required for each event element that ought to make use of an event subscription time before deployment. For each instance of the original process and each buffered event, an instance of the auxiliary event delivery process must be started.
 
 \medskip \noindent

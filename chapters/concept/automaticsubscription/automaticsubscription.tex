@@ -49,8 +49,6 @@ The query must be registered using \textit{registerQuery} before the process ins
 The query and its buffer will remain active even after any single instance has terminated. When the process gets un-deployed, the query can be deleted using \textit{removeQuery}.
 %\autoref{ch:extendedprocessengine} describes the steps in detail.
 
-\todo[inline]{show the steps with sample data from one of the examples}
-
 
 \paragraph{Architectural options}
 
@@ -58,18 +56,14 @@ Three options are considered to implement the explained functionality~(\autoref{
 (a) It can either be implemented by adopting the CEP platform itself, (b) by implementing a separate middleware between process engine and CEP platform, (c) or by implementing a buffering module as part of the process engine.
 Which of the three options suits best has to be evaluated for the given use-case and existing infrastructure. In some cases it might not be possible to adapt the code of process engine or event processing platform, which leaves a separate middleware as the only choice.
 
+A reference implementation for an extended complex event processing platform is presented in \autoref{ch:implunicorn} at the example of the Esper-based CEP~platform \textit{Unicorn}. It also explains, why extending the event platform was the preferred choice in the given scenario.
+
 \begin{figure}[]
 	\myfloatalign
 	{\includegraphics[width=0.8\linewidth]{chapters/concept/automaticsubscription/architecture-options.png}}
 	\caption{Architectural options to implement the event buffers}
 	\label{fig:buffered-event-handling-architecture}
 \end{figure}
-
-A reference implementation for an extended complex event processing platform is presented in \autoref{ch:implunicorn} at the example of the Esper-based CEP~platform \textit{Unicorn}. It also explains, why extending the event platform was the preferred choice in the given scenario.
-
-\medskip \noindent
-- given the extended api, it is now possible to implement early event subscription from the process engine
-\todo[inline]{connector}
 
 
 \subsection{Extended Process Engine Behavior}\label{ch:extendedprocessengine}
