@@ -9,25 +9,32 @@
 \let\cleardoublepage\relax
 
 \chapter*{Abstract}
-Business Processes have become an essential tool in organizing, documenting and executing company workflows while Event Processing can be used as a powerful tool to increase their flexibility especially in destributed scenarios. 
-The publish-subscribe paradigm is commonly used when communicating with complex event processing platforms, nevertheless prominent process modelling notations do not specify how to handle event subscription.
+Business process models have become an essential tool in organizing, documenting and executing company workflows while Event Processing can be used as a powerful tool to increase their flexibility especially in distributed scenarios. 
+The publish-subscribe paradigm is commonly used when communicating with complex event processing platforms, nevertheless prominent process modeling notations do not specify how to handle event subscription.
 
-At the example of BPMN 2.0, the first part of this work illustrates the need for a flexible usage of event subscription in process models and derives new requirements for process modelling notations. An assessment of the coverage of these requirements in BPMN 2.0 is presented and shortcomings are pointed out.
+At the example of BPMN 2.0, the first part of this work illustrates the need for a flexible event subscription time in process models and derives new requirements for process modeling notations. An assessment of the coverage of these requirements in BPMN 2.0 is presented and shortcomings are pointed out.
 
-Based on the identified requirements, this work presents a new concept for handling event subscription in business process management solutions, predominantly built on the notion of event buffers. The concept includes an extension to the BPMN meta model, specifies the semantics and API of a new event buffering module and describes the changes necessary to the behaviour of the process engine.
+Based on the identified requirements, this work presents a new concept for handling event subscription in business process management solutions, predominantly built on the notion of event buffers. The concept includes an extension to the BPMN meta model, specifies the semantics and API of a new event buffering module and describes the changes necessary to the behavior of the process engine.
 
 For evaluation purposes, the concept has been implemented as a reusable Camunda Process Engine Plugin that interacts with the academic Complex Event Processing Platform UNICORN.
 
-\todo[inline]{maybe improve abstract}
-
-
+\pagebreak
 \vfill
+
 
 \begin{otherlanguage}{ngerman}
 \pdfbookmark[1]{Zusammenfassung}{Zusammenfassung}
 \chapter*{Zusammenfassung}
-\todo[inline]{translate abstract}
-Kurze Zusammenfassung des Inhaltes in deutscher Sprache\dots 
+
+Im heutigen Unternehmensumfeld sind Geschäftsprozessmodelle ein anerkanntes Werkzeug um Arbeitsabläufe zu organisieren, zu dokumentieren und automatisiert auszuführen. \acf{CEP} kann dabei verwendet werden um die Flexiblität und Effizienz der Prozesse zu verbessern.
+Die Kommunikation mit CEP Plattformen folgt dabei dem publish-subscribe Muster, allerdings wird es von den wichtigsten Prozessmodellierungssprachen bisher nicht explizit beachtet.
+
+Am Beispiel von BPMN 2.0 wird in dieser Arbeit zuerst der Bedarf nach einer flexiblen Nutzung von Event subscription erläutert, wovon konkrete Anforderungen an Modellierungsstandards abgeleitet werden. Es wird im Anschluss untersucht, inwiefern diese Anforderungen in BPMN untersützt sind, woraufhin zusätzliche Mängel ausgearbeitet werden.
+
+Auf Basis dieser erweiterten Anforderungen wird anschließend eine Erweiterung zum BPMN Meta Model präsentiert, welche die Modellierung der subscribe-Operationen in Geschäftsprozessen ermöglicht. Dabei ist besonderer Wert auf den Zeitpunkt des Abonnierens gelegt, um den erarbeiteten Anforderungen gerecht zu werden.
+Zur Evaluierung des Konzepts wird zuletzt eine Referenzimplementierung unter Nutzung von Camunda und Unicorn vorgestellt.
+
+
 \end{otherlanguage}
 
 \endgroup			
