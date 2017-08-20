@@ -3,16 +3,11 @@
 %************************************************
 
 \autoref{ch:flexibleeventsubscription} has presented a concept that involves the model layer, the process engine and the event engine.
-It enables flexible event subscription to overcome the issues revealed in ...
-By explicitly chosing the time of event subscription and bridging the gap between event reception and consumption by the process instance it is possible to ...
-\todo[inline]{write from keypoints}
-
-the model extension is formalized in \autoref{ch:bpmnx}, hence BPMN models extended by all information necessary for flexible event subscription can be created.
-
-to evaluate our results and provide a reference implementation, we enhance the business process engine Camunda and the event processing platform UNICORN following the procedures described in \autoref{ch:extendedprocessengine} and \autoref{ch:bufferedcep} respectively.
-Camunda is extended by providing a Process Engine Plugin, Unicorn by adapting the source code.
-The resulting illustration of an event-driven architecture is evaluated by implementing the examples shown in \autoref{ch:motivatingexamples}.
-\todo[inline]{Application to examples missing}
+It enables flexible event subscription in BPMN to overcome the issues revealed in \autoref{ch:problemstatement}.
+The model extension is described in \autoref{ch:bpmnx}, and allows to create BPMN models that contain all information necessary to to issue event subscriptions for the employed event elements.
+To evaluate the results we enhance the business process engine Camunda and the event processing platform UNICORN following the procedures described in \autoref{ch:extendedprocessengine} and \autoref{ch:bufferedcep} respectively.
+Camunda is extended by providing a Process Engine Plugin (\autoref{ch:implcamunda}), Unicorn by adapting the source code (\autoref{ch:implunicorn}).
+\autoref{fig:architecture-camunda-unicorn} shows an overview of the applied architecture with added and modified elements highlighted in gray.
 
 \begin{figure}[]
 	\myfloatalign
@@ -20,21 +15,20 @@ The resulting illustration of an event-driven architecture is evaluated by imple
 	\caption{Architecture for flexible event subscription in Camunda and Unicorn}
 	\label{fig:architecture-camunda-unicorn}
 \end{figure}
-\todo[inline]{put the exact 4 listeners into the architecture model}
+
 
 \section{Extending the Event Processing Platform Unicorn}\label{ch:implunicorn}
-\textit{UNICORN} is an event engine developed for academic purposes at the Business Process Technology chair of Hasso-Plattner-Institute, Potsdam.
-\cite{herzberg2013event}
-It focuses on event processing for \acs{BPM}, ...
-Based on Esper, that means, what is esper
-what unicorn adds to esper: graphical and rest user-interface to ..., event persistence store, bp execution and correlation, recently also an event generator/replayer
-==> it translated user interactions into the according Esper method calls
+\textit{UNICORN} is an event engine developed for academic purposes at the Business Process Technology chair of the Hasso-Plattner-Institute, Potsdam \cite{unicornhome, baumgrass2015get}.
+%It focuses on event processing for \acs{BPM}
+It has been developed in the course of the EU \textit{GET project} \cite{getservicehome}, which investigates options to increase efficiency in logistics.
+Unicorn is based on the Esper \cite{esperhome}, an open source component for complex event processing available in Java.
+Esper can be integrated into custom applications using its feature-rich Java API and will provide stream processing capabilities including an own \acf{EPL}.
+Unicorn integrates Esper and adds a web-based user-interface, a REST API, a persistent data-store for events and a number of features specifically related to BPM.
+The latest version of Unicorn uses Esper $5.3.0$, therefor all future considerations are made based on the documentation of that version.
 
-- currently unicorn uses version 5.3.0 of esper, therefor all future considerations are made based on the documentation of that version
-\todo[inline]{write from keypoints}
-
-It has been decided to extend the event engine in this scenario, for several reasons.
-Firstly, the performance and operation of the process engine shall not be jeopardized. Event Processing features potentially require a lot of performance to handle a large number of requests in a short amount of time.
+\autoref{ch:bufferedcep} considers three architectural options to provide buffered event handling capabilities.
+It has been decided to extend the event engine in this scenario for several reasons.
+Firstly, the performance and operation of the process engine shall not be jeopardized (see shortcoming \textit{S3} in \autoref{ch:ass:discussion}). Event Processing features potentially require a lot of performance to handle a large number of requests in a short amount of time.
 By implementing the event Buffering module loosely coupled to the Process Engine, we ensure that its performance is not influenced.
 Implementing a separate middleware was avoided in the course of this work, to keep the architecture easy and concise to describe.
 Unicorn is an academic prototype in constant development and therefor predestined to be directly extended for this kind of use-case.
@@ -66,10 +60,9 @@ However it would be necessary to abuse the relational approach to implement a pe
 \paragraph{The Generic Buffering Solution}
 The investigation of engine-specific solutions did not bring up an optimal solution to implement an event buffer with existing mechanisms.
 Furthermore, this reference implementation should not be entirely limited on one specific event engine.
-For that reason a new generic buffering module has been implemented within Unicorn. A \acs{UML} class diagram is provided in \autoref{}.
-
-\missingfigure{
-UML class diagram of: BufferedLiveQueryListener extends LiveQueryListener, BufferManager (list<EventBuffer> | createBuffer, updatebuffer, deleteBuffer) implements runnable, EventBuffer (Policies | update, maintain, retrieve), Constants}
+For that reason a new generic buffering module has been implemented within Unicorn. 
+%A \acs{UML} class diagram is provided in \autoref{}.
+%\missingfigure{UML class diagram of: BufferedLiveQueryListener extends LiveQueryListener, BufferManager (list<EventBuffer> | createBuffer, updatebuffer, deleteBuffer) implements runnable, EventBuffer (Policies | update, maintain, retrieve), Constants}
 
 The module is built around the \textit{EventBuffer}-class. Objects of the class are managed by the \textit{BufferManager} and represent a single buffer entity, holding events of one query. Esper provides the query output as an object of type \textit{EventBean}, which is stored in a list in \textit{EventBuffer}.
 The buffer behaves according to the value of its policies, which influence the length of the list, the order in that items are retrieved from the buffer and the consumption behavior.
@@ -115,14 +108,12 @@ The methods were added under a new path \textit{/BufferedEventQuery} to make sur
 		Description: Remove the query and the associated buffer from the system.
 \end{description}
 
-\todo[inline]{??? Swagger definition of the implemented rest API}
 
 %\paragraph{Enabling Event Correlation in Camunda}
 Using instances of \textit{NotificationRule}, Unicorn sends notifications to the recipients~(see~\autoref{fig:architecture-camunda-unicorn}). In our scenario, the messages must be sent to Camunda, more specifically to a specific process instance within the engine.
 The \textit{Event Correlation Service} within Camunda is responsible for relating incoming message events to process instances. One way to enforce the correlation is by inserting the process instance identifier and the message name inside the message.
 For that reason, message name and process instance id must be provided when adding a subscription in the event engine. 
 Unicorn has been adopted to send notifications to Camunda including the required correlation information. A sample notification for a eurotunnel delay event is shown in~\autoref{lst:unicorn-json-notification}.
-\todo[inline]{ref/footnote camunda documentation}
 %https://docs.camunda.org/manual/7.7/reference/rest/message/post-message/
 
 \begin{lstlisting}[caption={Example of a JSON notification sent by UNICORN},label=lst:unicorn-json-notification]
@@ -135,13 +126,11 @@ Unicorn has been adopted to send notifications to Camunda including the required
 }
 \end{lstlisting}
 
-\todo[inline]{can i reference another part of the thesis? could be mentioned in buffered event handling}
-
 After implementing the necessary extensions to the event engine, it is the task of the process engine to connect the extended process model to the buffered event handling API.
 The adaptations to the process engine are presented in the following section.
 
 \section{Event Subscription Handling in Camunda}\label{ch:implcamunda}
-\todo[inline]{In Camunda, data objects can only be used for documentation purposes. The engine ignores them, so there is no way to set a value.}
+%\todo[inline]{In Camunda, data objects can only be used for documentation purposes. The engine ignores them, so there is no way to set a value.}
 
 Through the BPMN extension for flexible event subscription, the information necessary to register event queries in a CEP platform can be made available in process models.
 \autoref{ch:extendedprocessengine} outlines how the business process engine must be adapted to execute the operations for subscription handling.
@@ -173,8 +162,8 @@ Moreover, the PEP facilitates the re-usability across environments and different
 % peps https://docs.camunda.org/manual/7.7/user-guide/process-engine/process-engine-plugins/
 
 
-from \autoref{ch:bpmnx:basic}
-\todo[inline]{that means that in the implementation we need additional configuration values -> implementation chapter}
+%from \autoref{ch:bpmnx:basic}
+%\todo[inline]{that means that in the implementation we need additional configuration values -> implementation chapter}
 %- PEP config properties: cep url
 
 \subsection{Managing event Subscriptions at Runtime}
@@ -185,12 +174,19 @@ With the engine configuration available, a plethora of custom handlers, validato
 
 We implement a \textit{BPMNParseListener} that is to be executed after a BPMN element finished parsing~(\textit{customPostBPMNParseListeners}).
 The BPMNParseListener interface allows us to react to the parsing of single elements based on their type by making a separate method for every BPMN element available.
-A helpful example for using that listener is also provided on GitHub
-\footnote{GitHub: \textit{camunda-bpm-examples/process-engine-plugin/bpmn-parse-listener}, \url{https://github.com/camunda/camunda-bpm-examples/tree/master/process-engine-plugin/bpmn-parse-listener}}.
+A helpful example for using that listener is also provided on GitHub\footnote{GitHub: \textit{camunda-bpm-examples/process-engine-plugin/bpmn-parse-listener}, \url{https://github.com/camunda/camunda-bpm-examples/tree/master/process-engine-plugin/bpmn-parse-listener}}.
 The BPMN extension affects the intermediate and boundary message catch event, the receive task, the explicit subscription task and can also be used to specify subscription information for a message start event.
 It was attempted to utilize the separate methods of every element, but it is not possible to access the subscription information in the associated message elements from that point. Apart from the provided method arguments, the engine's \textit{RepositoryService} can normally be used to view model information, but only after the deployment was finished.  
 To overcome this limitation, we implement the method \textit{parseRootElement}, to which a representation of the root element \textit{bpmn:definitions} is passed, including all message and extension elements. 
-Before the content of this method is described, two more aspects need to be introduced, the \textit{SubscriptionEngine} and the \textit{ExecutionListeners}.
+Before the content of this method is described, two more aspects need to be introduced, the \textit{SubscriptionEngine} and the \textit{ExecutionListeners}. An excerpt of the related UML class diagramm is depicted in \autoref{fig:camunda-ext-uml}.
+
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=1.0\linewidth]{chapters/implementation/uml-camunda-ext.png}}
+	\caption{Excerpt of the UML class diagram of the Camunda Process Engine Plugin}
+	\label{fig:camunda-ext-uml}
+\end{figure}
+
 
 % read a model https://docs.camunda.org/manual/7.7/user-guide/model-api/bpmn-model-api/read-a-model/
 % bpmn extension elements https://docs.camunda.org/manual/7.7/user-guide/model-api/bpmn-model-api/extension-elements/
@@ -201,6 +197,7 @@ It offers method representations of all four API-calls, \textit{registerQuery}, 
 The second, more important functionality is the \textit{SubscriptionRepository}, a list of all available query and subscription identifiers and a mapping to the related process definitions or instances.
 As described in \autoref{ch:impl:unicorn-api}, active queries and subscriptions can only be deleted using their unique identifiers. 
 When issuing a subscription or registering a query, these identifiers are stored in the repository until the removal call is executed.
+Based on the repository information, the SubscriptionEngine can determine the subscription identifiers for provided event element information and execute the remove and unsubscribe operations on the event engine.
 
 \paragraph{ExecutionListeners}
 The concept involves four execution listeners, one for each API-call, which are attached to activities through the BPMN parse listener.
@@ -208,14 +205,11 @@ Execution listeners can be triggered by the camunda-internal end- or start-event
 Their implementation is concise: each of them is a separate class implementing the \textit{ExecutionListener} interface. They only have one method \textit{notify}, which is called by the engine when the end- or start-event fires.
 Within the method, each listener class issues an API-call using the functionality exposed by \textit{SubscriptionManager}.
 
-\todo[inline]{could mention that registerQuery can be bound either to an instance or to a process definition. this differentiation is made based on the subscriptionDefinition which is passed to the listener on creation.}
-
-All implemented classes are visualized in ... .
-\missingfigure{UML of all involved classes}
+%\todo[inline]{could mention that registerQuery can be bound either to an instance or to a process definition. this differentiation is made based on the subscriptionDefinition which is passed to the listener on creation.}
 
 
 \paragraph{Implementation of parseRootElement}
-After introducing the \textit{SubscriptionEngine} and the \textit{ExecutionListeners}, this paragraph describes how the listeners are attached to the activities in the course of the execution of \textit{parseRootElement}.
+After introducing the \textit{SubscriptionEngine} and the \textit{ExecutionListeners}, this paragraph describes how the listeners are attached to the activities in the course of the execution of \textit{parseRootElement} in our custom \textit{BPMNParseListener}.
 By the help of the model representation passed ot the method as an argument of type \textit{Element}, all relevant xml~elements can be extracted based on the element names.
 This results in a list of all intermediate and boundary message catch events and receive-tasks and the messages that they reference. The subscription definition is available as a child element of each message.
 For each element in the list, the execution now proceeds as outlined in \autoref{ch:extendedprocessengine}.
@@ -228,15 +222,14 @@ This can be exemplified by an intermediate message catch event with subscription
 	\item To the same activity, objects of \textit{UnsubscribeListener} and \textit{RemoveQueryListener} are registered to be triggered by the end event.
 \end{itemize}
 
-The complete workflow is shown as pseudo code in \autoref{}. \missingfigure{maybe provide pseudo code?}
 It is worth noting that the available code-base can easily be used to implement the event subscription for message start events, so that processes can be automatically instantiated by events delivered from the event engine.
 Considering that process definitions in Camunda are rarely removed completely, the removal of queries on process un-deployment was not implemented. The lack of an obvious intercept point to inject code at that time makes an implementation cumbersome.
 
-\paragraph{}
+\medskip \noindent
 Altogether, the enhanced CEP platform and business process engine enable the automatic handling of information provided through the BPMN extension for flexible event subscription.
 The event engine exposes functionality for buffered event handling which is accessed through execution listeners during the process execution in Camunda.
 The Camunda extension can be flexibly re-used across environments thanks to its implementation in the form of a Process Engine Plugin.
-Given these extended features, process designers can conveniently incorporate external message events in their BPMN models.
+Given these extended features, process designers can conveniently incorporate subscription information for external message events in their executable BPMN models.
 
 
 
