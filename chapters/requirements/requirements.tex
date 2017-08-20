@@ -3,8 +3,7 @@
 %************************************************
 
 Event subscription is an essential part of event-driven architectures and must consequently be considered when using events in business processes.
-While the use of external events is an active topic in research, most approaches only briefly discuss the subscription mechanism and use the \acs{BPMN}~semantics for orientation.
-\todo[inline]{ref}
+While the use of external events is an active topic in research, most approaches only briefly discuss the subscription mechanism and use the \acs{BPMN}~semantics for orientation~(\eg \,\cite{Pufahl2017} and \cite{Baumgrass2016}).
 Though event subscription is not directly addressed in the BPMN~specification, the descriptions on intermediate events state:
 
 \medskip
@@ -16,7 +15,7 @@ As pointed out by Mandal~et.~al.~\cite{mandal:2017}, these subscription semantic
 Due to the strict temporal order between event subscription, occurrence and un-subscription as required by the publish-subscribe paradigm, any events that occur before the enabling of the event element will be ignored by the process execution.
 That reduces the timespan for events to occur to a potentially small part of the total execution time and means that crucial events might be missed which can delay or block a process execution unnecessarily.
 
-In the following section, the problem is further illustrated at the example of two sample scenarios.
+In the following section, the problem is further illustrated at the example of two motivating scenarios.
 The observed situations then lead to the definition of \textit{Event Occurrence Scenarios} and the derivation of a set of requirements that must be fulfilled by a mechanism for flexible event subscription in business processes.
 
 \section{Motivating Examples}\label{ch:motivatingexamples}
@@ -44,7 +43,6 @@ Alternatively, the process considers a route using the ferry from Calais~(FR) to
 The Eurotunnel administration publishes delay information approximately every 30~minutes through an RSS feed on their website. While it mostly operates on schedule, delays ranging from 15~minutes to several hours occur regularly. It can happen that new information is not published for multiple hours.
 Significant delay events (delay~>~30~minutes) are received through a boundary catching message event attached to the activity \textit{Drive to Eurotunnel Check-In}. The boundary event is interrupting, hence the activity is canceled if a delay occurs.
 The transport continues towards the ferry terminal and crosses the English Channel over sea. After crossing the channel, the goods are delivered to the recipient.
-\todo[inline]{show a cep query for that scenario to make it more precise}
 
 As interpreted from the BPMN specification, the subscription to the boundary event is issued as soon as the related activity is enabled.
 Given that events arrive every 30~minutes, there can be a gap of up to half an hour, before the first information becomes available.
@@ -73,7 +71,6 @@ Much worse: if the receiving party sends out the arrival time information too ea
 
 Neither of the two presented catch events allow for an efficient and reliable execution of the process. They can cause unnecessary delays and even blocking of the process execution.
 
-\todo[inline]{Consider more possible event occurrence times to prepare for the next chapter}
 
 \paragraph{Up-to-date shipping information for an order}
 \begin{figure}[]
@@ -97,8 +94,16 @@ Other than in Example~1.2\,(\autoref{fig:example-eurotunnel-part2}), there is no
 It is furthermore worth noting that the response messages cannot be missed, because the message catch event immediately follows the message send event.
 
 A different situation holds for the boundary event \textit{Shipment Delay}.
-While the subscription to a Eurotunnel event can be issued at any time, it does not depend on any process data, the shipment delay has to be observed for each product that is part of the order. A subscription can therefor not be executed before the activity \textit{Prepare~Quote} has terminated. \todo[inline]{show a cep query for that scenario to make it more precise}
-Conforming to the definition of the process, the system will listen to shipment delays once the activity \textit{Prepare~Shipping} is enabled and therefor much later than possible.
+While the subscription to a Eurotunnel event can be issued at any time, it does not depend on any process data, the shipment delay has to be observed for each product that is part of the order. A subscription can therefor not be executed before the activity \textit{Prepare~Quote} has terminated.
+The Esper query to obtain delay information about the product with the id 123 looks as follows:
+
+\begin{lstlisting}[language=sql,caption={Esper EPL Query to obtain delay information for a product},label=lst:epl-query-shipping-delay]
+SELECT newArrivalDate, delayAmount, delayReason, productId
+FROM shippingdelay
+WHERE productId = 123
+\end{lstlisting}
+
+\noindent Conforming to the definition of the process, the system will listen to shipment delays once the activity \textit{Prepare~Shipping} is enabled and therefor much later than possible.
 Any events that occur after the completion of \textit{Prepare~Quote} but before \textit{Prepare~Shipping}, cannot be considered in the process execution and the customer will not be informed about a possible late shipment. That will, for instance, concern events that occur while the customer makes the decision about accepting or canceling the order.
 
 % The first of these three follows the \textit{Send/Receive} Service Interaction Pattern. \todo[inline]{missingref}
@@ -134,17 +139,15 @@ Given the life cycle steps \textit{process deployment}, \textit{process instanti
 
 \begin{figure}[]
 	\myfloatalign
-	{\includegraphics[width=1\linewidth]{chapters/requirements/timeline-event-occurrence.png}}
-	\caption{Possible event occurrence times in relation to a process execution life cycle}
+	{\includegraphics[width=1\linewidth]{chapters/requirements/timeline_event-occurrence.png}}
+	\caption{Event Occurrence Scenarios}{Possible times of event occurrence in relation to a process execution life-cycle. \textit{EOS2} (event does not occur) not illustrated.}
 	\label{fig:occurrence-timeline}
-\end{figure}\todo[inline]{improve figure: include EOS notions, save space, ?}
+\end{figure}
 
-An overview of the EOSs and the related life-cycle steps is provided in \autoref{fig:occurrence-timeline}, which uses a time-line to illustrate the possible event occurrence times.
+\noindent An overview of the EOSs and the related life-cycle steps is provided in \autoref{fig:occurrence-timeline}, which uses a time-line to illustrate the possible event occurrence times.
 The model deliberately excludes event occurrences after termination of the event element, because that would presume that there is no more interest in the event as the execution flow continued on another branch. Otherwise, the process will remain in waiting state until the event occurs.
 
-\todo[inline]{add a back reference to the examples. In example XY, events can occur before... whereas in example...}
-
-As introduced in \autoref{ch:bg:cep}, there is a strict temporal order between event subscription, reception and un-subscription.
+As introduced in \autoref{ch:bg:cep}, there is a strict temporal order between event subscription, consumption and un-subscription.
 To catch an event that occurs as described in any of the EOSs, the related subscription operation has to be executed before the start of the time interval associated with the EOS.
 On that basis, the latest possible event subscription time can be derived from each event occurrence scenario and is as follows:
 \textit{before process deployment}~($EOS_{5}$), \textit{during process deployment}~($EOS_{4}$), \textit{at process instantiation}~($EOS_{3}$) and when the \textit{BPMN event element is enabled}~($EOS_{1}$).
@@ -173,10 +176,6 @@ Before that, the formal requirements will be used to evaluate the capabilities o
 %\medskip \noindent
 %It shall be noted that the requirements \textit{R2.2} and \textit{R3} introduced in this chapter have also been pointed out by Mandal~et.\,al. in their work on early subscription and event buffering\,\cite{mandal:2017}.
 %Note that the need for flexible event subscription has also been pointed out by Mandal~et.\,al. in their work on early subscription and event buffering\,\cite{mandal:2017}. The authors follow a similar line of argumentation and also specify the requirement for a flexible time of subscription and event buffering.
-
-
-%Andreas: Dein Kommentar im Text sollte eigentlich überflüssig sein, weil du die Begrifflichkeit zuvor in Kapitel 2 geklärt haben solltest. Hier würde ich maximal einen kurzen Recap mit Verweis auf Ch.2 machen.
-\todo[inline]{by event I usually mean event from a cep pub/sub event source. The requirements relate to external intermediate message events. A limitation that is made in accordance with the motivated scenario. though some of the aspects might apply to other types of eventy, like the start event.}
 
 
 \paragraph{R1: Subscription Fundamentals}

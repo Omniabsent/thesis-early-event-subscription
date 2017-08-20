@@ -108,6 +108,7 @@ It is a task of the process design phase, to elaborate the correct time of subsc
 The subscription will be executed automatically by the system based on the information given in the BPMN model. Further information on the exact execution flow is provided in chapter~XY.
 
 \todo[inline]{Time of un-subscription also must be clarified in bpmnx}
+\todo[inline]{show some xml}
 
 
 \paragraph{Subscription time as part of the BPMN Message element\newline}
@@ -118,7 +119,9 @@ Note that a \textit{subscriptionTime} set to \textit{element-reached} will remai
 \todo[inline]{For each of the options: Define exactly (according to BPMN spec or standard literature), when in the flow the subscription is executed.}
 
 In motivating Example~1.1, it is necessary to issue the subscription to the Eurotunnel event as early as possible to make sure that data is available and the process execution is not delayed.
-Using the BPMN extension, the use case can be implemented by defining the event query and the subscription time in the BPMN model. \todo[inline]{show what that would look like in the example. Maybe some XML?}
+Using the BPMN extension, the use case can be implemented by defining the event query and the subscription time in the BPMN model. 
+
+\todo[inline]{show what that would look like in example 2.}
 
 \paragraph{The event subscription task\newline}
 As an alternative to specifying the subscription time using the extension field \textit{subscriptionTime}, an extension to the BPMN \textit{Task} type is proposed. \todo[inline]{it follows the ideas presented in ... but through referencing the message element}
