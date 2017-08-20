@@ -14,47 +14,6 @@ The extended requirements will be referenced in \autoref{ch:flexibleeventsubscri
 
 \todo[inline]{which functionality should be evaluated exactly?: all requirements? all occurrence scenarios, but no buffer policies. The buffer will always store the last version of the event and also deliver that version.}
 
-\section{Explicitly modeling Event Subscription in BPMN}
-
-\todo[inline]{do or not to do!?}
-
-can cite braun2015behind
-
-- there are 2 ways to work with event subscription: implicit and explicit
-- implicit is assumed by... ; they extend the process engine to execute a subscription; thereby maybe extending bpmn execution semantics
-	> and also assumed in the problem statement
-	> sample process model with an annotated query
-	
-- explicit as also proposed by mandal et al.
-
-- as the bpmn spec does not explicitly refer to subscription and unsubscription there is a demand for being explicit about subscription (without extending the bpmn execution semantic)
-- requirement 1 describes this fundamental need: sub/unsub must be part of execution flow, information must be available, variables can be used
-
--> this section explains the options to model event subscription in BPMN, not considering additional extensions to the meta model or execution semantics
--> thus evaluating requirement 1
-
-\paragraph{Modeling the publish/subscribe operations}
-
-- throw event
-	> query is in the item definition
-	> + implementation: webservice
-
-- send task
-
-- service task
-	> explicit implementation
-	> can use data as input
-
-\paragraph{Modeling Subscription Information}
-- annotation
-- dataObject
-
-
-- as bpmn offers a lot of modeling flexiblity, only a selection of options is presented.
-- show an example with service task that determines subscription payload from data object, then throw event
-
-\todo[inline]{after writing this, compare with table}
-
 
 \section{BPMN Models in presence of the Event Occurrence Scenarios}\label{ch:ass:models}
 \todo[inline]{To keep the illustrations simple, implicit subscription and unsubscription as part of the event-element is assumed}
