@@ -33,7 +33,7 @@ Firstly, the \textit{subscribe} operation has to be available in two steps:
 	A similar operation, \textit{addNotificationRecipient}, is available in existing CEP platforms. It adds a notification recipient to a query that is already registered in the platform. The difference is in the delivery of the first buffered message: \textit{requestEvents} sends out the message from the buffer, \textit{addNotificationRecipient} will send out notifications only for future query output.
 \end{aenumerate}\label{def:apiextension-subscribe}
 
-\noindent A similar situation holds for the un-subscribe operation: Given flexible event subscription, the operation must also comprise of two steps:
+\noindent A similar situation holds for the un-subscribe operation: Given flexible event subscription, the operation must comprise of two steps:
 
 \begin{aenumerate}
 	\setcounter{enumi}{2}
@@ -49,29 +49,23 @@ The query must be registered using \textit{registerQuery} before the process ins
 The query and its buffer will remain active even after any single instance has terminated. When the process gets un-deployed, the query can be deleted using \textit{removeQuery}.
 %\autoref{ch:extendedprocessengine} describes the steps in detail.
 
-
 \todo[inline]{show the steps with sample data from one of the examples}
-
-- to achieve the default behavior, each two steps have to be executed just after the other.
-
 
 
 \paragraph{Architectural options}
 
-Three options are considered to implement the explained functionality. 
-It can either be implemented by adopting the CEP platform itself, by implementing a separate middleware between process engine and CEP platform, or by implementing a buffering module as part of the process engine.
+Three options are considered to implement the explained functionality~(\autoref{fig:buffered-event-handling-architecture}). 
+(a) It can either be implemented by adopting the CEP platform itself, (b) by implementing a separate middleware between process engine and CEP platform, (c) or by implementing a buffering module as part of the process engine.
 Which of the three options suits best has to be evaluated for the given use-case and existing infrastructure. In some cases it might not be possible to adapt the code of process engine or event processing platform, which leaves a separate middleware as the only choice.
 
-
-\missingfigure{three options to implement the event buffering and api extension}
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=0.8\linewidth]{chapters/concept/automaticsubscription/architecture-options.png}}
+	\caption{Architectural options to implement the event buffers}
+	\label{fig:buffered-event-handling-architecture}
+\end{figure}
 
 A reference implementation for an extended complex event processing platform is presented in \autoref{ch:implunicorn} at the example of the Esper-based CEP~platform \textit{Unicorn}. It also explains, why extending the event platform was the preferred choice in the given scenario.
-
-\paragraph{Performance Considerations}
-
-\todo[inline]{write paragraph}
-- performance improvements through shared windows
-- due to its performance optimizations, an extension of the cep itself would make perfect sense
 
 \medskip \noindent
 - given the extended api, it is now possible to implement early event subscription from the process engine
@@ -101,6 +95,7 @@ For each possible subscription time, the following briefly enumerates which oper
 \begin{description}
 	\item[In every case:] 
 		The return-value of \textit{registerQuery}, a unique identifier of that query, must be stored for the related BPMN \textit{Message}. The id is later necessary to execute the other three API methods.
+		If the event query contains one or more variable values (see \autoref{ch:bpmnx:variables-in-queries}), all have to be replaced by their current values when \textit{registerQuery} is performed.
 		When an event element is reached, a call to \textit{requestEvents} must be issued. When the execution of that event element is finished, call \textit{unsubscribe}.
 	\item[Subscr. on process deployment:]
 		When a process gets deployed, the process engine must check if subscription information is in the model. For every \textit{Message} element that is set as \textit{subscribe on pr. deployment}, a call to \textit{registerQuery} must be issued as part of the deployment process. A call to \textit{deleteQuery} is executed when the process gets un-deployed for the same messages.
@@ -112,18 +107,6 @@ For each possible subscription time, the following briefly enumerates which oper
 		Once the event element is reached, \textit{registerQuery} must be executed for any \textit{Message} that is not covered by one of the prior cases. \textit{deleteQuery} must be called when the event element is finished.
 \end{description}
 \todo[inline]{be more precise about the time the calls should be executed (if possible). "reached"? "completed"? use the right bpmn words}
-
-
-- handling subscription dependencies:
-- when are process variables replaced by their actual values
-- The use of dynamic process variable values introduces an additional complexity: Depending on the time of event subscription, the value of the process variable might not yet be available.
-- reference BPMN data elements: process INSTANCE variable
--> the variable value might only be available during instance execution
--> can we find an exact definition of this in the spec?
-- see BPMN2 spec pp.211+ : Process and Activity can have DataInput and DataOutput. DataInput can have an 'optional' attribute
-- during execution the variable data might or might not be available. Related Work: Francesca?
--> too complex, we need a simplification for this.
-- what happens if the data is not available?
 
 
 
