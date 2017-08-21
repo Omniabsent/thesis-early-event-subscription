@@ -73,7 +73,7 @@ Originally, the QueryListener notifies all notification-recipients that are know
 For the event buffering, a new class \textit{BufferedLiveQueryListener} is created which extends the behavior of the standard query listener. Instead of only notifying all recipients, it also updates the associated buffer instance with the latest query output.
 The provided implementation serves for demonstration and reference purposes. It is not optimized for performance, for example in the case of overlapping data between buffers. Considering an event subscription issued on process instantiation, multiple \textit{EventBuffer} instances will essentially store the same data, if multiple instances of the process are started at the same time or with minimal difference.
 
-The presented buffering module supports the temporary storage of query results as demanded by \autoref{ch:concept}. After query creation, matching events can be stored in a buffer to be retrieved when necessary.
+The presented buffering module supports the temporary storage of query results as demanded by the BPMN extension. After query creation, matching events can be stored in a buffer to be retrieved when necessary.
 All buffer policies described in \autoref{ch:bpmnx:bufferpolicies} have been implemented.
 The following section explains how the \acs{REST}~\acs{API} of Unicorn is extended to make use of the buffering module.
 
