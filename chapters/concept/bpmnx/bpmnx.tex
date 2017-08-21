@@ -3,16 +3,11 @@
 % maybe cite braun2015behind
 
 The extensibility mechanism of the \ac{BPMN} allows to extend standard process elements with additional attributes, while maintaining conformity with the BPMN core~\cite[p.\,44]{bpmnspec}.
-Extensions are specified through an external definitions file and can be included into a BPMN process model by reference.
+%Extensions are specified through an external definitions file and can be included into a BPMN process model by reference.
+The BPMN extension developed in the present work is revealed in this section. First, an overview is provided (\autoref{bpmnx:overview}), then a more detailed documentation of the functionality and usage is provided.
+%- structure of this section: overview (initial understanding of the extended notation and the semantics), usage documentation(, detailed execution semantics?)
 
-\todo[inline]{write a little more about bpmn extensibility, then section structure}
-
-- utilizing this mechanism, we propose a BPMN extension for flexible event subscription
-
--> refer to as befes? or just "the extension"
-- structure of this section: overview (initial understanding of the extended notation and the semantics), usage documentation(, detailed execution semantics?)
-
-\subsection{Overview}
+\subsection{Overview}\label{bpmnx:overview}
 This section introduces a novel BPMN extension for incorporating event subscription semantics in business process models.
 The extension develops around the addition of subscription-related attributes to the BPMN \textit{Message} type. Based on the additional information, subscription and un-subscription for message events is handled automatically by an especially adapted process engine.
 The added attributes are \textit{EventQuery}, \textit{SubscriptionTime} and \textit{BufferPolicies}:
@@ -28,13 +23,9 @@ Additionally, the \textit{Event Subscription Task}, an extension of the \textit{
 By the use of the \textit{subscriptionTime} variable, the event subscription can be issued before the process flow reaches the event element and listens for the message. %bpmn event element is listening.
 Any messages that arrive before the event element is active are temporarily stored and will be delivered to the catch event or receive task once it is active.
 These storages as referred to as \textit{Event~Buffers}. By default, they store the latest message they receive, though the behavior can be adjusted using the \textit{BufferPolicies}.
-The extension elements are illustrated through a UML-representation in \autoref{}, the formal XSD-Schema is available in the appendix, \autoref{lst:xsd-flexsub}.\todo[inline]{fix ref}
 
 %- it is required that the infrastructure is prepared to execute extended processes accordingly, ref chapter
 % though, theoretically, every message can be extended with the attributes, the subscription is only managed for the elements...
-
-\missingfigure{UML-Diagram of BPMN extension: task>expl subscr task; message > messageeventdef > interm catch event; message > receive task}
-
 
 \begin{table}
 	\myfloatalign
@@ -62,25 +53,15 @@ The extension elements are illustrated through a UML-representation in \autoref{
 
 \subsection{Documentation}
 
-> why everything is added to the message element
-
-
-Semantically, the \textit{Message} type is most suited to be extended with subscription information.
-
+Through the BPMN extension, subscription-related information can be added to the Message element.
+While other authors have chosen to add subscription information directly to the catch event \cite{Baumgrass2016,beyer2016unicorn}, the Message element has been chosen for several reasons: It is a good match semantically, subscription meta information about an event message has a close relation to the Message element itself; By extending the Message element, a single extension applies to the intermediate event, the boundary event and the receive task at the same time (the extension is specifically designed for the use with exactly these three elements); If a single Message shall be used in a process multiple times, the subscription information must only be provided once.
 % receiveTask.messageRef; boundaryEvent.catchEvent.(message)eventDefinition.messageRef; intermediateCatchEvent.catchEvent.(message)eventDefinition.messageRef
-Each of the three elements references a BPMN \textit{Message}, the common denominator for communication within and across business processes.
-
-\todo[inline]{mention that others have extended the events instead, but this proposal goes another way}
-
-\todo[inline]{explain that the Message is a common element in BPMN models. It is the main generic type used for communication, collaboration.
-	The proposed extension to the Message type is only to be used by Message Receive situations in Intermediate Catch Event, the Boundary Catch Event and the Receive Task.}
+%Each of the three elements references a BPMN \textit{Message}, the common denominator for communication within and across business processes.
 
 By specification, the \textit{Message} element comprises an attribute \textit{name}, the name of the message, and \textit{itemRef}, the reference to a BPMN \textit{ItemDefinition} specifying the Message structure. Additionally, it inherits all attributes from the BPMN \textit{RootElement}~(see \cite{bpmnspec}\,p.\,93).
 In the following, the required additional attributes will be explained one after the other. A complete list is available in \autoref{tab:bpmn-extension}. The goal is to retain a stand-alone model that contains all information necessary to execute the subscription to the event source.
-
-- information is added to <subscriptionDefinition>
-
-\todo[inline]{not the subscription operation itself must be modeled, only the meta information. ==> Shortcoming2}
+All subscription information is incorporated in a model element \textit{subscriptionDefinition}, which is added to the \textit{extensionDefinitions} of the Message element.
+The formal XSD-Schema is available in the appendix, \autoref{lst:xsd-flexsub}.
 
 %\subsubsection{Introducing Event Buffers}
 %Any event message that occurs before reaching the event element but after the time of subscription will be kept in a buffer by the system.
@@ -94,21 +75,17 @@ For a subscribe operation, we consider the event~query, the platform address and
 This extension assumes that only one event engine is in use, so that access information can be configured in a central configuration store for the current process execution environment and not redundantly for each message.
 The event query instead needs to be specified for every message and is added to the model as an extension attribute \textit{eventQuery} of type \textit{string}, which should contain the full query as interpretable by the CEP platform.
 
-A similar approach has been taken by X and Y, who aim at enriching BPMN models with subscription information without considering the time of subscription specifically.
-\todo[inline]{Find this source; explain what they do (different)}
-
-Given this first fundamental part of the BPMN extension, it is possible to execute the subscription, but the time of subscription cannot be influenced.
+Given this first fundamental part of the BPMN extension, it is possible to execute the subscription, thus addressing requirement R1. However, the time of subscription cannot be influenced.
 
 \subsubsection*{The time of event subscription modeled in BPMN}\label{ch:bpmnx:subscriptiontimes}
 
-This section specifically addresses the requirement \textit{R1.1}, aiming to provide a flexible event subscription time to be selected for each BPMN message when designing an event-driven process.
+This section specifically addresses the requirement \textit{R2}, aiming to provide a flexible event subscription time to be selected for each BPMN message when designing an event-driven process.
 Two different means are to be offered to support all subscription times demanded by \textit{R1.1}: Firstly, the subscription can happen in the background. Alternatively, the subscription can be modeled explicitly as a flow-element in the process.
 It is a task of the process design phase, to elaborate the correct time of subscription necessary for the use case.
 
-The subscription will be executed automatically by the system based on the information given in the BPMN model. Further information on the exact execution flow is provided in chapter~XY.
+The subscription will be executed automatically by the system based on the information given in the BPMN model. Further information on the exact execution flow is provided in \autoref{bpmnx:executionsemantics}.
+As this means that the subscribe and unsubscribe operations themselves do not have to be explicitly modeled, shortcoming \textit{S2} is addressed.
 
-\todo[inline]{Time of un-subscription also must be clarified in bpmnx}
-\todo[inline]{show some xml}
 
 
 \paragraph{Subscription time as part of the BPMN Message element\newline}
@@ -116,21 +93,21 @@ To provide the Process Designer with a simple but powerful tool to influence the
 The field can take one of the following values: \textit{process-deployment}, \textit{process-instantiation}, \textit{manual}, \textit{element-reached}. The last option is the default option, intepreting the standard BPMN semantics.
 Note that a \textit{subscriptionTime} set to \textit{element-reached} will remain without effect if an explicit subscription task for the same event was executed before the event is reached.
 
-\todo[inline]{For each of the options: Define exactly (according to BPMN spec or standard literature), when in the flow the subscription is executed.}
-
 In motivating Example~1.1, it is necessary to issue the subscription to the Eurotunnel event as early as possible to make sure that data is available and the process execution is not delayed.
-Using the BPMN extension, the use case can be implemented by defining the event query and the subscription time in the BPMN model. 
+Using the BPMN extension, the use case can be implemented by defining the event query and the subscription time in the BPMN model as depicted in \autoref{lst:xml-message-onInst}.
 
-\todo[inline]{show what that would look like in example 2.}
+\begin{lstlisting}[caption={XML representation of an extended BPMN Message element},label=lst:xml-message-onInst]
+SELECT occurrencetime, delay, delayreason 
+FROM eurotunnel.win:time(2 hour)
+WHERE delay > 30
+
+
+
+\end{lstlisting}
+
 
 \paragraph{The event subscription task\newline}
-As an alternative to specifying the subscription time using the extension field \textit{subscriptionTime}, an extension to the BPMN \textit{Task} type is proposed. \todo[inline]{it follows the ideas presented in ... but through referencing the message element}
-Other than \cite{mandal:2017} 
-
-
-
-\missingfigure{Example 2 using an explicit subscription task}
-
+As an alternative to specifying the subscription time using the extension field \textit{subscriptionTime}, an extension to the BPMN \textit{Task} type is proposed. 
 The extended task is used to execute the subscription explicitly as part of the process flow.
 A field \textit{messageId} is added to the service task to establish a reference between the activity and the message definition.
 As introduced in section~\autoref{ch:bpmnx:basic}, the extended BPMN Message definition contains the information necessary to issue the subscription to an event source.
@@ -138,8 +115,6 @@ Once the Explicit Subscription Task is activated, the subscription for the refer
 
 Modeling the event subscription in an explicit task can be necessary when the subscription depends on the result of another activity. In that case, the subscription cannot be issued on process instantiation, because the necessary information is not yet available. Instead, an early subscription can be implemented using the extended service task.
 Apart from this particular use case, the explicit subscription task enables the Process Designer to place the subscription flexibly in the process flow and give her full control over the time of subscription.
-
-\todo[inline]{As an improvement to the options for subscription time, there could be an option "ASAP", so that the process engine issues the subscription automatically as soon as the required process data becomes available}
 
 If both tools, the extension field \textit{subscriptionTime} and the explicit subscription task, are used for a single BPMN message, the earlier subscription of the two will be executed, the second subscription will have no effect.
 That means for example if the \textit{subscriptionTime} is set to \textit{event reached} and an explicit subscription task is inserted before the event element, then the subscription will be executed at the time the explicit subscription task is active.
@@ -171,8 +146,7 @@ The use of dynamic process variable values introduces an additional complexity: 
 The \textit{LifespanPolicy} allows to specify after which timespan elements in the buffer should be deleted. Timespans are defined using the ISO8601 notation for time intervals\footnote{see \textit{Date and time format - ISO 8601}, \url{https://www.iso.org/iso-8601-date-and-time-format.html}, accessed 2017-08-13}. 
 The default value is \textit{infinite}.
 
-\todo[inline]{überleitung zu example}
-Example~1.1 is implemented by setting the \textit{subscriptionTime} to \textit{process-deployment}, which means that there can be an infinite time difference between the action of subscribing to the event source and the reaching of the event element in one of the instances. \todo[inline]{ref example}
+Motivating Example~1.1 is implemented by setting the \textit{subscriptionTime} to \textit{process-deployment}, which means that there can be an infinite time difference between the action of subscribing to the event source and the reaching of the event element in one of the instances.
 In case events are not published in a longer time, for example due to technical fault at the event producer, the buffer will contain older events that might not be relevant anymore.
 Using the \textit{LifespanPolicy}, the process designer can express, that events should be deleted from the buffer after a certain period of time and thus avoid outdated information. The buffer is maintained automatically by the system.
 That of course comes at the price that the process has to remain in waiting state until a new event message arrives.
@@ -186,7 +160,7 @@ An additional parameter \textit{ConsumptionPolicy} is introduced which can take 
 While \textit{reuse} denotes the behavior that is already known, \textit{bounded reuse(n)} will allow an element to be retrieved exactly \textit{n} times. \textit{n} has to be replaced by an integer value greater 0.
 The option \textit{Consume} will remove an element from the buffer immediately after it has been retrieved for the first time, it is therefor equivalent to \textit{Bounded Reuse(1)}.
 
-\todo[inline]{can still be clearer}
+
 
 
 \begin{figure}[]
@@ -214,18 +188,8 @@ The option \textit{Consume} will remove an element from the buffer immediately a
 
 - what if messages are defined in different ways? => I want to reuse the buffer between processes, but the message definition (especially cep query) are not the same. how will the system behave?
 
-\paragraph{A Note on the Interplay of Event Queries and Buffers}
 
-\todo[inline]{do i keep this chapter?}
-// even with the simplest settings
-
-Modern event query languages are feature-rich and offer a large set of expressions to filter events from incoming streams. \todo[inline]{ref background}
-The introduced basic event buffer can be used in connection with any desired event query and will store the latest output of that query.
-These two features together suffice to implement even more complex use-cases: Query windows of length \textit{n} can be used to keep multiple events in the buffer, filter expressions allow to keep a subset of all events based on their attribute values, multiple streams can be joined together.
-As soon as the process flow reaches an event element, the latest CEP message is retrieved from the buffer. It is not consumed, that means a second event element that references the same BPMN Message will reuse the information from the buffer.
-If no information is available in the buffer, the flow element will remain in the waiting state until a message is received. Then, the process flow proceeds as usual.
-
-\subsection{Execution Semantics}
+\subsection{Execution Semantics}\label{bpmnx:executionsemantics}
 
 After the previous section has described the functionality and usage of the BPMN extension, the following section textually defines the additions necessary to the BPMN execution semantics to implement the subscription, the un-subscription and the interaction with the event buffer.
 According to the specification, the purpose of the execution semantics is \textit{to describe a clear and precise understanding of the operation of the elements}.~\cite{bpmnspec},\,p.\,425\,ff.
