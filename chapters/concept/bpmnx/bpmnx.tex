@@ -227,7 +227,7 @@ If no information is available in the buffer, the flow element will remain in th
 
 \subsection{Execution Semantics}
 
-After the previous section has described the functionality and usage of the BPMN extension, the following section defines the additions necessary to the BPMN execution semantics.
+After the previous section has described the functionality and usage of the BPMN extension, the following section textually defines the additions necessary to the BPMN execution semantics to implement the subscription, the un-subscription and the interaction with the event buffer.
 According to the specification, the purpose of the execution semantics is \textit{to describe a clear and precise understanding of the operation of the elements}.~\cite{bpmnspec},\,p.\,425\,ff.
 While the execution semantics in BPMN must not be supported for a product to achieve \textit{Modeling Conformance}, they must be implemented to achieve \textit{Process Execution Conformance}.
 
@@ -239,9 +239,8 @@ If an activity never enters the \textit{running} state because the process flow 
 
 Originally, this life cycle specifically relates to activity instances.
 To specify the execution semantics of the presented extension, for example the time of subscription and un-subscription, a similar model is required for describing the life cycle of event elements.
-For this purpose, the activity live cycle is adopted to event elements as follows:
-Once an event is enabled, it immediately enters the state \textit{running}. 
-Event elements can be canceled when they appear after an event-based gateway and another event following the gateway occurs earlier.
+For this purpose, the life cycle of an event is considered to consist of the same states and transitions as an activity.
+Event elements can be canceled when they appear after an event-based gateway and another event following the same gateway occurs earlier.
 If the trigger of the event fires, it enters \textit{terminated}. Equivalent to activities, event elements can be skipped if the process execution choses a different path.
 
 \begin{figure}[]
@@ -250,32 +249,42 @@ If the trigger of the event fires, it enters \textit{terminated}. Equivalent to 
 	\caption{The activity instance life cycle}\label{fig:activity-lifecycle}
 \end{figure}
 
-\paragraph{Operational semantics of subscription handling}
+\paragraph{Operational Semantics for subscription handling}
+The subscription behavior of the existing BPMN elements intermediate message catch event (IMCE), boundary message catch event (BMCE) and receive task (RT) can be defined using the \textit{subscriptionDefinition} extension inside the associated Message element.
+%For the purpose of enhancing their operational semantics for automatic subscription handling, either of the three is referred to as a \textit{receiving element}
+Furthermore, the subscription can be modeled as a flow element using the \textit{Event Subscription Task}.
+Each of these elements already has execution semantics defined by the BPMN specification, which are extended with additional operations for flexible event handling.
+Due to the possibility to define the \textit{subscriptionTime} independently from the event element or receive task, adopting the semantics for these four elements is not sufficient to implement all possible event subscription times.
 
+Because the execution semantics are reliant on the subscription time specified in the message, the enhanced semantics are not described per element, but for each possible subscription time.
+The required additions to the operational semantics of BPMN are as follows:
 
-
-- general: we specify the time the following operations must be executed. register query (includes inst. of buffer), subscribe (to buffer), unsubscribe, remove query. on the basis of <subscriptionDefinition>
-+ subscriptionTime controls when the operations must occur. in case of on depl, on inst, manual, element reached
-
-as the message element itself does not have an operational semantic, we extend the semantics of the elements that reference the Message.
-
-- process deployment
-> deployment of Business Processes [is] out of scope of this specification. bpmnspec,p.22
-however, from the general idea of process deployment and un-deployment (ref bg) + "when the listening to the start event starts. when it stops" this definitely has an executional aspect.
-at that time also ... is done
-+ process undeployment
-
-- process instantiation
-> on completion of any start event, do registerQuery
-
-- Event Subscription Task: 
-> do stuff when active. once complete: terminate
-
-- catch event: (start/interm/boundary): 
-> register query
-
-
-\todo[inline]{write exec semantics}
+\begin{description}
+	\item[SubscriptionTime \textit{element reached}:]
+	IMCE/BMCE/RT: The subscription to the event source is issued on the \textit{begin} transition. The element remains in \textit{running} state until an event is consumed. The un-subscription from the event source is performed either on the \textit{terminate} or on the \textit{cancel} transition.
+	
+	\item[In every other case:] 
+	IMCE/BMCE/RT: On the \textit{begin} transition, events are requested from the Event Buffer associated to the element.
+	The element remains in \textit{running} state until the buffer delivers an event or the \textit{cancel}	transition takes place.
+	When the \textit{cancel} or the \textit{terminate} transition is performed, the buffer is informed to stop delivering events.
+	
+	\item[SubscriptionTime \textit{process-deployment}:]
+	The BPMN specification itself states that the \textit{deployment of Business Processes [is] out of scope} \cite[p.\,22]{bpmnspec}.
+	However, there must be a certain operational semantic implied by the start of the listening process to Message Start Events.
+	Therefore: An Event Buffer for the Message element is initialized at the end of the process deployment process. At the same time when the listening process to a Message Start Event begins.
+	The Event Buffer is destroyed when the process gets un-deployed, the same time a Message Start Event stops listening.
+	
+	\item[SubscriptionTime \textit{process-instantiation}:] 
+	The Event Buffer for the Message element is created when the Start Event that initializes the process instances creates a token on its outgoing Sequence Flows, that means after the start event has occurred.
+	The Event Buffer is destroyed when the process instance terminates, more precisely, when all tokens of the process instance have reached an end node (a node without outgoing sequence flows).
+	
+	\item[Subscr. through explicit subscription task:]
+	An Event buffer for the referenced Message is initialized when the Event Subscription Task performs the \textit{begin} transition.
+	The deletion of the buffer follows the same rules as in \textit{Subscr. on process instantiation}
+	
+	\item[SubscriptionTime \textit{manual}:]
+	The existence of an event buffer instance is assumed, hence no further operations are specified.
+\end{description}
 
 
 
