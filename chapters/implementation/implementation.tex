@@ -166,7 +166,7 @@ Moreover, the PEP facilitates the re-usability across environments and different
 %\todo[inline]{that means that in the implementation we need additional configuration values -> implementation chapter}
 %- PEP config properties: cep url
 
-\subsection{Managing event Subscriptions at Runtime}
+\subsection{Managing Event Subscriptions at Runtime}
 The Process Engine Plugin enables us to execute custom JAVA code at predefined points during engine execution.
 An entry point to the modification of the execution behavior is provided through the implementation of the \textit{ProcessEnginePlugin} interface. It allows to intercept \textit{preInit}, \textit{postInit} and \textit{postProcessEngineBuild}, that means at three different points during the engine bootstrapping.
 We chose to provide a custom implementation for the \textit{preInit} method, which has an object of \textit{ProcessEngineConfigurationImpl} as parameter.
