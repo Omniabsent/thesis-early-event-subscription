@@ -44,10 +44,10 @@ If a recipient is already subscribed, than the behavior will be equivalent to th
 When investigating the options for implementing event buffers in UNICORN, solutions that are specific to the event processing platform were considered.
 Notably, the concept of a \textit{Window} in event processing languages is very much comparable with a buffer as described in this work. Windows hold a variable number of events in memory according to specified window properties. That way, windows can act like size- or time-oriented buffers and allow access to older events whenever a new event occurs.
 \textit{Named Windows} in Esper allow to create global data windows that can be modified and read from multiple statements. Similar functionality is provided by \textit{Tables}, which follow a relational approach by primary key.
-\footnote{see \textit{Chapter 6. EPL Reference: Named Windows And Tables},\newline \url{http://www.espertech.com/esper/release-5.3.0/esper-reference/html/nwtable.html}}
+\footnote{see \textit{Chapter 6. EPL Reference: Named Windows And Tables}, \url{http://www.espertech.com/esper/release-5.3.0/esper-reference/html/nwtable.html}, accessed 2017-08-12}
 
 If a query window is connected with the Esper-specific \textit{Output Clause}, it is possible to delay query output with timing constraints or trigger it on the change of a global variable.
-\footnote{see \textit{Chapter 5. EPL Reference: Clauses},\newline \url{http://www.espertech.com/esper/release-5.3.0/esper-reference/html/epl\_clauses.html}}
+\footnote{see \textit{Chapter 5. EPL Reference: Clauses}, \url{http://www.espertech.com/esper/release-5.3.0/esper-reference/html/epl\_clauses.html}, accessed 2017-08-12}
 When putting together these features, an event buffer could be implemented as follows: The call \textit{registerQuery} instantiates the window. If the \textit{Consume}-policy is used, we use a named window that we share among queries and delete from after receiving the event. 
 At \textit{subscribe}, a notification-recipient is added to a query and output is triggered by causing a variable change in Esper. \textit{Unsubscribe} and \textit{removeQuery} remove a notification-recipient and de-register the query respectively.
 
@@ -143,14 +143,14 @@ Our workflow for flexible event subscription mainly involves the core components
 Being a community-driven open-source project, the Camunda project offers numerous options for customizing and extending its behavior.
 A core concept to trigger the execution of custom code during a process execution are \textit{ExecutionListeners}.
 They can be incorporated in BPMN models using the properties window of the Camunda Modeler as demonstrated in \autoref{ch:assessment}. In that case they have a textual representation in the model file, a specification can be found in the product documentation
-\footnote{\textit{Camunda BPMN Extension Elements}, \url{https://docs.camunda.org/manual/7.7/reference/bpmn20/custom-extensions/extension-elements/\#executionlistener}}.
+\footnote{\textit{Camunda BPMN Extension Elements}, \url{https://docs.camunda.org/manual/7.7/reference/bpmn20/custom-extensions/extension-elements/\#executionlistener}, accessed 2017-08-10}.
 
 However, one of the main goals of this thesis is to provide an alternative solution to explicitly modeling the subscription, unless an explicit subscription task shall be used). Thus the additional necessity attach execution listeners to BPMN elements shall be avoided.
 Instead, subscriptions shall be managed automatically by the process engine solely based on the subscription definition provided in the extended message element.
 To achieve this kind of behavior, Camunda offers the concept of a \ac{PEP} to intercept significant engine operations and introduce custom code. 
 By this means, execution listeners can be added programatically.
 The plugin is a separate software module that implements the interface \textit{ProcessEnginePlugin}
-\footnote{\textit{Process Engine Plugins}, \url{https://docs.camunda.org/manual/7.7/user-guide/process-engine/process-engine-plugins/}}.
+\footnote{\textit{Process Engine Plugins}, \url{https://docs.camunda.org/manual/7.7/user-guide/process-engine/process-engine-plugins/} accessed 2017-08-10}.
 It is activated by adding a \textit{plugin} entry in the process engine configuration.
 
 \cite{mandal:2017} and \cite{Pufahl2017} have chosen to directly adapt the source code of camunda. More precisely, they propose to modify the \textit{Behavior} class of the Camunda core to execute additional code when a BPMN element starts executing.
@@ -170,11 +170,11 @@ Moreover, the PEP facilitates the re-usability across environments and different
 The Process Engine Plugin enables us to execute custom JAVA code at predefined points during engine execution.
 An entry point to the modification of the execution behavior is provided through the implementation of the \textit{ProcessEnginePlugin} interface. It allows to intercept \textit{preInit}, \textit{postInit} and \textit{postProcessEngineBuild}, that means at three different points during the engine bootstrapping.
 We chose to provide a custom implementation for the \textit{preInit} method, which has an object of \textit{ProcessEngineConfigurationImpl} as parameter.
-With the engine configuration available, a plethora of custom handlers, validators and listeners can be registered\footnote{Some arbitrary examples are pre-/post-deployers, event-handlers, post-variable-serializers, command-interceptors. Full list available from: \url{https://docs.camunda.org/javadoc/camunda-bpm-platform/7.7/org/camunda/bpm/engine/impl/cfg/ProcessEngineConfigurationImpl.html}}.
+With the engine configuration available, a plethora of custom handlers, validators and listeners can be registered\footnote{Some arbitrary examples are pre-/post-deployers, event-handlers, post-variable-serializers, command-interceptors. Full list available from: \url{https://docs.camunda.org/javadoc/camunda-bpm-platform/7.7/org/camunda/bpm/engine/impl/cfg/ProcessEngineConfigurationImpl.html}, accessed 2017-08-11}.
 
 We implement a \textit{BPMNParseListener} that is to be executed after a BPMN element finished parsing~(\textit{customPostBPMNParseListeners}).
 The BPMNParseListener interface allows us to react to the parsing of single elements based on their type by making a separate method for every BPMN element available.
-A helpful example for using that listener is also provided on GitHub\footnote{GitHub: \textit{camunda-bpm-examples/process-engine-plugin/bpmn-parse-listener}, \url{https://github.com/camunda/camunda-bpm-examples/tree/master/process-engine-plugin/bpmn-parse-listener}}.
+A helpful example for using that listener is also provided on GitHub\footnote{GitHub, \textit{camunda-bpm-examples/process-engine-plugin/bpmn-parse-listener}, \url{https://github.com/camunda/camunda-bpm-examples/tree/master/process-engine-plugin/bpmn-parse-listener}, accessed 2017-08-11}.
 The BPMN extension affects the intermediate and boundary message catch event, the receive task, the explicit subscription task and can also be used to specify subscription information for a message start event.
 It was attempted to utilize the separate methods of every element, but it is not possible to access the subscription information in the associated message elements from that point. Apart from the provided method arguments, the engine's \textit{RepositoryService} can normally be used to view model information, but only after the deployment was finished.  
 To overcome this limitation, we implement the method \textit{parseRootElement}, to which a representation of the root element \textit{bpmn:definitions} is passed, including all message and extension elements. 
@@ -222,7 +222,7 @@ This can be exemplified by an intermediate message catch event with subscription
 	\item To the same activity, objects of \textit{UnsubscribeListener} and \textit{RemoveQueryListener} are registered to be triggered by the end event.
 \end{itemize}
 
-It is worth noting that the available code-base can easily be used to implement the event subscription for message start events, so that processes can be automatically instantiated by events delivered from the event engine.
+\noindent It is worth noting that the available code-base can easily be used to implement the event subscription for message start events, so that processes can be automatically instantiated by events delivered from the event engine.
 Considering that process definitions in Camunda are rarely removed completely, the removal of queries on process un-deployment was not implemented. The lack of an obvious intercept point to inject code at that time makes an implementation cumbersome.
 
 \medskip \noindent

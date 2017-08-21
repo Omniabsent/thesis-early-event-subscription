@@ -33,7 +33,7 @@ The action of making the process runnable in the execution environment is called
 After these preparations the process can be enacted in daily business while its current state is monitored and system maintenance is performed if necessary (\emph{Enactment Phase}). 
 A single process execution begins with the \emph{process instantiation}, when the process has succeeded or is aborted, we say the process is \emph{terminated}.
 During the enactment, system and stakeholders can start collecting performance indicators and process execution logs to allow evaluating the quality of the process specification. If that \emph{Evaluation} step reveals deficiencies, the life-cycle starts over by entering the design phase once again.
-The \emph{process un-deployment} is performed if necessary, so that no new instances of the old process can be started~\cite[p.~11~ff.]{weske:bpm-book}. A similar life-cycle is described by Dumas in \cite{dumas:bpm}.
+The \emph{process un-deployment} is performed if necessary, so that no new instances of the old process can be started~\cite[p.~11~ff.]{weske:bpm-book}. A similar life-cycle is described by Dumas~\cite{dumas:bpm}.
 %\todo[inline]{add reference to \cite{dumas:bpm}, mention that Weske says pretty much the same}
 %the investigations undertaken in this work target the Design \& Analysis phase
 
@@ -76,6 +76,8 @@ Camunda is popular among the research community as the source code is openly ava
 
 A generic meta model of business process models is proposed in \cite{weske:bpm-book}.
 According to the model, all processes are composed of nodes and edges with each node representing either an activity model, an event model or a gateway model. The complete definition is provided in \textit{Definition~3}.
+
+\pagebreak
 
 \begin{description}
 	\item[Definition 3 (Business Process Meta Model):]
@@ -144,7 +146,9 @@ A data object is used to model the \textit{Request} artifact as output of the \t
 The IT world is facing an exponential increase in the amount of produced data. A significant part of this data are pieces of information about real-life occurrences, such as a current sensor value, an interaction on a website or the location of a vehicle on the road.
 We call this kind of strongly time-related information an \textit{Event} and the according computer science field \acf{CEP}~\cite{evtprocessing}.
 More specifically, Etzion and Niblett define an event as \textit{an occurrence within a particular system or domain; it is something that has happened, or is contemplated as having happened in that domain}.
-It is understood that events are of a certain \textit{event type}, defining the attributes that each event instance of the event type is composed of. An attribute is described by a unique attribute name and a data type.
+It is understood that events are of a certain \textit{event type}, defining the attributes that each event instance of the event type is composed of. An attribute is described by a unique attribute name and a data type
+
+\pagebreak
 
 \begin{description}
 	\item[Definition 4 (Event):]
@@ -229,18 +233,21 @@ As explained in \autoref{ch:bg:cep}, interactions with a CEP platform follow the
 In the BPM scenario, this means that a subscription to events must be present, so that events can be received by the process engine and correlated to a specific message element within a process instance~\cite{Baumgrass2016}.
 The correlation has to be performed by the process engine on the basis of context information, for example a subscription identifier incorporated inside every CEP message. 
 An interaction between process engine and event engine is illustrated in \autoref{fig:bg:subscription-workflow}~\cite[,\,p.\,13]{mandal:2017} at the example of the event engine Unicorn.
+
+\begin{figure}[]
+	\myfloatalign
+	{\includegraphics[width=0.6\linewidth]{chapters/background/subscription-workflow.png}}
+	\caption{Event subscription work flow between process engine and event engine}
+	\label{fig:bg:subscription-workflow}
+\end{figure}
+
 Note that a different event engine might implement the work-flow slightly differently, but still follow the same general concept.
 In the given case, the process engine first issues a \acs{HTTP} POST call containing the subscription query a notification-path. The path contains the address of the desired notification recipient in case a matching event occurs.
 The event engine answers that call with a unique identifier associated to that single subscription.
 As soon as an event occurs that matches the query, the event engine sends the query output along with the subscription identifier to the process engine which can correlate the event back to the associated instance.
 In the next chapter, we will discuss when exactly the event subscription is issued by the process engine.
 
-\begin{figure}[]
-	\myfloatalign
-	{\includegraphics[width=0.6\linewidth]{chapters/background/subscription-workflow.png}}
-	\caption{Even-subscription work-flow between process engine and event engine.}
-	\label{fig:bg:subscription-workflow}
-\end{figure}
+
 
 %- no standard yet available to do subscription in bpmn
 %- it must be assumed that the subscription is either already active or explicitly modeled in BPMN, e.g. using a service task
