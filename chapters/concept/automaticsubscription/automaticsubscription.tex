@@ -84,7 +84,7 @@ The process engine might have to be adopted to read all relevant data from the e
 \paragraph{Managing subscription and un-subscription}
 As defined in the BPMN extension for flexible event subscription, the action of subscribing to an event source can happen at different times during process deployment and execution. The options and the implicit timing of subscription and un-subscription are specified in \autoref{ch:bpmnx:subscriptiontimes}.
 The process engine must communicate with the process engine using the four calls \textit{registerQuery}, \textit{requestEvents}, \textit{unsubscribe} and \textit{deleteQuery}, that were presented in the previous chapter.
-For each possible subscription time, the following briefly enumerates which operations must be executed when. 
+For each possible subscription time, the following briefly enumerates which operations must be executed when in accordance with the defined execution semantics. 
 
 \begin{description}
 	\item[In every case:] 
@@ -100,8 +100,4 @@ For each possible subscription time, the following briefly enumerates which oper
 	\item[Subscr. when the event element is reached:]
 		Once the event element is reached, \textit{registerQuery} must be executed for any \textit{Message} that is not covered by one of the prior cases. \textit{deleteQuery} must be called when the event element is finished.
 \end{description}
-\todo[inline]{make reference to execution semantics}
 
-
-
-\todo[inline]{few closing sentences...}
