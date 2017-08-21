@@ -14,7 +14,7 @@ More precisely, \citeauthor{weske:bpm-book} \cite{weske:bpm-book} defines a sing
 \end{description}
 
 \noindent The term \emph{Business process management} describes the techniques available to develop and support processes throughout their life-cycle.
-It is grounded in the use of explicit process representations which ultimately allow the exchange, analysis and reproduction of the workflows.
+It is grounded in the use of explicit process representations which ultimately allow the exchange, analysis and reproduction of the work flows.
 This process specification is referred to as the \emph{business process model}, composed mainly of activities and the rules that are necessary to coordinate their execution.
 When a process is performed according to its model, the single execution is called \textit{process instance}.
 Based on a process model, the number of possible instances is theoretically unbounded.
@@ -146,7 +146,7 @@ A data object is used to model the \textit{Request} artifact as output of the \t
 The IT world is facing an exponential increase in the amount of produced data. A significant part of this data are pieces of information about real-life occurrences, such as a current sensor value, an interaction on a website or the location of a vehicle on the road.
 We call this kind of strongly time-related information an \textit{Event} and the according computer science field \acf{CEP}~\cite{evtprocessing}.
 More specifically, Etzion and Niblett define an event as \textit{an occurrence within a particular system or domain; it is something that has happened, or is contemplated as having happened in that domain}.
-It is understood that events are of a certain \textit{event type}, defining the attributes that each event instance of the event type is composed of. An attribute is described by a unique attribute name and a data type
+It is understood that events are of a certain \textit{event type}, defining the attributes that each event instance of the event type is composed of. An attribute is described by a unique attribute name and a data type.
 
 \pagebreak
 
@@ -211,16 +211,17 @@ In case aggregated information is demanded by the query, the stream processor wi
 \end{figure}
 
 The subscription to an event in a CEP platform is primarily defined by an \textit{Event Query}.
-Many modern event query languages are inspired by \acs{SQL}, but cannot be entirely compliant due to the different underlying data processing concept.
-When formulating event queries, it is essential to consider the stream processing principle.
-For the illustration of the concepts, this thesis relies on the Esper \ac{EPL}~\cite{esperhome}, utilized in Esper-based event processing engines like the one employed in the presented reference implementation, \autoref{ch:implementation}.
-A simple event query in Esper looks as follows:
+Many modern event query languages are inspired by \acs{SQL}, but cannot be entirely compliant due to the different underlying data processing concept. A simple event query in Esper looks as follows:
 
 \begin{lstlisting}[language=sql,caption={Sample Query in Esper EPL},label=lst:epl-query-example]
-	SELECT occurrencetime, delay, delayreason 
-	FROM eurotunnel.win:time(2 hour)
-	WHERE delay > 30
+SELECT occurrencetime, delay, delayreason 
+FROM eurotunnel.win:time(2 hour)
+WHERE delay > 30
 \end{lstlisting}
+
+When formulating event queries, it is essential to consider the stream processing principle.
+For the illustration of the concepts, this thesis relies on the Esper \ac{EPL}~\cite{esperhome}, utilized in Esper-based event processing engines like the one employed in the presented reference implementation, \autoref{ch:implementation}.
+
 
 \section{Event-driven Business Process Control}
 The disciplines of Complex Event Processing and Business Process Management are connected in \acf{EdBPM}, which discusses the uses of events to enhance business processes~\cite{evtprocessing}.
@@ -232,7 +233,7 @@ Within business processes, event-based communication can for example be used to 
 As explained in \autoref{ch:bg:cep}, interactions with a CEP platform follow the publish-subscribe paradigm.
 In the BPM scenario, this means that a subscription to events must be present, so that events can be received by the process engine and correlated to a specific message element within a process instance~\cite{Baumgrass2016}.
 The correlation has to be performed by the process engine on the basis of context information, for example a subscription identifier incorporated inside every CEP message. 
-An interaction between process engine and event engine is illustrated in \autoref{fig:bg:subscription-workflow}~\cite[,\,p.\,13]{mandal:2017} at the example of the event engine Unicorn.
+An interaction between process engine and event engine is illustrated in \autoref{fig:bg:subscription-workflow}~\cite[\,p.\,13]{mandal:2017} at the example of the event engine Unicorn.
 
 \begin{figure}[]
 	\myfloatalign
@@ -241,7 +242,7 @@ An interaction between process engine and event engine is illustrated in \autore
 	\label{fig:bg:subscription-workflow}
 \end{figure}
 
-Note that a different event engine might implement the work-flow slightly differently, but still follow the same general concept.
+Note that a different event engine might implement the work flow slightly differently, but still follow the same general concept.
 In the given case, the process engine first issues a \acs{HTTP} POST call containing the subscription query a notification-path. The path contains the address of the desired notification recipient in case a matching event occurs.
 The event engine answers that call with a unique identifier associated to that single subscription.
 As soon as an event occurs that matches the query, the event engine sends the query output along with the subscription identifier to the process engine which can correlate the event back to the associated instance.

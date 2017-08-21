@@ -21,12 +21,12 @@ In the following, we propose an API for buffered event processing which provides
 Firstly, the \textit{subscribe} operation has to be available in two steps:
 
 \begin{aenumerate}
-	\item \textit{registerQuery(queryString[, bufferPolicies]): queryId}\newline
+	\item \textit{registerQuery\,(queryString[, bufferPolicies]): queryId}\newline
 	The call registers an event query in the CEP platform and instantiates a buffer. Matching events will be held in the buffer according to the specified  policies. It returns a unique identifier to that new query registration and hence for the connected buffer. That identifier must be used to modify the query later.
 	
 	\textit{bufferPolicies} is an optional parameter which is provided as an object with four possible fields: \textit{LifetimePolicy}, \textit{ConsumptionPolicy}, \textit{SizePolicy}, \textit{OrderPolicy}. Refer to \autoref{ch:bpmnx:bufferpolicies} for a detailed specification of the semantics and possible values of the parameters. If \textit{bufferPolicies} is not or only partly specified, the system should fall back to the denoted default values.
 	
-	\item \textit{subscribe(queryId, notificationPath): subscriptionId}\newline
+	\item \textit{subscribe\,(queryId, notificationPath): subscriptionId}\newline
 	Initiates the delivery of notifications for a given queryId to a notification recipient.
 	The recipient is specified through the \textit{notificationPath}, the full address of the entity that is supposed to receive the message.
 	Notifications are delivered asynchronously as soon as they are available. If the buffer is not empty, a message will be sent right after the \textit{requestEvents} call.
@@ -37,9 +37,9 @@ Firstly, the \textit{subscribe} operation has to be available in two steps:
 
 \begin{aenumerate}
 	\setcounter{enumi}{2}
-	\item \textit{unsubscribe(subscriptionId)}\newline
+	\item \textit{unsubscribe\,(subscriptionId)}\newline
 	Removes a notification-recipient for a given query-id. Note that the buffer and query instance remain intact, so that other recipients can still subscribe.
-	\item \textit{removeQuery(queryId)}\newline
+	\item \textit{removeQuery\,(queryId)}\newline
 	Completely deletes the query and its buffer, so that no notifications are sent out any longer. 
 \end{aenumerate}\label{def:apiextension-unsubscribe}
 
